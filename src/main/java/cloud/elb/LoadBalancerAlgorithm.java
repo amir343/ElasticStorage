@@ -1,8 +1,8 @@
 package cloud.elb;
 
-import java.util.List;
+import instance.Node;
 
-import scenarios.manager.Cloud.Node;
+import java.util.List;
 
 /**
  * 

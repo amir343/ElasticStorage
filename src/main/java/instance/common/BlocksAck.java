@@ -1,6 +1,6 @@
 package instance.common;
 
-import scenarios.manager.Cloud.Node;
+import instance.Node;
 import se.sics.kompics.address.Address;
 import se.sics.kompics.network.Message;
 

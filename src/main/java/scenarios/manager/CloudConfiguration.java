@@ -1,6 +1,7 @@
 package scenarios.manager;
 
 import instance.Instance;
+import instance.Node;
 import instance.common.Block;
 
 import java.io.FileInputStream;
@@ -15,7 +16,6 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
-import scenarios.manager.Cloud.Node;
 import se.sics.kompics.address.Address;
 import cloud.common.NodeConfiguration;
 

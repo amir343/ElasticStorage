@@ -1,5 +1,6 @@
 package cloud.api;
 
+import instance.Node;
 import instance.common.InstanceStarted;
 import instance.common.ShutDown;
 import instance.common.ShutDownAck;
@@ -9,7 +10,6 @@ import java.util.List;
 
 import logger.Logger;
 import logger.LoggerFactory;
-import scenarios.manager.Cloud.Node;
 import scenarios.manager.CloudConfiguration;
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;

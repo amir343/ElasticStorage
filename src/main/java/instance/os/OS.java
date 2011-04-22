@@ -1,5 +1,6 @@
 package instance.os;
 
+import instance.Node;
 import instance.common.AckBlock;
 import instance.common.Block;
 import instance.common.BlockResponse;
@@ -59,7 +60,6 @@ import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
 
-import scenarios.manager.Cloud.Node;
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
 import se.sics.kompics.Negative;

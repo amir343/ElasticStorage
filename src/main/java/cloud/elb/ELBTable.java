@@ -1,5 +1,6 @@
 package cloud.elb;
 
+import instance.Node;
 import instance.common.Block;
 
 import java.util.ArrayList;
@@ -10,7 +11,6 @@ import cloud.gui.CloudGUI;
 import logger.Logger;
 import logger.LoggerFactory;
 
-import scenarios.manager.Cloud.Node;
 
 /**
  * 

@@ -45,13 +45,13 @@ public class TestScenario {
     	
     	cloud.start();
     	
-//    	ControllerApplication controller = new ControllerApplication(ElasticController.class) {
-//    		{
-//    			controllerAddress("127.0.0.1", 23443);
-//    		}
-//    	};
-//    	
-//    	controller.start();
+    	ControllerApplication controller = new ControllerApplication(ElasticController.class) {
+    		{
+    			controllerAddress("127.0.0.1", 23443);
+    		}
+    	};
+    	
+    	controller.start();
     	
     	
     }

@@ -1,5 +1,6 @@
 package cloud.api;
 
+import instance.Node;
 import instance.common.Block;
 
 import java.io.FileInputStream;
@@ -11,7 +12,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
 
-import scenarios.manager.Cloud.Node;
 import se.sics.kompics.address.Address;
 import cloud.common.NodeConfiguration;
 

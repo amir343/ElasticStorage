@@ -1,5 +1,7 @@
 package cloud.gui;
 
+import instance.Node;
+
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
@@ -30,7 +32,6 @@ import logger.LoggerFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 
-import scenarios.manager.Cloud.Node;
 import statistics.distribution.Distribution;
 import statistics.distribution.DistributionRepository;
 import cloud.api.CloudAPI;

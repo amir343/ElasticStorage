@@ -1,5 +1,6 @@
 package cloud.common;
 
+import instance.Node;
 import instance.common.Block;
 import instance.common.Size;
 
@@ -7,7 +8,6 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
-import scenarios.manager.Cloud.Node;
 import se.sics.kompics.address.Address;
 
 /**

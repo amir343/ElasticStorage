@@ -1,5 +1,7 @@
 package cloud.api;
 
+import instance.Node;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,7 +10,6 @@ import cloud.gui.CloudGUI;
 import logger.Logger;
 import logger.LoggerFactory;
 
-import scenarios.manager.Cloud.Node;
 import se.sics.kompics.address.Address;
 
 /**

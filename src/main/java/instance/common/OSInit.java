@@ -1,8 +1,9 @@
 package instance.common;
 
+import instance.Node;
+
 import java.util.List;
 
-import scenarios.manager.Cloud.Node;
 import se.sics.kompics.Init;
 import se.sics.kompics.address.Address;
 import cloud.api.InstanceConfiguration;

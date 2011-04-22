@@ -1,6 +1,7 @@
 package cloud.elb;
 
-import scenarios.manager.Cloud.Node;
+import instance.Node;
+
 
 /**
  * 

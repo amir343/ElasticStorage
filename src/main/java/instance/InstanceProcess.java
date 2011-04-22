@@ -10,7 +10,6 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
 
 import scenarios.manager.CloudConfiguration;
-import scenarios.manager.Cloud.Node;
 import cloud.api.InstanceConfiguration;
 import cloud.common.NodeConfiguration;
 

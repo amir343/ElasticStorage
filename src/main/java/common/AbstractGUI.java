@@ -63,22 +63,25 @@ public abstract class AbstractGUI extends JFrame implements GUI {
 	
 	@Override
 	public synchronized void log(String text) {
-		logTextArea.append(text + "\n");
-		if (!logTextLocked) logTextArea.setCaretPosition(logTextArea.getDocument().getLength());
-		else logTextArea.setCaretPosition(lockedPosition);
+		synchronized (logTextArea) {
+			logTextArea.append(text + "\n");
+			if (!logTextLocked) logTextArea.setCaretPosition(logTextArea.getDocument().getLength());
+			else logTextArea.setCaretPosition(lockedPosition);
+		}
 	}
 	
 	@Override
 	public void lockLogText() {
 		lockedPosition = logTextArea.getDocument().getLength();
-		logTextArea.setCaretPosition(lockedPosition);
 		logTextLocked = true;
 	}
 	
 	@Override
 	public void unlockLogText() {
 		logTextLocked = false;
-		logTextArea.setCaretPosition(logTextArea.getDocument().getLength());
+		synchronized (logTextArea) {
+			logTextArea.setCaretPosition(logTextArea.getDocument().getLength());
+		}
 	}
 	
 	@Override

@@ -1,5 +1,6 @@
 package cloud.elb;
 
+import instance.Node;
 import instance.common.Block;
 import instance.common.BlocksAck;
 import instance.common.Request;
@@ -10,7 +11,6 @@ import java.util.Map;
 
 import logger.Logger;
 import logger.LoggerFactory;
-import scenarios.manager.Cloud.Node;
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
 import se.sics.kompics.Negative;

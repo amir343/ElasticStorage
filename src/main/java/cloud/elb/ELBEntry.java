@@ -1,12 +1,12 @@
 package cloud.elb;
 
+import instance.Node;
 import instance.common.Block;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import scenarios.manager.Cloud;
-import scenarios.manager.Cloud.Node;
 
 /**
  * 
@@ -41,7 +41,7 @@ public class ELBEntry {
 		return active;
 	}
 
-	public List<Cloud.Node> getReplicas() {
+	public List<Node> getReplicas() {
 		return replicas;
 	}
 	
