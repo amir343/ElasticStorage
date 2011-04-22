@@ -1,4 +1,4 @@
-package cloud.api.adress;
+package cloud.api.address;
 
 import java.util.ArrayList;
 import java.util.List;

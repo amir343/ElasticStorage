@@ -1,4 +1,4 @@
-package cloud.api.adress;
+package cloud.api.address;
 
 /**
  * 

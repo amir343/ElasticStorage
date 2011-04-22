@@ -17,7 +17,7 @@ import se.sics.kompics.Positive;
 import se.sics.kompics.address.Address;
 import se.sics.kompics.network.Network;
 import se.sics.kompics.timer.Timer;
-import cloud.api.adress.AddressManager;
+import cloud.api.address.AddressManager;
 import cloud.common.CloudAPIInit;
 import cloud.common.ConsiderInstance;
 import cloud.common.ELB;
