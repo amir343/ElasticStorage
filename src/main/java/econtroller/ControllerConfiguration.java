@@ -8,7 +8,6 @@ import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
-import scenarios.manager.CloudConfiguration;
 import se.sics.kompics.address.Address;
 
 /**

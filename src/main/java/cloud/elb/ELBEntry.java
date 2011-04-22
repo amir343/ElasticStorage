@@ -6,8 +6,6 @@ import instance.common.Block;
 import java.util.ArrayList;
 import java.util.List;
 
-import scenarios.manager.Cloud;
-
 /**
  * 
  * @author Amir Moulavi

@@ -3,8 +3,6 @@ package instance.gui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import common.GUI;
-
 /**
  * 
  * @author Amir Moulavi
@@ -15,12 +13,10 @@ import common.GUI;
 public class LockActionListener implements ActionListener {
 
 	private LogTextAreaMouseListener logTextAreaMouseListener;
-	private GUI gui;
 	private boolean lock = true;
 
-	public LockActionListener(LogTextAreaMouseListener logTextAreaMouseListener, GUI gui) {
+	public LockActionListener(LogTextAreaMouseListener logTextAreaMouseListener) {
 		this.logTextAreaMouseListener = logTextAreaMouseListener;
-		this.gui = gui;
 	}
 
 	@Override

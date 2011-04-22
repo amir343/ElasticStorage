@@ -24,7 +24,7 @@ public class LogTextAreaMouseListener extends MouseAdapter {
 
 	public LogTextAreaMouseListener(GUI gui) {
 		this.gui = gui;
-		lockActionListener = new LockActionListener(this, gui);
+		lockActionListener = new LockActionListener(this);
 		lockMenuItem = new JMenuItem("Lock");
 		lockMenuItem.addActionListener(lockActionListener);
 		popupMenu.add(lockMenuItem);		

@@ -1,6 +1,5 @@
 package econtroller.controller;
 
-import se.sics.kompics.Event;
 import se.sics.kompics.address.Address;
 import se.sics.kompics.network.Message;
 

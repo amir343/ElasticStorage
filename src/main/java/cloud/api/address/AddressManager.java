@@ -7,16 +7,15 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
 import java.util.Scanner;
 import java.util.Set;
-
-import com.thoughtworks.xstream.XStream;
 
 import logger.Logger;
 import logger.LoggerFactory;
 import se.sics.kompics.address.Address;
 import cloud.gui.CloudGUI;
+
+import com.thoughtworks.xstream.XStream;
 
 /**
  * 
@@ -52,7 +51,6 @@ public class AddressManager {
 			logger.error("There is something wrong with 'addresses.xml' file. Please check that out");
 			throw new RuntimeException("There is something wrong with 'addresses' file. Please check that out");
 		}
-		Random random = new Random();
 		for (AddressRange range : addressPoll.getList()) {
 			if (range.getStartPort() > range.getEndPort() )
 				throw new RuntimeException("Incorrect port range for address " + range.getIp() + " -> [" + range.getStartPort() + "," +  range.getEndPort() + "]");
