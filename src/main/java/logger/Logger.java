@@ -9,6 +9,8 @@ package logger;
 
 public interface Logger {
 
+	void raw(String text);
+	
 	void info(String text);
 
 	void warn(String text);

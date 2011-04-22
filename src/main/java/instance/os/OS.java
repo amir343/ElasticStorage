@@ -98,14 +98,14 @@ public class OS extends ComponentDefinition {
 	Negative<OSPort> os = provides(OSPort.class);
 	
 	// Variables needed by OS
-	private String kernel = "2.2-2";
+	private String uname_r = "2.2-2";
+	private Kernel kernel = new Kernel();
 	protected final int numberOfDevices = 3;
 	private int numberOfDevicesLoaded = 0;
 	private long BANDWIDTH = 2 * Size.MB.getSize();
 	private static final long WAIT = 1000;
 	private static final long REQUEST_QUEUE_PROCESSING_INTERVAL = 1000;
 	private static final long CPU_LOAD_PROPAGATION_INTERVAL = 5000;
-
 	public static final long RESTART_PERIOD = 60000;
 	private int simultaneousDownloads = 20;
 	protected Address cloudProvider;
@@ -164,17 +164,21 @@ public class OS extends ComponentDefinition {
 	Handler<OSInit> initHandler = new Handler<OSInit>() {
 		@Override
 		public void handle(OSInit event) {
+			retrieveInitParameters(event);
+			loadKernel();
+			loadBlocksToDisk(event);
+			dataSet.addSeries(xySeries);
+			waitForSystemStartUp();
+			gui.updateBandwidthInfoLabel(Size.getSizeString(BANDWIDTH));
+		}
+
+		private void retrieveInitParameters(OSInit event) {
 			nodeConfiguration = event.getNodeConfiguration();
 			BANDWIDTH = event.getNodeConfiguration().getBandwidthMegaBytePerSecond();
 			simultaneousDownloads = event.getNodeConfiguration().getSimultaneousDownloads();
 			self = event.getSelfAddress();
 			node = event.getNodeInfo();
 			cloudProvider = event.getCloudProviderAddress();
-			printInitScriptsOutput();
-			loadBlocksToDisk(event);
-			dataSet.addSeries(xySeries);
-			waitForSystemStartUp();
-			gui.updateBandwidthInfoLabel(Size.getSizeString(BANDWIDTH));
 		}
 	};
 	
@@ -186,7 +190,7 @@ public class OS extends ComponentDefinition {
 		public void handle(OSRestartTimeout event) {
 			trigger(new StartMemoryUnit(), memory);
 			trigger(new StartDiskUnit(), disk);
-			printInitScriptsOutput();
+			loadKernel();
 			scheduleCPULoadPropagationToCloudProvider();
 			scheduleProcessingRequestQueue();
 		}
@@ -214,9 +218,12 @@ public class OS extends ComponentDefinition {
 		public void handle(ProcessRequestQueue event) {
 			if (instanceRunning() && acceptRequest) {
 				int freeSlot = simultaneousDownloads - currentTransfers.size();
+				trigger(new MemoryCheckOperation(), cpu);
 				for (int i=0; i<freeSlot; i++) {
 					if (!requestQueue.isEmpty()) {
 						Request req = requestQueue.remove();
+						trigger(new MemoryCheckOperation(), cpu);
+						trigger(new MemoryReadOperation(8), cpu);
 						startProcessForRequest(req);
 					} else break;
 				}
@@ -313,13 +320,7 @@ public class OS extends ComponentDefinition {
 					Request request = process.getRequest();
 					gui.decreaseNrDownloadersFor(request.getBlockId());
 					currentTransfers.remove(event.getTimeoutId());
-					if (request.getDestinationNode() != null) {
-						logger.info("Rebalancing finished for " + event.getPid());
-						trigger(new BlockTransfered(self, request.getDestinationNode(), process.getBlockSize()), network);
-					} else {
-						logger.debug("Transfering finished for " + event.getPid() );
-						trigger(new RequestDone(self, cloudProvider, request.getId()), network);
-					}
+					informDownloader(event, process, request);
 					removeFromProcessTable(event.getPid());
 					endProcessOnCPU(event.getPid());
 					if (currentTransfers.size() != 0) {
@@ -328,6 +329,16 @@ public class OS extends ComponentDefinition {
 					}
 				}
 				checkIfCanAcceptRequest();
+			}
+		}
+
+		private void informDownloader(TransferingFinished event, Process process, Request request) {
+			if (request.getDestinationNode() != null) {
+				logger.info("Rebalancing finished for " + event.getPid());
+				trigger(new BlockTransfered(self, request.getDestinationNode(), process.getBlockSize()), network);
+			} else {
+				logger.debug("Transfering finished for " + event.getPid() );
+				trigger(new RequestDone(self, cloudProvider, request.getId()), network);
 			}
 		}
 
@@ -343,6 +354,7 @@ public class OS extends ComponentDefinition {
 				if (found == false)
 					acceptRequest = true;
 			}
+			trigger(new MemoryCheckOperation(), cpu);
 		}
 	};
 	
@@ -355,6 +367,7 @@ public class OS extends ComponentDefinition {
 		public void handle(ReadDiskFinished event) {
 			if (instanceRunning()) {
 				scheduleTransferForBlock(pt.get(event.getPid()));
+				trigger(new MemoryCheckOperation(), cpu);
 			}
 		}
 	};
@@ -435,6 +448,7 @@ public class OS extends ComponentDefinition {
 		public void handle(PropagateCPULoad event) {
 			if (instanceRunning()) {
 				trigger(new MyCPULoad(self, cloudProvider, node, currentCpuLoad), network);
+				trigger(new MemoryCheckOperation(), cpu);
 				scheduleCPULoadPropagationToCloudProvider();
 			}
 		}
@@ -551,7 +565,7 @@ public class OS extends ComponentDefinition {
 	};
 
 	private void osStarted() {
-		logger.debug("OS with kernel " + kernel + " started");
+		logger.debug("OS with kernel " + uname_r + " started");
 	}
 
 	protected Block findRequestedBlock(String blockId) {
@@ -575,11 +589,11 @@ public class OS extends ComponentDefinition {
 		trigger(st, timer);		
 	}
 
-	protected void printInitScriptsOutput() {
-		logger.info("Kernel " + kernel + " loaded");
-		logger.info("Current bandwidth: " + nodeConfiguration.getBandwidth() + " (MB) ");
-		logger.info("Number of possible simultaneous downloads -> " + nodeConfiguration.getSimultaneousDownloads());
+	protected void loadKernel() {
 		gui.setTitle(node.getNodeName() + "@" + node.getIP() + ":" + node.getPort());
+		enabled = false;
+		kernel.init(nodeConfiguration.getCpuSpeedInstructionPerSecond());
+		enabled = true;
 	}
 
 	protected void scheduleDeath() {

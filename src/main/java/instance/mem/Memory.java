@@ -61,9 +61,22 @@ public class Memory extends ComponentDefinition {
 			enabled = true;
 			logger = LoggerFactory.getLogger(Memory.class, InstanceGUI.getInstance());
 			setCapacity(event.getNodeConfiguration());
-			logger.info("Memory with capacity " + Size.getSizeString(capacity) + " is started...");
 			InstanceGUI.getInstance().updateMemoryInfoLabel(Size.getSizeString(capacity));
+			printMemoryLog();
 			sendReadySignal();
+		}
+
+		private void printMemoryLog() {
+			logger.raw(" Initializing HighMem for node 0 (00000000:00000000)");
+			logger.raw(" Memory: " + Size.getSizeString(capacity) + " available (2759k kernel code, 13900k reserved, 1287k data, 408k init, 0k highmem)");
+			logger.raw(" virtual kernel memory layout:");
+			logger.raw("     fixmap  : 0xf5716000 - 0xf57ff000   ( 932 kB)");
+			logger.raw("     pkmap   : 0xf5400000 - 0xf5600000   (2048 kB)");
+			logger.raw("     vmalloc : 0xe6f00000 - 0xf53fe000   ( 228 MB)");
+			logger.raw("     lowmem  : 0xc0000000 - 0xe6700000   ( 615 MB)");
+			logger.raw("       .init : 0xc13f4000 - 0xc145a000   ( 408 kB)");
+			logger.raw("       .data : 0xc12b1dcf - 0xc13f3cc8   (1287 kB)");
+			logger.raw("       .text : 0xc1000000 - 0xc12b1dcf   (2759 kB)");
 		}
 	};
 	
@@ -93,7 +106,7 @@ public class Memory extends ComponentDefinition {
 		@Override
 		public void handle(RequestBlock event) {
 			if (enabled) {
-				logger.debug("Received request " + event);
+				logger.debug("Received request for data block " + event.getProcess().getRequest().getBlockId());
 				if (blockExist(event.getProcess().getRequest().getBlockId())) {
 					event.getProcess().setBlockSize(blocks.get(event.getProcess().getRequest().getBlockId()).getSize());
 					AckBlock ack = new AckBlock(event.getProcess());

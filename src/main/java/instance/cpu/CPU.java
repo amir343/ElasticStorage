@@ -53,7 +53,7 @@ import se.sics.kompics.timer.Timer;
 public class CPU extends ComponentDefinition {
 
 
-	private Logger logger;
+	private Logger logger = LoggerFactory.getLogger(CPU.class, InstanceGUI.getInstance());
 	
 	// Ports
 	Negative<CPUChannel> cpu = provides(CPUChannel.class);
@@ -71,8 +71,7 @@ public class CPU extends ComponentDefinition {
 	private List<Integer> loadSamples = new ArrayList<Integer>();
 	private List<Double> loads = new ArrayList<Double>();
 	protected boolean enabled = false;
-
-	protected InstanceGUI gui;	
+	protected InstanceGUI gui = InstanceGUI.getInstance();
 	
 	public CPU() {
 		tasks.set(0);
@@ -94,16 +93,19 @@ public class CPU extends ComponentDefinition {
 		@Override
 		public void handle(CPUInit event) {
 			enabled = true;
-			gui = InstanceGUI.getInstance();
-			logger = LoggerFactory.getLogger(CPU.class, gui);
 			CPU_CLOCK = event.getNodeConfiguration().getCpuSpeedInstructionPerSecond();
 			gui.updateCPUInfoLabel(event.getNodeConfiguration().getCpuSpeed() + " GHz");
-			logger.info("CPU Intel " + event.getNodeConfiguration().getCpuSpeed() +" (GHz) core i7 started...");
 			dataSet.addSeries(xySeries);
+			printCPULog(event);
 			sendReadySignal();
 			scheduleLoadSampler(1000);
 			scheduleLoadCalculation();
 			gui.createCPULoadDiagram(getChart());
+		}
+
+		private void printCPULog(CPUInit event) {
+			logger.raw(" CPU: Unsupported number of siblings 4");
+			logger.info("CPU Intel " + event.getNodeConfiguration().getCpuSpeed() +" (GHz) core i7 started...");
 		}
 	};
 

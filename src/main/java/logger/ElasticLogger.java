@@ -22,8 +22,17 @@ public class ElasticLogger implements Logger {
 	}
 
 	public synchronized void log(String text, String level) {
-		String log = String.format("%7d %s {%s} %s", now(), level, className, text);
+		String log;
+		if (level != null)
+			log = String.format("[%010.4f] %s {%s} %s", now(), level, className, text);
+		else
+			log = String.format("[%010.4f] %s", now(), text);;
 		gui.log(log);		
+	}
+
+	@Override
+	public void raw(String text) {
+		log(text, null);		
 	}
 
 	@Override
@@ -46,15 +55,16 @@ public class ElasticLogger implements Logger {
 		log(text, "ERROR");
 	}
 
-	private long now() {
+	private double now() {
 		long now = System.currentTimeMillis();
-		long diff = now - start;
-		return diff;
+		Long diff = now - start;
+	    return diff.doubleValue()/1000;
 	}
 	
 	public long nowInSeconds() {
 		long now = System.currentTimeMillis() - start;
 		return now/1000;
 	}
+
 
 }
