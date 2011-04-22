@@ -264,7 +264,7 @@ public class ControllerGUI extends AbstractGUI {
 		for (String name : controllerNames) {
 			controllers.addItem(name);
 		}
-		this.repaint();
+		controllers.revalidate();
 	}
 
 	public void startController() {

@@ -24,6 +24,9 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.table.DefaultTableModel;
 
+import logger.Logger;
+import logger.LoggerFactory;
+
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 
@@ -47,6 +50,7 @@ import common.AbstractGUI;
 public class CloudGUI extends AbstractGUI {
 
 	private static CloudGUI instance = new CloudGUI();
+	private Logger logger = LoggerFactory.getLogger(CloudGUI.class, this);
 	
 	public static CloudGUI getInstance() {
 		return instance;
@@ -172,11 +176,16 @@ public class CloudGUI extends AbstractGUI {
 	}
 
 	private void createResponseTimePanel(JFreeChart chart) {
-		if (responseTimeDiagramPanel != null)
-			statisticsPanel.remove(responseTimeDiagramPanel);
-		responseTimeDiagramPanel = new ChartPanel(chart);
-		responseTimeDiagramPanel.setBorder(BorderFactory.createTitledBorder("Response Time"));
-		statisticsPanel.add(responseTimeDiagramPanel);
+		if (null != chart) {
+			if (responseTimeDiagramPanel != null)
+				statisticsPanel.remove(responseTimeDiagramPanel);
+			responseTimeDiagramPanel = new ChartPanel(chart);
+			responseTimeDiagramPanel.setBorder(BorderFactory.createTitledBorder("Response Time"));
+			statisticsPanel.add(responseTimeDiagramPanel);
+			statisticsPanel.revalidate();
+		} else {
+			logger.error("chart for responseTime can not be null");
+		}
 	}
 
 	private void createRequestEngineTab() {
@@ -236,11 +245,16 @@ public class CloudGUI extends AbstractGUI {
 	}
 
 	private void createDiagramPanel(JFreeChart chart) {
-		if (diagramPanel != null)
-			requestEnginePanel.remove(diagramPanel);
-		diagramPanel = new ChartPanel(chart);
-		diagramPanel.setBorder(BorderFactory.createTitledBorder("Diagram"));
-		requestEnginePanel.add(diagramPanel);
+		if (null != chart) {
+			if (diagramPanel != null)
+				requestEnginePanel.remove(diagramPanel);
+			diagramPanel = new ChartPanel(chart);
+			diagramPanel.setBorder(BorderFactory.createTitledBorder("Diagram"));
+			requestEnginePanel.add(diagramPanel);
+			requestEnginePanel.revalidate();
+		} else {
+			logger.error("chart can not be null");
+		}
 	}
 
 	private void createInstanceControlPanel() {
@@ -342,7 +356,11 @@ public class CloudGUI extends AbstractGUI {
 	}
 	
 	public synchronized void addNewInstance(Node instance) {
-		model.insertRow(instances.getRowCount(), new String[]{instance.getNodeName(), instance.getIP()+":"+instance.getPort(), "Healthy"});
+		if (null != instance) {
+			model.insertRow(instances.getRowCount(), new String[]{instance.getNodeName(), instance.getIP()+":"+instance.getPort(), "Healthy"});
+		} else {
+			logger.error("instance can not be null");
+		}
 	}
 	
 	public void killSelectedInstances() {
@@ -361,22 +379,30 @@ public class CloudGUI extends AbstractGUI {
 	}
 	
 	public void suspectInstance(Node node) {
-		for (int i=0; i<model.getRowCount(); i++) {
-			if ( ((String)(model.getValueAt(i, 0))).equals(node.getNodeName()) && 
-					((String)(model.getValueAt(i, 1))).equals(node.getIP()+":"+node.getPort())) {
-				model.setValueAt("Unhealthy", i, 2);
-				return;
+		if ( null != node) {
+			for (int i=0; i<model.getRowCount(); i++) {
+				if ( ((String)(model.getValueAt(i, 0))).equals(node.getNodeName()) && 
+						((String)(model.getValueAt(i, 1))).equals(node.getIP()+":"+node.getPort())) {
+					model.setValueAt("Unhealthy", i, 2);
+					return;
+				}
 			}
+		} else {
+			logger.error("node can not be null");
 		}
 	}
 
 	public void restoreInstance(Node node) {
-		for (int i=0; i<model.getRowCount(); i++) {
-			if ( ((String)(model.getValueAt(i, 0))).equals(node.getNodeName()) && 
-					((String)(model.getValueAt(i, 1))).equals(node.getIP()+":"+node.getPort())) {
-				model.setValueAt("Healthy", i, 2);
-				return;
+		if ( null != node ) {
+			for (int i=0; i<model.getRowCount(); i++) {
+				if ( ((String)(model.getValueAt(i, 0))).equals(node.getNodeName()) && 
+						((String)(model.getValueAt(i, 1))).equals(node.getIP()+":"+node.getPort())) {
+					model.setValueAt("Healthy", i, 2);
+					return;
+				}
 			}
+		} else {
+			logger.error("node can not be null");
 		}
 	}
 	
@@ -388,7 +414,6 @@ public class CloudGUI extends AbstractGUI {
 		parametersPanel.add(parameter1);
 		currentDistribution = distributionRepository.getExponentialDistribution();
 		createDiagramPanel(currentDistribution.getChart());
-		this.repaint();
 	}
 
 	public void decorateForUniformDistribution() {
@@ -405,7 +430,6 @@ public class CloudGUI extends AbstractGUI {
 		
 		currentDistribution = distributionRepository.getUniformDistribution();
 		createDiagramPanel(currentDistribution.getChart());
-		this.repaint();
 	}
 	
 	public void decorateForConstantDistribution() {
@@ -417,7 +441,6 @@ public class CloudGUI extends AbstractGUI {
 		
 		currentDistribution = distributionRepository.getConstantDistribution();
 		createDiagramPanel(currentDistribution.getChart());
-		this.repaint();		
 	}
 
 
@@ -426,15 +449,12 @@ public class CloudGUI extends AbstractGUI {
 		currentDistribution = distributionRepository.getCustomDistribution(lines);
 		
 		createDiagramPanel(currentDistribution.getChart());
-		this.repaint();		
 	}
 	
 	public void decorateForInValidDistribution() {
 		parametersPanel.removeAll();
 		parameter1Lbl.setText("Invalid Distribution file, choose a correct distribution!");
 		parametersPanel.add(parameter1Lbl);
-		
-		this.repaint();
 	}
 
 	public synchronized void instanceAdded() {
@@ -532,12 +552,10 @@ public class CloudGUI extends AbstractGUI {
 
 	public void updateResponseTime() {
 		createResponseTimePanel(responseTimeService.getChart());
-		this.repaint();		
 	}
 
 	public void takeSnapshot() {
 		api.takeSnapshot();
-		
 	}
 
 	public void saveSelectedSnapshotTo(File selectedDir) {
@@ -587,9 +605,13 @@ public class CloudGUI extends AbstractGUI {
 	}
 
 	public void addSnapshot(CloudSnapshot cloudSnapshot) {
-		snapshotModel.insertRow(snapshotModel.getRowCount(), new Object[]{cloudSnapshot.getId(), cloudSnapshot.getDate()});
-		cloudSnapshot.addLogText(logTextArea.getText());
-		snapshots.add(cloudSnapshot);
+		if (null != cloudSnapshot) {
+			snapshotModel.insertRow(snapshotModel.getRowCount(), new Object[]{cloudSnapshot.getId(), cloudSnapshot.getDate()});
+			cloudSnapshot.addLogText(logTextArea.getText());
+			snapshots.add(cloudSnapshot);
+		} else {
+			logger.error("cloudSnapshot can not be null");
+		}
 	}
 	
 	private CloudSnapshot getSnapshotWithId(int id) {

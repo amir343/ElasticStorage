@@ -27,6 +27,10 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
+import logger.Logger;
+import logger.LoggerFactory;
+
+import org.apache.commons.lang.StringUtils;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 
@@ -46,6 +50,7 @@ import eu.hansolo.steelseries.tools.FrameDesign;
 public class InstanceGUI extends AbstractGUI {
 	
 	private static InstanceGUI instance = new InstanceGUI();
+	private Logger logger = LoggerFactory.getLogger(InstanceGUI.class, this);
 	
 	public static InstanceGUI getInstance() {
 		return instance;
@@ -252,34 +257,50 @@ public class InstanceGUI extends AbstractGUI {
 	}
 	
 	public void initializeDataBlocks(List<Block> blocks) {
-		for (Block block : blocks) {
-			model.insertRow(model.getRowCount(), new Object[]{block.getName(), Size.getSizeString(block.getSize()), 0, 0});
+		if (blocks != null) {
+			for (Block block : blocks) {
+				if (StringUtils.isNotEmpty(block.getName())) {
+					model.insertRow(model.getRowCount(), new Object[]{block.getName(), Size.getSizeString(block.getSize()), 0, 0});
+				} else {
+					logger.error("Block name can not be null");
+				}
+			}
+		} else {
+			logger.error("blocks can not be null");
 		}
 	}
 
 	public synchronized void increaseNrDownloadersFor(String blockId) {
-		for (int i=0; i< model.getRowCount(); i++) {
-			if ( ((String)model.getValueAt(i, 0)).equals(blockId)) {
-				int currentValue = (Integer) model.getValueAt(i, 2);
-				currentValue ++;
-				model.setValueAt(currentValue, i, 2);
-				currentValue = (Integer) model.getValueAt(i, 3);
-				currentValue ++;				
-				model.setValueAt(currentValue, i, 3);
-				break;
+		if (StringUtils.isNotEmpty(blockId)) {
+			for (int i=0; i< model.getRowCount(); i++) {
+				if ( ((String)model.getValueAt(i, 0)).equals(blockId)) {
+					int currentValue = (Integer) model.getValueAt(i, 2);
+					currentValue ++;
+					model.setValueAt(currentValue, i, 2);
+					currentValue = (Integer) model.getValueAt(i, 3);
+					currentValue ++;				
+					model.setValueAt(currentValue, i, 3);
+					break;
+				}
 			}
+		} else {
+			logger.error("blockId can not be null");
 		}
 	}
 
 	public synchronized void decreaseNrDownloadersFor(String blockId) {
-		for (int i=0; i< model.getRowCount(); i++) {
-			if ( ((String)model.getValueAt(i, 0)).equals(blockId)) {
-				int currentValue = (Integer) model.getValueAt(i, 2);
-				currentValue --;
-				if (currentValue < 0 ) currentValue = 0;
-				model.setValueAt(currentValue, i, 2);
-				break;
+		if (!StringUtils.isEmpty(blockId)) {
+			for (int i=0; i< model.getRowCount(); i++) {
+				if ( ((String)model.getValueAt(i, 0)).equals(blockId)) {
+					int currentValue = (Integer) model.getValueAt(i, 2);
+					currentValue --;
+					if (currentValue < 0 ) currentValue = 0;
+					model.setValueAt(currentValue, i, 2);
+					break;
+				}
 			}
+		} else {
+			logger.error("blockId can not be null");
 		}
 	}
 
@@ -295,30 +316,34 @@ public class InstanceGUI extends AbstractGUI {
 			cpuLoadDiagramPanel.remove(cpuChartPanel);
 		cpuChartPanel = new ChartPanel(chart);
 		cpuLoadDiagramPanel.add(cpuChartPanel);
-		this.repaint();
+		cpuLoadDiagramPanel.revalidate();
 	}
 	
 	public void createBandwidthDiagram(JFreeChart chart) {
-		if (bandwidthChartPanel != null) 
-			bandwidthPanel.remove(bandwidthChartPanel);
-		bandwidthChartPanel = new ChartPanel(chart);
-		bandwidthPanel.add(bandwidthChartPanel);
-		this.repaint();
+		if (null != chart) {
+			if (bandwidthChartPanel != null) 
+				bandwidthPanel.remove(bandwidthChartPanel);
+			bandwidthChartPanel = new ChartPanel(chart);
+			bandwidthPanel.add(bandwidthChartPanel);
+			bandwidthPanel.revalidate();
+		} else {
+			logger.error("chart can not be null");
+		}
 	}
 	
 	public void updateCPUInfoLabel(String info) {
 		cpuInfoLbl.setText("CPU: " + info);
-		this.repaint();
+		cpuInfoLbl.revalidate();
 	}
 	
 	public void updateMemoryInfoLabel(String info) {
 		memoryLbl.setText("Memory: " + info);
-		this.repaint();
+		memoryLbl.revalidate();
 	}
 	
 	public void updateBandwidthInfoLabel(String info) {
 		bandwidthInfoLbl.setText("Bandwidth: " + info);
-		this.repaint();
+		bandwidthInfoLbl.revalidate();
 	}
 	
 	public void setOSReference(OS os) {
@@ -330,9 +355,13 @@ public class InstanceGUI extends AbstractGUI {
 	}
 
 	public void addSnapshot(InstanceSnapshot snapshot) {
-		snapshotModel.insertRow(snapshotModel.getRowCount(), new Object[]{snapshot.getId(), snapshot.getDate()});
-		snapshot.addLogText(logTextArea.getText());
-		snapshots.add(snapshot);
+		if (null != snapshot) {
+			snapshotModel.insertRow(snapshotModel.getRowCount(), new Object[]{snapshot.getId(), snapshot.getDate()});
+			snapshot.addLogText(logTextArea.getText());
+			snapshots.add(snapshot);
+		} else {
+			logger.error("snapshot can not be null");
+		}
 	}
 
 	public JTable getSnapshotTable() {

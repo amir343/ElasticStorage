@@ -24,7 +24,7 @@ public class ResponseTimeService {
 
 	private static ResponseTimeService instance = new ResponseTimeService();
 	private XYSeries series = new XYSeries("ResponseTime");
-	private Long start = null;
+	private Long start = System.currentTimeMillis();
 	
 	public static ResponseTimeService getInstance() {
 		return instance;
@@ -35,10 +35,8 @@ public class ResponseTimeService {
 	}
 
 	public void add(List<RequestStatistic> completedRequest) {
-		if (start == null)
-			start = System.currentTimeMillis();
 		for (RequestStatistic rs : completedRequest) {
-			series.add(System.currentTimeMillis()-start, rs.getResponseTime());
+			series.add(rs.getEnd()-start, rs.getResponseTime());
 		}		
 	}
 
