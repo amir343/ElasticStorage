@@ -566,6 +566,7 @@ public class OS extends ComponentDefinition {
 
 	private void osStarted() {
 		logger.debug("OS with kernel " + uname_r + " started");
+		gui.decorateSystemStarted();
 	}
 
 	protected Block findRequestedBlock(String blockId) {
@@ -591,6 +592,7 @@ public class OS extends ComponentDefinition {
 
 	protected void loadKernel() {
 		gui.setTitle(node.getNodeName() + "@" + node.getIP() + ":" + node.getPort());
+		gui.decorateWhileSystemStartUp();
 		enabled = false;
 		kernel.init(nodeConfiguration.getCpuSpeedInstructionPerSecond());
 		enabled = true;

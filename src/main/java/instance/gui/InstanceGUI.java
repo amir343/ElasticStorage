@@ -62,7 +62,7 @@ public class InstanceGUI extends AbstractGUI {
 	private DefaultTableModel snapshotModel;
 	private JTable dataTable;
 	private JTable snapshotTable;
-	private JPanel statPanel;
+	private JPanel statTab;
 	private JPanel dataSection;
 	private JPanel cpuLoadPanel;
 	private JPanel bandwidthPanel;
@@ -112,6 +112,7 @@ public class InstanceGUI extends AbstractGUI {
 		createSnapshotTab();
 		createLogPanel();
 		setLayout(new GridLayout(1, 1));
+		tabbedPane.setSelectedComponent(logPanel);
 		add(tabbedPane);
 	}
 
@@ -188,17 +189,17 @@ public class InstanceGUI extends AbstractGUI {
 	}
 
 	private void createStatisticsTab() {
-		statPanel = new JPanel();
-		statPanel.setLayout(new GridLayout(3, 0));
+		statTab = new JPanel();
+		statTab.setLayout(new GridLayout(3, 0));
 		
 		createCPUPanel();
 		createCPULoadDiagramPanel();
 		createBandwidthPanel();
 		
-		statPanel.add(cpuLoadPanel);
-		statPanel.add(cpuLoadDiagramPanel);
-		statPanel.add(bandwidthPanel);
-		tabbedPane.addTab("Statistics", statPanel);		
+		statTab.add(cpuLoadPanel);
+		statTab.add(cpuLoadDiagramPanel);
+		statTab.add(bandwidthPanel);
+		tabbedPane.addTab("Statistics", statTab);		
 	}
 
 	private void createCPULoadDiagramPanel() {
@@ -448,6 +449,23 @@ public class InstanceGUI extends AbstractGUI {
 	@Override
 	public void createFileMenuItems() {
 		createRestartMenuItem();		
+	}
+	
+	public void decorateWhileSystemStartUp() {
+		tabbedPane.setEnabledAt(0, false);
+		tabbedPane.setEnabledAt(1, false);
+		tabbedPane.setEnabledAt(2, false);
+		toolMenu.setEnabled(false);
+		fileMenu.setEnabled(false);
+	}
+
+	public void decorateSystemStarted() {
+		tabbedPane.setEnabledAt(0, true);
+		tabbedPane.setEnabledAt(1, true);
+		tabbedPane.setEnabledAt(2, true);
+		toolMenu.setEnabled(true);
+		fileMenu.setEnabled(true);
+		tabbedPane.setSelectedComponent(statTab);
 	}
 	 
 }
