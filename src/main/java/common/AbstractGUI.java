@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.JFrame;
 import javax.swing.JMenu;
@@ -47,7 +48,7 @@ public abstract class AbstractGUI extends JFrame implements GUI {
 	protected JMenu toolMenu;
 	protected JMenuItem takeSnapshotMenuItem;
 	protected SnapshotActionListener snapshotActionListener = new SnapshotActionListener(this);
-	private boolean logTextLocked = false;
+	private AtomicBoolean logTextLocked = new AtomicBoolean(false);
 	private int lockedPosition;
 	
 	
@@ -63,25 +64,20 @@ public abstract class AbstractGUI extends JFrame implements GUI {
 	
 	@Override
 	public synchronized void log(String text) {
-		synchronized (logTextArea) {
-			logTextArea.append(text + "\n");
-			if (!logTextLocked) logTextArea.setCaretPosition(logTextArea.getDocument().getLength());
-			else logTextArea.setCaretPosition(lockedPosition);
-		}
+		logTextArea.append(text + "\n");
+		if (!logTextLocked.get()) logTextArea.setCaretPosition(logTextArea.getText().length());
+		else logTextArea.setCaretPosition(lockedPosition);
 	}
 	
 	@Override
 	public void lockLogText() {
-		lockedPosition = logTextArea.getDocument().getLength();
-		logTextLocked = true;
+		lockedPosition = logTextArea.getText().length();
+		logTextLocked.set(true);
 	}
 	
 	@Override
 	public void unlockLogText() {
-		logTextLocked = false;
-		synchronized (logTextArea) {
-			logTextArea.setCaretPosition(logTextArea.getDocument().getLength());
-		}
+		logTextLocked.set(false);
 	}
 	
 	@Override

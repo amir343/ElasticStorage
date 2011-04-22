@@ -12,6 +12,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 
@@ -29,6 +30,12 @@ import econtroller.controller.Controller;
 public class ControllerGUI extends AbstractGUI {
 
 	private static final long serialVersionUID = 8924494948307221974L;
+	private static final int SENSE_MIN = 5;
+	private static final int SENSE_MAX = 120;
+	private static final int SENSE_INIT = 5;
+	private static final int ACT_MIN = 5;
+	private static final int ACT_MAX = 120;
+	private static final int ACT_INIT = 60;
 	private static ControllerGUI instance = new ControllerGUI();
 	
 	public static ControllerGUI getInstance() {
@@ -56,6 +63,10 @@ public class ControllerGUI extends AbstractGUI {
 	private JPanel controllerDesignButtonsPanel;
 	private JButton startControllerBtn;
 	private JButton stopControllerBtn;
+	private JSlider senseSlider;
+	private JSlider actSlider;
+	private JLabel actLabel;
+	private JLabel senseLabel;
 	
 	public ControllerGUI() {
 		createMenuBar();
@@ -106,13 +117,49 @@ public class ControllerGUI extends AbstractGUI {
 
 	private void createControllerDesignSection() {
 		controllerDesignPanel = new JPanel();
-		controllerDesignPanel.setLayout(new GridLayout(2, 0));
+		controllerDesignPanel.setLayout(new GridLayout(6, 0));
 		controllerDesignPanel.setBorder(BorderFactory.createTitledBorder("Controller Design"));
 		
 		createDesignSection();
+		createSenseActTimersSection();
 		createDesignSectionButtons();
 		
 		controlPanel.add(controllerDesignPanel);		
+	}
+
+	private void createSenseActTimersSection() {
+		createSenseSlider();
+		createActSlider();
+	}
+
+	private void createSenseSlider() {
+		senseLabel = new JLabel("Sense every (s)", JLabel.CENTER);
+		
+		senseSlider = new JSlider(JSlider.HORIZONTAL, SENSE_MIN, SENSE_MAX, SENSE_INIT);
+		senseSlider.setMajorTickSpacing(20);
+		senseSlider.setMinorTickSpacing(1);
+		senseSlider.setPaintLabels(true);
+		senseSlider.setPaintTicks(true);
+		senseSlider.setPaintTrack(true);
+		
+		controllerDesignPanel.add(senseLabel);
+		controllerDesignPanel.add(senseSlider);
+	}
+
+	private void createActSlider() {
+		actLabel = new JLabel("Act every (s)", JLabel.CENTER);
+		
+		actSlider = new JSlider();
+		actSlider = new JSlider(JSlider.HORIZONTAL, ACT_MIN, ACT_MAX, ACT_INIT);
+		actSlider.setMajorTickSpacing(20);
+		actSlider.setMinorTickSpacing(1);
+		actSlider.setPaintLabels(true);
+		actSlider.setPaintTicks(true);
+		actSlider.setPaintTrack(true);
+		
+		controllerDesignPanel.add(actLabel);
+		controllerDesignPanel.add(actSlider);
+		
 	}
 
 	private void createDesignSectionButtons() {
@@ -217,12 +264,20 @@ public class ControllerGUI extends AbstractGUI {
 	
 	public void disableControllerDesignSection() {
 		controllers.setEnabled(false);
+		senseSlider.setEnabled(false);
+		actSlider.setEnabled(false);
+		senseLabel.setEnabled(false);
+		actLabel.setEnabled(false);
 		startControllerBtn.setEnabled(false);
 		stopControllerBtn.setEnabled(true);
 	}
 
 	public void enableControllerDesignSection() {
 		controllers.setEnabled(true);
+		senseSlider.setEnabled(true);
+		actSlider.setEnabled(true);
+		senseLabel.setEnabled(true);
+		actLabel.setEnabled(true);
 		startControllerBtn.setEnabled(true);
 		stopControllerBtn.setEnabled(false);
 	}
@@ -268,11 +323,16 @@ public class ControllerGUI extends AbstractGUI {
 	}
 
 	public void startController() {
-		controller.startController((String)controllers.getSelectedItem());		
+		controller.startController((String)controllers.getSelectedItem(), senseSlider.getValue(), actSlider.getValue());		
 	}
 
 	public void stopController() {
 		controller.stopController();
+		
+	}
+	
+	public static void main(String[] args) {
+		ControllerGUI.getInstance();
 		
 	}
 

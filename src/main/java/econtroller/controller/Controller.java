@@ -4,6 +4,7 @@ import instance.os.MonitorResponse;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.UUID;
 
 import logger.Logger;
 import logger.LoggerFactory;
@@ -12,6 +13,7 @@ import se.sics.kompics.Handler;
 import se.sics.kompics.Positive;
 import se.sics.kompics.address.Address;
 import se.sics.kompics.network.Network;
+import se.sics.kompics.timer.CancelTimeout;
 import se.sics.kompics.timer.ScheduleTimeout;
 import se.sics.kompics.timer.Timer;
 import econtroller.ControllerConfiguration;
@@ -19,6 +21,7 @@ import econtroller.design.ControlRepository;
 import econtroller.design.ControllerDesign;
 import econtroller.gui.ControllerGUI;
 import econtroller.sensor.SensorChannel;
+import econtroller.sensor.StopSense;
 
 /**
  * 
@@ -41,9 +44,11 @@ public class Controller extends ComponentDefinition {
 	protected ControllerConfiguration controllerConfiguration;
 	protected boolean connectedToCloudProvider = false;
 	private static final long CONNECTION_TIMEOUT = 5000;
-	private static final long ACTION_PERFORMING_INTERVAL = 60000;
+	private static long ACTION_PERFORMING_INTERVAL = 60000;
 	private Address cloudProviderAddress;
 	private ControllerDesign controller = null;
+	private UUID previousActionPerformingTimeout;
+	private boolean actionPerformingEnabled = false;
 	
 	public Controller() {
 		gui.setController(this);
@@ -67,7 +72,6 @@ public class Controller extends ComponentDefinition {
 			setGUITitle();
 			controlRespository = ControlRepository.getInstance();
 			gui.addControllers(controlRespository.getControllerNames());
-			scheduleActionPerforming();
 		}
 	};
 	
@@ -114,9 +118,13 @@ public class Controller extends ComponentDefinition {
 	}
 
 	protected void scheduleActionPerforming() {
-		ScheduleTimeout st = new ScheduleTimeout(ACTION_PERFORMING_INTERVAL);
-		st.setTimeoutEvent(new ActuateTimeout(st));
-		trigger(st, timer);		
+		if (actionPerformingEnabled) {
+			ScheduleTimeout st = new ScheduleTimeout(ACTION_PERFORMING_INTERVAL);
+			ActuateTimeout action = new ActuateTimeout(st);
+			st.setTimeoutEvent(action);
+			previousActionPerformingTimeout = action.getTimeoutId();
+			trigger(st, timer);		
+		}
 	}
 
 	public void connectToCloudProvider(String ip, String port) {
@@ -150,13 +158,25 @@ public class Controller extends ComponentDefinition {
 		return address;
 	}
 
-	public void startController(String selectedController) {
+	public void startController(String selectedController, int senseTimeout, int actTimeout) {
+		trigger(new StartSense(senseTimeout), sensor);
+		ACTION_PERFORMING_INTERVAL = actTimeout*1000;
+		actionPerformingEnabled = true;
+		scheduleActionPerforming();
 		controller = controlRespository.getControllerWithName(selectedController);	
 		controller.setControllerCallBack(this);
 	}
 
 	public void stopController() {
+		actionPerformingEnabled = false;
 		controller = null;
+		cancelPreviousActionPerformingTimer();
+		trigger(new StopSense(), sensor);
+	}
+
+	private void cancelPreviousActionPerformingTimer() {
+		CancelTimeout cancelTimeout = new CancelTimeout(previousActionPerformingTimeout);
+		trigger(cancelTimeout, timer);		
 	}
 
 	public void actuate() {
