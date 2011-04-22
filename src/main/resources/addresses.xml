@@ -1,0 +1,19 @@
+<addressPoll>
+  <addresses>
+    <addressRange>
+      <ip>127.0.0.1</ip>
+      <startPort>37000</startPort>
+      <endPort>38001</endPort>
+    </addressRange>
+    <addressRange>
+      <ip>127.0.0.1</ip>
+      <startPort>47000</startPort>
+      <endPort>48005</endPort>
+    </addressRange>
+    <addressRange>
+      <ip>127.0.0.1</ip>
+      <startPort>51000</startPort>
+      <endPort>51857</endPort>
+    </addressRange>
+  </addresses>
+</addressPoll>
