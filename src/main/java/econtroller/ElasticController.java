@@ -13,6 +13,9 @@ import se.sics.kompics.network.mina.MinaNetwork;
 import se.sics.kompics.network.mina.MinaNetworkInit;
 import se.sics.kompics.timer.Timer;
 import se.sics.kompics.timer.java.JavaTimer;
+import econtroller.actuator.Actuator;
+import econtroller.actuator.ActuatorChannel;
+import econtroller.actuator.ActuatorInit;
 import econtroller.controller.Controller;
 import econtroller.controller.ControllerInit;
 import econtroller.gui.ControllerGUI;
@@ -45,11 +48,13 @@ public class ElasticController extends ComponentDefinition {
 		try {
 			Component controller = create(Controller.class);
 			Component sensor = create(Sensor.class);
+			Component actuator = create(Actuator.class);
 			Component timer = create(JavaTimer.class);
 			Component network = create(MinaNetwork.class);
 			
 			subscribe(handleFault, controller.control());
 			subscribe(handleFault, sensor.control());
+			subscribe(handleFault, actuator.control());
 			subscribe(handleFault, timer.control());
 			subscribe(handleFault, network.control());
 			
@@ -57,14 +62,19 @@ public class ElasticController extends ComponentDefinition {
 	
 			trigger(new ControllerInit(controllerConfiguration), controller.control());
 			trigger(new SensorInit(controllerConfiguration), sensor.control());
+			trigger(new ActuatorInit(controllerConfiguration), actuator.control());
 			trigger(new MinaNetworkInit(self, 5), network.control());
 			
 			connect(controller.required(Network.class), network.provided(Network.class));
 			connect(controller.required(Timer.class), timer.provided(Timer.class));
 			connect(controller.required(SensorChannel.class), sensor.provided(SensorChannel.class));
+			connect(controller.required(ActuatorChannel.class), actuator.provided(ActuatorChannel.class));
 			
 			connect(sensor.required(Network.class), network.provided(Network.class));
 			connect(sensor.required(Timer.class), timer.provided(Timer.class));
+			
+			connect(actuator.required(Network.class), network.provided(Network.class));
+			
 		} catch(Exception e) {
 			gui.log(generateString(e.getMessage(), e.getStackTrace()));
 		}

@@ -17,6 +17,8 @@ import se.sics.kompics.timer.CancelTimeout;
 import se.sics.kompics.timer.ScheduleTimeout;
 import se.sics.kompics.timer.Timer;
 import econtroller.ControllerConfiguration;
+import econtroller.actuator.ActuatorChannel;
+import econtroller.actuator.NodeRequest;
 import econtroller.design.ControlRepository;
 import econtroller.design.ControllerDesign;
 import econtroller.gui.ControllerGUI;
@@ -36,6 +38,7 @@ public class Controller extends ComponentDefinition {
 	private Logger logger = LoggerFactory.getLogger(Controller.class, gui);
 	
 	Positive<SensorChannel> sensor = requires(SensorChannel.class);
+	Positive<ActuatorChannel> actuatorChannel = requires(ActuatorChannel.class);
 	Positive<Network> network = requires(Network.class);
 	Positive<Timer> timer = requires(Timer.class);
 	
@@ -181,7 +184,7 @@ public class Controller extends ComponentDefinition {
 
 	public void actuate() {
 		if (connectedToCloudProvider)
-			trigger(new NewNodeRequest(self, cloudProviderAddress), network);	
+			trigger(new NodeRequest(cloudProviderAddress), actuatorChannel);	
 		else
 			logger.warn("You should first connect to cloud provider");
 	}
