@@ -52,8 +52,10 @@ public class RequestGenerator extends ComponentDefinition {
 	
 	public RequestGenerator() {
 		reqGen = this;
+		
 		subscribe(initHandler, generator);
 		subscribe(requestDoneHandler, generator);
+		
 		subscribe(requestEngineTimeout, timer);
 		subscribe(RTCollectionTimeoutHandler, timer);
 	}
@@ -67,6 +69,9 @@ public class RequestGenerator extends ComponentDefinition {
 		}
 	};
 	
+	/**
+	 * This handler is triggered according to the current distribution and prepares and sends requests for all data blocks
+	 */
 	Handler<RequestEngineTimeout> requestEngineTimeout = new Handler<RequestEngineTimeout>() {
 		@Override
 		public void handle(RequestEngineTimeout event) {
@@ -84,6 +89,9 @@ public class RequestGenerator extends ComponentDefinition {
 		}
 	};
 	
+	/**
+	 * This handler is triggered when a transfer finishes and calculates the response time for further presentation
+	 */
 	Handler<RequestDone> requestDoneHandler = new Handler<RequestDone>() {
 		@Override
 		public void handle(RequestDone event) {
@@ -94,6 +102,9 @@ public class RequestGenerator extends ComponentDefinition {
 		}
 	};
 	
+	/**
+	 * This handler is triggered periodically to draw response time scatter plot in the GUI
+	 */
 	Handler<RTCollectionTimeout> RTCollectionTimeoutHandler = new Handler<RTCollectionTimeout>() {
 		@Override
 		public void handle(RTCollectionTimeout event) {

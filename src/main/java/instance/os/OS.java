@@ -496,7 +496,8 @@ public class OS extends ComponentDefinition {
 	};
 
 	/**
-	 * This handler sends a request to another instance asking for all the blocks that it owns.
+	 * This handler sends a request to another instance asking for the recommended blocks that it received 
+	 * from cloud provider.
 	 */
 	Handler<RebalanceRequest> rebalanceRequestHandler = new Handler<RebalanceRequest>() {
 		@Override

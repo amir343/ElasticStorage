@@ -56,7 +56,9 @@ public class HealthChecker extends ComponentDefinition {
 		subscribe(initHandler, epfd);
 		subscribe(considerInstanceHandler, epfd);
 		subscribe(instanceKilledHandler, epfd);		
+		
 		subscribe(heartbeatTimeoutHandler, timer);
+		
 		subscribe(aliveHandler, network);
 	}
 	
@@ -72,6 +74,9 @@ public class HealthChecker extends ComponentDefinition {
 		}
 	};
 	
+	/**
+	 * This handler is triggered periodically to check the health of all available instances
+	 */
 	Handler<HeartbeatTimeout> heartbeatTimeoutHandler = new Handler<HeartbeatTimeout>() {
 		@Override
 		public void handle(HeartbeatTimeout event) {
@@ -98,6 +103,9 @@ public class HealthChecker extends ComponentDefinition {
 		}
 	};
 	
+	/**
+	 * This handler is triggered when a node responds back to a previously sent Heatbeat message
+	 */
 	Handler<Alive> aliveHandler = new Handler<Alive>() {
 		@Override
 		public void handle(Alive event) {
@@ -106,6 +114,9 @@ public class HealthChecker extends ComponentDefinition {
 		}
 	};
 	
+	/**
+	 * This handler is triggered when a new node is started and cloud Provider discovers its existence
+	 */
 	Handler<ConsiderInstance> considerInstanceHandler = new Handler<ConsiderInstance>() {
 		@Override
 		public void handle(ConsiderInstance event) {
@@ -114,6 +125,10 @@ public class HealthChecker extends ComponentDefinition {
 		}
 	};
 	
+	/**
+	 * This handler is triggered when one instance is killed or shut down so the EPFD would not consider checking
+	 * its health
+	 */
 	Handler<InstanceKilled> instanceKilledHandler = new Handler<InstanceKilled>() {
 		@Override
 		public void handle(InstanceKilled event) {

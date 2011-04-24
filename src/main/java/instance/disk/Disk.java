@@ -40,6 +40,7 @@ public class Disk extends ComponentDefinition {
 
 	public Disk() {
 		subscribe(initHandler, control);
+		
 		subscribe(loadHandler, disk);
 		subscribe(requestBlockHandler, disk);
 		subscribe(startDiskUnitHandler, disk);

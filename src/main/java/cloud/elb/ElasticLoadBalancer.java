@@ -92,6 +92,9 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 		}
 	};
 	
+	/**
+	 * This handler is triggered when receives a suspect signal from EPFD so it marks the corresponding data blocks' replica as suspected 
+	 */
 	Handler<SuspectNode> suspectNodeHandler = new Handler<SuspectNode>() {
 		@Override
 		public void handle(SuspectNode event) {
@@ -99,6 +102,9 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 		}
 	};
 	
+	/**
+	 * This handler is triggered when receives a restore signal from EPFD so it marks the corresponding data blocks' replica as restored
+	 */
 	Handler<RestoreNode> restoreNodeHandler = new Handler<RestoreNode>() {
 		@Override
 		public void handle(RestoreNode event) {
@@ -106,6 +112,9 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 		}
 	};
 	
+	/**
+	 * This handler is triggered when a node shuts down so its replicas become unavailable
+	 */
 	Handler<RemoveReplica> removeReplicaHandler = new Handler<RemoveReplica>() {
 		@Override
 		public void handle(RemoveReplica event) {
@@ -113,6 +122,10 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 		}
 	};
 	
+	/**
+	 * This handler is triggered when the newly requested instance starts up completely and acknowledges back its start up so its data blocks' replica
+	 * become available
+	 */
 	Handler<BlocksAck> blocksAckHandler = new Handler<BlocksAck>() {
 		@Override
 		public void handle(BlocksAck event) {
@@ -123,7 +136,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 	
 	/**
 	 * This handler is triggered by Request Generator and it is responsible for sending
-	 * request to the choosen node with respect to LoadBalancerAlgorithm
+	 * request to the chosen node with respect to LoadBalancerAlgorithm
 	 */
 	Handler<Request> requestHandler = new Handler<Request>() {
 		@Override
@@ -137,6 +150,9 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 		}
 	};
 	
+	/**
+	 * This handler is triggered when a transfer finishes
+	 */
 	Handler<RequestDone> requestDoneHandler = new Handler<RequestDone>() {
 		@Override
 		public void handle(RequestDone event) {
