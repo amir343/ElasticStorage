@@ -51,12 +51,14 @@ public class CustomDistribution implements Distribution {
 		XYSeries xySeries = new XYSeries("PDF");
 		double x = 1;
 		for (int i=0; i<lines.size(); i++) {
-			xySeries.add(x, Integer.parseInt(lines.get(i).trim()));
-			x++;
+			int y = Integer.parseInt(lines.get(i).trim());
+			x += y;
+			xySeries.add(x, y);
 		}
 		for (int i=0; i<30; i++) {
-			xySeries.add(x, Integer.parseInt(lines.get(lines.size()-1).trim()));
-			x++;
+			int y = Integer.parseInt(lines.get(lines.size()-1).trim());
+			x += y;
+			xySeries.add(x, y);
 		}
 		dataSet.addSeries(xySeries);
 		return dataSet;

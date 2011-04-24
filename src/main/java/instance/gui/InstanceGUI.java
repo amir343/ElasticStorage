@@ -238,6 +238,7 @@ public class InstanceGUI extends AbstractGUI {
 		cpuDialMeter.setThreshold(70.0);
 		cpuDialMeter.setFrameDesign(FrameDesign.CHROME);
 		cpuDialMeter.setBackgroundColor(BackgroundColor.BEIGE);
+		cpuDialMeter.setLcdDecimals(1);
 		cpuLoadPanel.add(cpuDialMeter);
 	}
 
@@ -254,6 +255,7 @@ public class InstanceGUI extends AbstractGUI {
 	}
 
 	public void cpuLoad(double load) {
+		cpuDialMeter.setLcdValue(load);
 		cpuDialMeter.setValueAnimated(load);
 	}
 	
