@@ -80,7 +80,6 @@ public class CloudGUI extends AbstractGUI {
 	private JComboBox bandwidthes;
 	private JTextArea sDownloads;
 	private JComboBox cpuSpeed;
-	private DefaultTableModel model;
 	private JComboBox memories;
 	private JPanel requestEnginePanel;
 	private JComboBox distributions;
@@ -99,10 +98,12 @@ public class CloudGUI extends AbstractGUI {
 	private JPanel statisticsPanel;
 	private JPanel snapshotPanel;
 	private DefaultTableModel snapshotModel;
+	private DefaultTableModel model;
 	private JTable snapshotTable;
 	private String[] snapshotTableColumns = new String[]{"Snapshot ID", "Date"};
 	private SnapshotPopupListener snapshotPopupListener = new SnapshotPopupListener(this);
 	private List<CloudSnapshot> snapshots = new ArrayList<CloudSnapshot>();
+	private String[] instanceTableColumn = new String[]{"Name", "Address", "Status", "Cost ($)"};
 	
 	public CloudGUI() {
 		createTabs();
@@ -288,7 +289,7 @@ public class CloudGUI extends AbstractGUI {
 	}
 
 	private void createInstanceTable(JPanel currentInstancesPanel) {
-	    model = new DefaultTableModel(new String[][]{}, new String[]{"Name", "Address", "Status"});
+	    model = new DefaultTableModel(new String[][]{}, instanceTableColumn);
 		instances = new JTable(model){
 			private static final long serialVersionUID = 8374219580041789497L;
 			public boolean isCellEditable(int rowIndex, int colIndex) {
@@ -358,7 +359,7 @@ public class CloudGUI extends AbstractGUI {
 	
 	public synchronized void addNewInstance(Node instance) {
 		if (null != instance) {
-			model.insertRow(instances.getRowCount(), new String[]{instance.getNodeName(), instance.getIP()+":"+instance.getPort(), "Healthy"});
+			model.insertRow(instances.getRowCount(), new String[]{instance.getNodeName(), instance.getIP()+":"+instance.getPort(), "Healthy", "0.0"});
 		} else {
 			logger.error("instance can not be null");
 		}
@@ -399,6 +400,20 @@ public class CloudGUI extends AbstractGUI {
 				if ( ((String)(model.getValueAt(i, 0))).equals(node.getNodeName()) && 
 						((String)(model.getValueAt(i, 1))).equals(node.getIP()+":"+node.getPort())) {
 					model.setValueAt("Healthy", i, 2);
+					return;
+				}
+			}
+		} else {
+			logger.error("node can not be null");
+		}
+	}
+	
+	public void updateCostForNode(Node node, String cost) {
+		if ( null != node ) {
+			for (int i=0; i<model.getRowCount(); i++) {
+				if ( ((String)(model.getValueAt(i, 0))).equals(node.getNodeName()) && 
+						((String)(model.getValueAt(i, 1))).equals(node.getIP()+":"+node.getPort())) {
+					model.setValueAt(cost, i, 3);
 					return;
 				}
 			}

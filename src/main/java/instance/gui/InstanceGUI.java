@@ -25,6 +25,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.border.Border;
 import javax.swing.table.DefaultTableModel;
 
 import logger.Logger;
@@ -83,6 +84,7 @@ public class InstanceGUI extends AbstractGUI {
 	private OS os;
 	private List<InstanceSnapshot> snapshots = new ArrayList<InstanceSnapshot>();
 	private JMenuItem restartMenuItem;
+	private JLabel costLabel;
 	
 	public InstanceGUI() {
 		createMenuBar();
@@ -179,10 +181,13 @@ public class InstanceGUI extends AbstractGUI {
 		memoryLbl.setBorder(BorderFactory.createEtchedBorder());
 		bandwidthInfoLbl = new JLabel("Bandwidth: ");
 		bandwidthInfoLbl.setBorder(BorderFactory.createEtchedBorder());
+		costLabel = new JLabel("Cost: $ 0.0");
+		costLabel.setBorder(BorderFactory.createEtchedBorder());
 		
 		systemInfoPanel.add(cpuInfoLbl);
 		systemInfoPanel.add(memoryLbl);
 		systemInfoPanel.add(bandwidthInfoLbl);
+		systemInfoPanel.add(costLabel);
 		
 		infoTab.add(systemInfoPanel);
 
@@ -468,6 +473,11 @@ public class InstanceGUI extends AbstractGUI {
 		toolMenu.setEnabled(true);
 		fileMenu.setEnabled(true);
 		tabbedPane.setSelectedComponent(statTab);
+	}
+
+	public void updateCurrentCost(String cost) {
+		costLabel.setText("Cost: $ " + cost);
+		costLabel.revalidate();		
 	}
 	 
 }

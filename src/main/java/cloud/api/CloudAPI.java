@@ -4,6 +4,7 @@ import instance.Node;
 import instance.common.InstanceStarted;
 import instance.common.ShutDown;
 import instance.common.ShutDownAck;
+import instance.os.InstanceCost;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,6 +86,7 @@ public class CloudAPI extends ComponentDefinition {
 		subscribe(connectControllerHandler, network);
 		subscribe(disconnectHandler, network);
 		subscribe(newNodeRequestHandler, network);
+		subscribe(instanceCostHandler, network);
 	}
 	
 	Handler<CloudAPIInit> initHandler = new Handler<CloudAPIInit>() {
@@ -209,6 +211,16 @@ public class CloudAPI extends ComponentDefinition {
 		public void handle(RebalanceResponseMap event) {
 			dnsService.addDNSEntry(event.getNodeConfiguration().getNode());
 			instanceManagement.initializeNode(event.getNodeConfiguration());
+		}
+	};
+	
+	/**
+	 * This handler is triggered when a node sends its cost to cloudProvider
+	 */
+	Handler<InstanceCost> instanceCostHandler = new Handler<InstanceCost>() {
+		@Override
+		public void handle(InstanceCost event) {
+			gui.updateCostForNode(event.getNode(), event.getCost());			
 		}
 	};
 

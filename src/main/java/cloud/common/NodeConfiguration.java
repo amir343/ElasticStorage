@@ -2,7 +2,6 @@ package cloud.common;
 
 import instance.Node;
 import instance.common.Block;
-import instance.common.Size;
 
 import java.io.Serializable;
 import java.util.List;
@@ -20,48 +19,27 @@ import se.sics.kompics.address.Address;
 public class NodeConfiguration implements Serializable {
 	
 	private static final long serialVersionUID = -9025878066809528650L;
-	private double cpuSpeed;
-	private double bandwidth;
+	private CpuConfiguration cpuConfiguration;
+	private BandwidthConfiguration bandwidthConfiguration;
 	private int simultaneousDownloads;
 	private String name = "NONAME";
 	private Node node;
 	private List<Block> blocks;
 	private int memory;
-	private Node sourceNode;
 	private Map<String, Address> dataBlocksMap;
 
 	public NodeConfiguration(double cpuSpeed, double bandwidth, int memory, int simultaneousDownloads) {
-		this.cpuSpeed = cpuSpeed;
-		this.bandwidth = bandwidth;
+		this.cpuConfiguration = new CpuConfiguration(cpuSpeed);
+		this.bandwidthConfiguration = new BandwidthConfiguration(bandwidth);
 		this.memory = memory;
 		this.simultaneousDownloads = simultaneousDownloads;
 	}
 
 	public NodeConfiguration() {
-		this.cpuSpeed = 2.0;
-		this.bandwidth = 2.0;
+		this.cpuConfiguration = new CpuConfiguration(2.0);
+		this.bandwidthConfiguration = new BandwidthConfiguration(2.0);
 		this.memory = 4;
 		this.simultaneousDownloads = 20;
-	}
-
-	public long getCpuSpeedInstructionPerSecond() {
-		long result = (long) ((cpuSpeed*10) * Size.GHertz.getSize());
-		result /= 10;
-		return result;
-	}
-	
-	public double getCpuSpeed() {
-		return cpuSpeed;
-	}
-
-	public long getBandwidthMegaBytePerSecond() {
-		long result = (long) ((bandwidth*10) * Size.MB.getSize());
-		result /= 10;
-		return result;
-	}
-	
-	public double getBandwidth() {
-		return bandwidth;
 	}
 
 	public int getMemory() {
@@ -92,9 +70,9 @@ public class NodeConfiguration implements Serializable {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("{");
-			sb.append("cpuSpeed: ").append(cpuSpeed).append(",");
+			sb.append(cpuConfiguration).append(",");
 			sb.append("memory: ").append(memory).append(",");
-			sb.append("bandwidth: ").append(bandwidth).append(",");
+			sb.append(bandwidthConfiguration).append(",");
 			sb.append("simDownloads: ").append(simultaneousDownloads);
 		sb.append("}");
 		return sb.toString();
@@ -109,7 +87,7 @@ public class NodeConfiguration implements Serializable {
 	}
 	
 	public NodeConfiguration cpu(double speed) {
-		this.cpuSpeed = speed;
+		this.cpuConfiguration = new CpuConfiguration(speed);
 		return this;
 	}
 	
@@ -119,7 +97,7 @@ public class NodeConfiguration implements Serializable {
 	}
 	
 	public NodeConfiguration bandwidthMB(double bandwidth) {
-		this.bandwidth = bandwidth;
+		this.bandwidthConfiguration = new BandwidthConfiguration(bandwidth);
 		return this;
 	}
 
@@ -129,6 +107,14 @@ public class NodeConfiguration implements Serializable {
 
 	public Map<String, Address> getDataBlocksMap() {
 		return dataBlocksMap;
+	}
+
+	public CpuConfiguration getCpuConfiguration() {
+		return cpuConfiguration;
+	}
+	
+	public BandwidthConfiguration getBandwidthConfiguration() {
+		return bandwidthConfiguration;
 	}
 	
 }

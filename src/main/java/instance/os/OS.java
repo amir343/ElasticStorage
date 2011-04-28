@@ -40,6 +40,7 @@ import instance.gui.InstanceGUI;
 import instance.mem.StartMemoryUnit;
 
 import java.awt.Color;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -107,11 +108,13 @@ public class OS extends ComponentDefinition {
 	private static final long REQUEST_QUEUE_PROCESSING_INTERVAL = 1000;
 	private static final long CPU_LOAD_PROPAGATION_INTERVAL = 5000;
 	public static final long RESTART_PERIOD = 60000;
+	private static final long COST_CALCULATION_INTERVAL = 10000;
 	private int simultaneousDownloads = 20;
 	protected Address cloudProvider;
 	private ConcurrentMap<String, Process> pt = new ConcurrentHashMap<String, Process>();
 	private ConcurrentMap<UUID, String> currentTransfers = new ConcurrentHashMap<UUID, String>();
 	private ConcurrentLinkedQueue<Request> requestQueue = new ConcurrentLinkedQueue<Request>();
+	private CostService costService = new CostService();
 	protected InstanceGUI gui;
 	protected Address self;
 	protected Node node;
@@ -125,6 +128,8 @@ public class OS extends ComponentDefinition {
 	private List<Block> blocks = new ArrayList<Block>();
 	protected boolean acceptRequest = true;
 	private boolean enabled = true;	
+	private int megaBytesDownloadedSoFar = 0;
+	protected double currentCost = 0.0;
 	
 	public OS() {
 		gui = InstanceGUI.getInstance();
@@ -150,6 +155,7 @@ public class OS extends ComponentDefinition {
 		subscribe(waitTimeoutHandler, timer);
 		subscribe(deathHandler, timer);
 		subscribe(OSRestartTimeoutHandler, timer);
+		subscribe(calculateCostHandler, timer);
 		
 		subscribe(requestMessageHandler, network);
 		subscribe(heartbeatMessageHandler, network);
@@ -169,12 +175,13 @@ public class OS extends ComponentDefinition {
 			loadBlocksToDisk(event);
 			dataSet.addSeries(xySeries);
 			waitForSystemStartUp();
+			costService.init(event.getNodeConfiguration());
 			gui.updateBandwidthInfoLabel(Size.getSizeString(BANDWIDTH));
 		}
 
 		private void retrieveInitParameters(OSInit event) {
 			nodeConfiguration = event.getNodeConfiguration();
-			BANDWIDTH = event.getNodeConfiguration().getBandwidthMegaBytePerSecond();
+			BANDWIDTH = event.getNodeConfiguration().getBandwidthConfiguration().getBandwidthMegaBytePerSecond();
 			simultaneousDownloads = event.getNodeConfiguration().getSimultaneousDownloads();
 			self = event.getSelfAddress();
 			node = event.getNodeInfo();
@@ -318,6 +325,7 @@ public class OS extends ComponentDefinition {
 				Process process = pt.get(event.getPid());
 				if (process != null) {
 					Request request = process.getRequest();
+					updateTransferedBandwidth(process);
 					gui.decreaseNrDownloadersFor(request.getBlockId());
 					currentTransfers.remove(event.getTimeoutId());
 					informDownloader(event, process, request);
@@ -330,6 +338,10 @@ public class OS extends ComponentDefinition {
 				}
 				checkIfCanAcceptRequest();
 			}
+		}
+
+		private synchronized void updateTransferedBandwidth(Process process) {
+			megaBytesDownloadedSoFar += (process.getBlockSize()/(1024*1024));			
 		}
 
 		private void informDownloader(TransferingFinished event, Process process, Request request) {
@@ -383,6 +395,7 @@ public class OS extends ComponentDefinition {
 			} else {
 				scheduleProcessingRequestQueue();
 				scheduleCPULoadPropagationToCloudProvider();
+				scheduleCostCalculation();
 			}
 		}
 	};
@@ -565,9 +578,31 @@ public class OS extends ComponentDefinition {
 		}
 	};
 
+	/**
+	 * This handler is triggered to calculate the current cost for this instance from its start up time
+	 */
+	Handler<CalculateCost> calculateCostHandler = new Handler<CalculateCost>() {
+		@Override
+		public void handle(CalculateCost event) {
+			currentCost = costService.computeCostSoFar(megaBytesDownloadedSoFar);
+			DecimalFormat df = new DecimalFormat("##.####");
+			String currentCostString = df.format(currentCost);
+			gui.updateCurrentCost(currentCostString);
+			logger.debug("This instance costed $ " + currentCostString + " so far");
+			trigger(new InstanceCost(self, cloudProvider, node, currentCostString), network);
+			scheduleCostCalculation();
+		}
+	};
+
 	private void osStarted() {
 		logger.debug("OS with kernel " + uname_r + " started");
 		gui.decorateSystemStarted();
+	}
+
+	protected void scheduleCostCalculation() {
+		ScheduleTimeout st = new ScheduleTimeout(COST_CALCULATION_INTERVAL);
+		st.setTimeoutEvent(new CalculateCost(st));
+		trigger(st, timer);		
 	}
 
 	protected Block findRequestedBlock(String blockId) {
@@ -595,7 +630,7 @@ public class OS extends ComponentDefinition {
 		gui.setTitle(node.getNodeName() + "@" + node.getIP() + ":" + node.getPort());
 		gui.decorateWhileSystemStartUp();
 		enabled = false;
-		kernel.init(nodeConfiguration.getCpuSpeedInstructionPerSecond());
+		kernel.init(nodeConfiguration.getCpuConfiguration().getCpuSpeedInstructionPerSecond());
 		enabled = true;
 	}
 

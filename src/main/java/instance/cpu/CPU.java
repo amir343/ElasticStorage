@@ -93,8 +93,8 @@ public class CPU extends ComponentDefinition {
 		@Override
 		public void handle(CPUInit event) {
 			enabled = true;
-			CPU_CLOCK = event.getNodeConfiguration().getCpuSpeedInstructionPerSecond();
-			gui.updateCPUInfoLabel(event.getNodeConfiguration().getCpuSpeed() + " GHz");
+			CPU_CLOCK = event.getNodeConfiguration().getCpuConfiguration().getCpuSpeedInstructionPerSecond();
+			gui.updateCPUInfoLabel(event.getNodeConfiguration().getCpuConfiguration().getCpuSpeed() + " GHz");
 			dataSet.addSeries(xySeries);
 			printCPULog(event);
 			sendReadySignal();
@@ -105,7 +105,7 @@ public class CPU extends ComponentDefinition {
 
 		private void printCPULog(CPUInit event) {
 			logger.raw(" CPU: Unsupported number of siblings 4");
-			logger.info("CPU Intel " + event.getNodeConfiguration().getCpuSpeed() +" (GHz) core i7 started...");
+			logger.info("CPU Intel " + event.getNodeConfiguration().getCpuConfiguration().getCpuSpeed() +" (GHz) core i7 started...");
 		}
 	};
 
