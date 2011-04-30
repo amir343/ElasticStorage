@@ -188,7 +188,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 			trigger(new RebalanceResponseMap(nodeConfig), elb);
 		}
 	};
-
+	
 	protected void startELBTable(ELBInit event) {
 		elbTable = new ELBTable(event.getReplicationDegree());
 		for (Block block : event.getBlocks()) {

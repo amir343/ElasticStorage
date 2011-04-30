@@ -38,7 +38,6 @@ public class ELBTable {
 		List<Block> blocks = new ArrayList<Block>();
 		for (ELBEntry entry : entries) {
 			if (entry.getNrOfReplicas() < desireReplicateDegree) {
-				entry.updateNode(node);
 				blocks.add(entry.getBlock());
 			}
 		}
@@ -51,7 +50,6 @@ public class ELBTable {
 	private void selectRandomNumberOfBlocks(List<Block> blocks, Node node) {
 		for (int i=0; i<entries.size(); i+=2) {
 			ELBEntry entry = entries.get(i);
-			entry.updateNode(node);
 			blocks.add(entry.getBlock());
 		}
 	}

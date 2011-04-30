@@ -52,10 +52,6 @@ public class ELBEntry {
 		return block;
 	}
 
-	public void updateNode(Node node) {
-		replicas.add(node);	
-	}
-
 	public void suspect(Node node) {
 		if (replicas.contains(node)) {
 			replicas.remove(node);
@@ -79,9 +75,10 @@ public class ELBEntry {
 	}
 
 	public void activateFor(Node node) {
-		if (replicas.contains(node)) 
+		if (!replicas.contains(node)) {
 			active = true;		
-		else replicas.add(node);
+			replicas.add(node);
+		} 
 	}
 	
 	public Node getNextNodeToSendRequest() {
@@ -93,8 +90,8 @@ public class ELBEntry {
 		StringBuilder sb = new StringBuilder();
 		sb.append("{");
 			sb.append("block: ").append(getBlock());
-		sb.append("{");
+		sb.append("}");
 		return sb.toString();
 	}
-	
+
 }
