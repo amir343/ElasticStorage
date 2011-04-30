@@ -154,7 +154,6 @@ public class OS extends ComponentDefinition {
 		subscribe(readDiskFinishedHandler, timer);
 		subscribe(waitTimeoutHandler, timer);
 		subscribe(deathHandler, timer);
-		subscribe(OSRestartTimeoutHandler, timer);
 		subscribe(calculateCostHandler, timer);
 		
 		subscribe(requestMessageHandler, network);
@@ -189,20 +188,6 @@ public class OS extends ComponentDefinition {
 		}
 	};
 	
-	/**
-	 * This handler is simple time out event indicating that the OS is restarted
-	 */
-	Handler<OSRestartTimeout> OSRestartTimeoutHandler = new Handler<OSRestartTimeout>() {
-		@Override
-		public void handle(OSRestartTimeout event) {
-			trigger(new StartMemoryUnit(), memory);
-			trigger(new StartDiskUnit(), disk);
-			loadKernel();
-			scheduleCPULoadPropagationToCloudProvider();
-			scheduleProcessingRequestQueue();
-		}
-	};
-
 	/**
 	 * This handler is in charge of handling the request that are sent by Elastic Load Balancer
 	 */
@@ -812,13 +797,17 @@ public class OS extends ComponentDefinition {
 		requestQueue.clear();
 		xySeries.clear();
 		scheduleCPULoadPropagationToCloudProvider();
-		scheduleRestart();		
+		
+		kernel.shutdown();
+		gui.decorateWhileSystemStartUp();
+		
+		trigger(new StartMemoryUnit(), memory);
+		trigger(new StartDiskUnit(), disk);
+		loadKernel();
+		scheduleCPULoadPropagationToCloudProvider();
+		scheduleProcessingRequestQueue();
+
+		gui.decorateSystemStarted();
 	}
 	
-	private void scheduleRestart() {
-		ScheduleTimeout st = new ScheduleTimeout(RESTART_PERIOD);
-		st.setTimeoutEvent(new OSRestartTimeout(st));
-		trigger(st, timer);		
-	}
-
 }

@@ -306,4 +306,15 @@ public class Kernel {
 		}
 	}
 
+	public void shutdown() {
+		logger.raw("");
+		logger.raw("*************************************");
+		logger.raw("Received SHUTDOWN Signal.");
+		sleep(OperationDuration.getExecutionOperation(cpuSpeed, 1000L));
+		logger.raw("Preparing instance for SHUTDOWN...");
+		sleep(OperationDuration.getExecutionOperation(cpuSpeed, 2000L));
+		logger.raw("*************************************");
+		logger.raw("");		
+	}
+
 }
