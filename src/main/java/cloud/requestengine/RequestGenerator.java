@@ -22,6 +22,7 @@ import se.sics.kompics.timer.Timer;
 import statistics.distribution.Distribution;
 import cloud.common.Generator;
 import cloud.common.RequestEngineTimeout;
+import cloud.common.SendRawData;
 import cloud.gui.CloudGUI;
 
 /**
@@ -43,6 +44,7 @@ public class RequestGenerator extends ComponentDefinition {
 	
 	private Map<UUID, RequestStatistic> currentRequests = new HashMap<UUID, RequestStatistic>();
 	private List<RequestStatistic> completedRequest = new ArrayList<RequestStatistic>();
+	private List<RequestStatistic> completedRequestClone = new ArrayList<RequestStatistic>();
 	private ResponseTimeService responseTimeService = ResponseTimeService.getInstance();
 	protected List<Block> blocks;
 	private List<UUID> timerIds = new ArrayList<UUID>();
@@ -55,6 +57,7 @@ public class RequestGenerator extends ComponentDefinition {
 		
 		subscribe(initHandler, generator);
 		subscribe(requestDoneHandler, generator);
+		subscribe(sendRawDataHandler, generator);
 		
 		subscribe(requestEngineTimeout, timer);
 		subscribe(RTCollectionTimeoutHandler, timer);
@@ -98,6 +101,7 @@ public class RequestGenerator extends ComponentDefinition {
 			UUID id = UUID.fromString(event.getRequestID());
 			currentRequests.get(id).setEnd(System.currentTimeMillis());
 			completedRequest.add(currentRequests.get(id));
+			completedRequestClone.add(currentRequests.get(id));
 			currentRequests.remove(id);			
 		}
 	};
@@ -114,6 +118,23 @@ public class RequestGenerator extends ComponentDefinition {
 				gui.updateResponseTime();
 			}
 			scheduleResponseTimeCollector();
+		}
+	};
+	
+	/**
+	 * This handler is triggered when cloudAPI request the average response time
+	 */
+	Handler<SendRawData> sendRawDataHandler = new Handler<SendRawData>() {
+		@Override
+		public void handle(SendRawData event) {
+			Long responseTimeSum = 0L;
+			for (RequestStatistic req : completedRequestClone) {
+				responseTimeSum += req.getResponseTime();
+			}
+			double mean = responseTimeSum.doubleValue()/completedRequestClone.size();
+			completedRequestClone.clear();
+			ResponseTimeTD data = new ResponseTimeTD(event.getNrNodes(), mean, event.getController());
+			trigger(data, generator);			
 		}
 	};
 

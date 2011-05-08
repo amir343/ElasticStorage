@@ -75,7 +75,7 @@ import cloud.common.Alive;
 import cloud.common.HeartbeatMessage;
 import cloud.common.NodeConfiguration;
 import cloud.common.RequestMessage;
-import cloud.elb.MyCPULoad;
+import cloud.elb.MyCPULoadAndBandwidth;
 import cloud.requestengine.RequestDone;
 import econtroller.sensor.Monitor;
 
@@ -124,7 +124,7 @@ public class OS extends ComponentDefinition {
 	private XYSeries xySeries = new XYSeries("Load");
 	private long startTime = System.currentTimeMillis();
 	private int lastSnapshotID = 1;
-	private long currentBandwidth;
+	private long currentBandwidth = BANDWIDTH;
 	private List<Block> blocks = new ArrayList<Block>();
 	protected boolean acceptRequest = true;
 	private boolean enabled = true;	
@@ -445,7 +445,7 @@ public class OS extends ComponentDefinition {
 		@Override
 		public void handle(PropagateCPULoad event) {
 			if (instanceRunning()) {
-				trigger(new MyCPULoad(self, cloudProvider, node, currentCpuLoad), network);
+				trigger(new MyCPULoadAndBandwidth(self, cloudProvider, node, currentCpuLoad, currentBandwidth), network);
 				trigger(new MemoryCheckOperation(), cpu);
 				scheduleCPULoadPropagationToCloudProvider();
 			}

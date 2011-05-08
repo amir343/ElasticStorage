@@ -19,6 +19,7 @@ public class ELB extends PortType {
 		negative(RestoreNode.class);
 		negative(RemoveReplica.class);
 		negative(RebalanceDataBlocks.class);
+		negative(SendRawData.class);
 		positive(Replicas.class);
 		positive(RebalanceResponseMap.class);
 	}

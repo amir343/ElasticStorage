@@ -11,16 +11,18 @@ import se.sics.kompics.network.Message;
  *
  */
 
-public class MyCPULoad extends Message {
+public class MyCPULoadAndBandwidth extends Message {
 
 	private static final long serialVersionUID = -2182498572620179460L;
 	private Node node;
 	private double cpuLoad;
+	private long currentBandwidth;
 
-	public MyCPULoad(Address source, Address destination, Node node, double cpuLoad) {
+	public MyCPULoadAndBandwidth(Address source, Address destination, Node node, double cpuLoad, long currentBandwidth) {
 		super(source, destination);
 		this.node = node;	
 		this.cpuLoad = cpuLoad;
+		this.currentBandwidth = currentBandwidth;
 	}
 
 	public Node getNode() {
@@ -29,6 +31,10 @@ public class MyCPULoad extends Message {
 
 	public double getCpuLoad() {
 		return this.cpuLoad;
+	}
+
+	public long getCurrentBandwidth() {
+		return currentBandwidth;
 	}
 
 }

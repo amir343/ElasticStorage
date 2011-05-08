@@ -30,7 +30,7 @@ public class TestScenario {
     		{
     			cloudProviderAddress("127.0.0.1", 23444);
     			node("node1", "127.0.0.1", 23445).
-    				cpu(1.2).
+    				cpu(4.2).
     				memoryGB(8).
     				bandwidthMB(5);
     			data("block1", 2, Size.MB);

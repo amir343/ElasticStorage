@@ -6,6 +6,7 @@ import instance.common.ShutDown;
 import instance.common.ShutDownAck;
 import instance.os.InstanceCost;
 
+import java.awt.geom.GeneralPath;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,13 +30,17 @@ import cloud.common.InstanceKilled;
 import cloud.common.NodeConfiguration;
 import cloud.common.RemoveReplica;
 import cloud.common.Replicas;
+import cloud.common.RequestTrainingData;
 import cloud.common.Restore;
 import cloud.common.RestoreNode;
+import cloud.common.SendRawData;
 import cloud.common.Suspect;
 import cloud.common.SuspectNode;
+import cloud.common.TrainingData;
 import cloud.epfd.HealthCheckerInit;
 import cloud.gui.CloudGUI;
 import cloud.requestengine.ResponseTimeService;
+import cloud.requestengine.ResponseTimeTD;
 import econtroller.controller.Connect;
 import econtroller.controller.ConnectionEstablished;
 import econtroller.controller.Disconnect;
@@ -72,6 +77,9 @@ public class CloudAPI extends ComponentDefinition {
 	protected boolean connectedToController = false;
 	private List<Node> currentNodes = new ArrayList<Node>();
 	
+	private Double totalCost = 0.0;
+
+	
 	public CloudAPI() {
 		api = this;
 		subscribe(initHandler, control);
@@ -87,6 +95,7 @@ public class CloudAPI extends ComponentDefinition {
 		subscribe(disconnectHandler, network);
 		subscribe(newNodeRequestHandler, network);
 		subscribe(instanceCostHandler, network);
+		subscribe(requestTrainingDataHandler, network);
 	}
 	
 	Handler<CloudAPIInit> initHandler = new Handler<CloudAPIInit>() {
@@ -220,10 +229,27 @@ public class CloudAPI extends ComponentDefinition {
 	Handler<InstanceCost> instanceCostHandler = new Handler<InstanceCost>() {
 		@Override
 		public void handle(InstanceCost event) {
-			gui.updateCostForNode(event.getNode(), event.getCost());			
+			gui.updateCostForNode(event.getNode(), event.getCost());
+			synchronized (totalCost) {
+				totalCost += Double.valueOf(event.getCost());
+			}
 		}
 	};
-
+	
+	/**
+	 * This handler is triggered when the modeler requests training data from cloudAPI
+	 */
+	Handler<RequestTrainingData> requestTrainingDataHandler = new Handler<RequestTrainingData>() {
+		@Override
+		public void handle(RequestTrainingData event) {
+			trigger(new SendRawData(event.getSource(), currentNodes.size()), elb);
+			TrainingData data = new TrainingData(self, event.getSource(), currentNodes.size());
+			data.setTotalCost(totalCost);
+			trigger(data, network);
+			
+		}
+	};
+	
 	public void kill(Node node) {
 		trigger(new ShutDown(self, node.getAddress()), network);
 		logger.debug("Shuting down Node " + node);

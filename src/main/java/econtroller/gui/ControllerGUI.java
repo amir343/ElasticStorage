@@ -1,13 +1,17 @@
 package econtroller.gui;
 
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
@@ -19,6 +23,7 @@ import javax.swing.JTextField;
 import common.AbstractGUI;
 
 import econtroller.controller.Controller;
+import econtroller.modeler.Modeler;
 
 /**
  * 
@@ -67,6 +72,20 @@ public class ControllerGUI extends AbstractGUI {
 	private JSlider actSlider;
 	private JLabel actLabel;
 	private JLabel senseLabel;
+	private JPanel modelerPanel;
+	private JPanel modelerControlPanelSection;
+	private JPanel maxInstanceSection;
+	private JPanel modelerButtonsSection;
+	private JButton startModelerButton;
+	private JButton stopModelerButton;
+	private JLabel maxNrInstancesLbl;
+	private JTextField maxInstanceText;
+	private JPanel cpuPanel;
+	private JPanel bandwidthPanel;
+	private JPanel responseTimePanel;
+	private JPanel costPanel;
+	private JPanel nrInstancePanel;
+	private Modeler modeler;
 	
 	public ControllerGUI() {
 		createMenuBar();
@@ -99,9 +118,86 @@ public class ControllerGUI extends AbstractGUI {
 	private void createTabs() {
 		tabbedPane = new JTabbedPane();
 		creatControlPanel();
+		createModelerPanel();
 		createLogPanel();
 		setLayout(new GridLayout(1, 1));
 		add(tabbedPane);
+	}
+
+	private void createModelerPanel() {
+		modelerPanel = new JPanel();
+		modelerPanel.setLayout(new FlowLayout());
+		
+		createModelerControlPanel();
+		
+		
+		tabbedPane.addTab("Black Box System Identification", modelerPanel);
+	}
+
+	private void createModelerControlPanel() {
+		modelerControlPanelSection = new JPanel();
+		GroupLayout group = new GroupLayout(modelerControlPanelSection);
+		modelerControlPanelSection.setLayout(group);
+		modelerControlPanelSection.setBorder(BorderFactory.createTitledBorder("Control Panel"));
+
+		createMaximumInstanceSection();
+		createControlPanelButtons();
+		createChartPanels();
+		
+		group.setHorizontalGroup(
+				group.createSequentialGroup()
+				.addGroup(group.
+						createParallelGroup().addComponent(maxNrInstancesLbl).addComponent(startModelerButton).addComponent(cpuPanel).addComponent(responseTimePanel).addComponent(nrInstancePanel))
+				.addGroup(group.
+						createParallelGroup().addComponent(maxInstanceText).addComponent(stopModelerButton).addComponent(bandwidthPanel).addComponent(costPanel))
+		);
+		
+		group.setVerticalGroup(
+				group.createSequentialGroup()
+				.addGroup(group.createParallelGroup().addComponent(maxNrInstancesLbl).addComponent(maxInstanceText))
+				.addGroup(group.createParallelGroup().addComponent(startModelerButton).addComponent(stopModelerButton))
+				.addGroup(group.createParallelGroup().addComponent(cpuPanel).addComponent(bandwidthPanel))
+				.addGroup(group.createParallelGroup().addComponent(responseTimePanel).addComponent(costPanel))
+				.addGroup(group.createSequentialGroup().addComponent(nrInstancePanel))
+		);		
+		
+		modelerPanel.add(modelerControlPanelSection);
+	}
+
+	private void createChartPanels() {
+		cpuPanel = new JPanel();
+		cpuPanel.setBorder(BorderFactory.createTitledBorder("Average CPU"));
+		
+		bandwidthPanel = new JPanel();
+		bandwidthPanel.setBorder(BorderFactory.createTitledBorder("Average Bandwidth"));
+		
+		responseTimePanel = new JPanel();
+		responseTimePanel.setBorder(BorderFactory.createTitledBorder("Average Response Time"));
+		
+		costPanel = new JPanel();
+		costPanel.setBorder(BorderFactory.createTitledBorder("Total Cost"));
+		
+		nrInstancePanel = new JPanel();
+		nrInstancePanel.setBorder(BorderFactory.createTitledBorder("Nr of Instances"));
+		
+	}
+
+	private void createControlPanelButtons() {
+		startModelerButton = new JButton("Start");
+		startModelerButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				startModelerButton.setEnabled(false);
+				modeler.startModeler();
+			}
+		});
+		
+		stopModelerButton = new JButton("Stop");
+	}
+
+	private void createMaximumInstanceSection() {
+		maxNrInstancesLbl = new JLabel("Maximum Number of Instances");
+		maxInstanceText = new JTextField();
 	}
 
 	private void creatControlPanel() {
@@ -334,6 +430,10 @@ public class ControllerGUI extends AbstractGUI {
 	public static void main(String[] args) {
 		ControllerGUI.getInstance();
 		
+	}
+
+	public void setModeler(Modeler modeler) {
+		this.modeler = modeler;
 	}
 
 

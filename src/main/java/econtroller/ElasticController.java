@@ -19,6 +19,9 @@ import econtroller.actuator.ActuatorInit;
 import econtroller.controller.Controller;
 import econtroller.controller.ControllerInit;
 import econtroller.gui.ControllerGUI;
+import econtroller.modeler.ModelPort;
+import econtroller.modeler.Modeler;
+import econtroller.modeler.ModelerInit;
 import econtroller.sensor.Sensor;
 import econtroller.sensor.SensorChannel;
 import econtroller.sensor.SensorInit;
@@ -50,11 +53,13 @@ public class ElasticController extends ComponentDefinition {
 			Component sensor = create(Sensor.class);
 			Component actuator = create(Actuator.class);
 			Component timer = create(JavaTimer.class);
+			Component modeler = create(Modeler.class);
 			Component network = create(MinaNetwork.class);
 			
 			subscribe(handleFault, controller.control());
 			subscribe(handleFault, sensor.control());
 			subscribe(handleFault, actuator.control());
+			subscribe(handleFault, modeler.control());
 			subscribe(handleFault, timer.control());
 			subscribe(handleFault, network.control());
 			
@@ -64,14 +69,19 @@ public class ElasticController extends ComponentDefinition {
 			trigger(new SensorInit(controllerConfiguration), sensor.control());
 			trigger(new ActuatorInit(controllerConfiguration), actuator.control());
 			trigger(new MinaNetworkInit(self, 5), network.control());
+			trigger(new ModelerInit(self), modeler.control());
 			
 			connect(controller.required(Network.class), network.provided(Network.class));
 			connect(controller.required(Timer.class), timer.provided(Timer.class));
 			connect(controller.required(SensorChannel.class), sensor.provided(SensorChannel.class));
 			connect(controller.required(ActuatorChannel.class), actuator.provided(ActuatorChannel.class));
+			connect(controller.required(ModelPort.class), modeler.provided(ModelPort.class));
 			
 			connect(sensor.required(Network.class), network.provided(Network.class));
 			connect(sensor.required(Timer.class), timer.provided(Timer.class));
+			
+			connect(modeler.required(Network.class), network.provided(Network.class));
+			connect(modeler.required(Timer.class), timer.provided(Timer.class));
 			
 			connect(actuator.required(Network.class), network.provided(Network.class));
 			

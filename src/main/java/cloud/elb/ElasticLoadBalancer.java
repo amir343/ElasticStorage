@@ -5,6 +5,7 @@ import instance.common.Block;
 import instance.common.BlocksAck;
 import instance.common.Request;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,10 +29,13 @@ import cloud.common.RemoveReplica;
 import cloud.common.Replicas;
 import cloud.common.RequestMessage;
 import cloud.common.RestoreNode;
+import cloud.common.SendRawData;
 import cloud.common.SuspectNode;
+import cloud.common.TrainingData;
 import cloud.gui.CloudGUI;
 import cloud.requestengine.RequestDone;
 import cloud.requestengine.RequestGeneratorInit;
+import cloud.requestengine.ResponseTimeTD;
 
 /**
  * 
@@ -52,6 +56,9 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 	private LeastCPULoadAlgorithm loadBalancerAlgorithm = LeastCPULoadAlgorithm.getInstance();
 	private ELBTable elbTable;
 	protected Address self;
+	
+	private List<Double> cpuLoads = new ArrayList<Double>();
+	private List<Long> bandwidths = new ArrayList<Long>();
 
 	public ElasticLoadBalancer() {
 		subscribe(initHandler, elb);
@@ -60,8 +67,10 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 		subscribe(restoreNodeHandler, elb);
 		subscribe(removeReplicaHandler, elb);
 		subscribe(rebalanceDataBlocksHandler, elb);
+		subscribe(sendRawDataHandler, elb);
 		
 		subscribe(requestHandler, generator);
+		subscribe(responseTimeHandler, generator);
 
 		subscribe(blocksAckHandler, network);
 		subscribe(requestDoneHandler, network);
@@ -164,10 +173,12 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 	 * This handler receives the cpu load from an instance and updates the 
 	 * nodeStatistics in LoadBalancerAlgorithm 
 	 */
-	Handler<MyCPULoad> myCPULoadHandler = new Handler<MyCPULoad>() {
+	Handler<MyCPULoadAndBandwidth> myCPULoadHandler = new Handler<MyCPULoadAndBandwidth>() {
 		@Override
-		public void handle(MyCPULoad event) {
+		public void handle(MyCPULoadAndBandwidth event) {
 			loadBalancerAlgorithm.updateCPULoadFor(event.getNode(), event.getCpuLoad());
+			cpuLoads.add(event.getCpuLoad());
+			bandwidths.add(event.getCurrentBandwidth());
 		}
 	};
 	
@@ -188,6 +199,51 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 			trigger(new RebalanceResponseMap(nodeConfig), elb);
 		}
 	};
+	
+	/**
+	 * This handler is triggerd when ELB receives a request from cloudProvider to send the training data to controller
+	 */
+	Handler<SendRawData> sendRawDataHandler = new Handler<SendRawData>() {
+		@Override
+		public void handle(SendRawData event) {
+			trigger(new SendRawData(event.getController(), event.getNrNodes()), generator);
+
+			double cpuLoadMean = calculateCPULoadMean();
+			double bandwidthMean = calculateBandwidthMean();
+			cpuLoads.clear();
+			bandwidths.clear();
+			TrainingData data = new TrainingData(self, event.getController(), event.getNrNodes());
+			data.setCpuLoalMean(cpuLoadMean);
+			data.setBandwidthMean(bandwidthMean);
+			trigger(data, network);			
+		}
+	};
+	
+	/**
+	 * This handler is triggered when RequestGenerator provides the average response time
+	 */
+	Handler<ResponseTimeTD> responseTimeHandler = new Handler<ResponseTimeTD>() {
+		@Override
+		public void handle(ResponseTimeTD event) {
+			TrainingData data = new TrainingData(self, event.getController(), event.getNrNodes());
+			data.setResponseTimeMean(event.getMean());
+			trigger(data, network);
+		}
+	};
+
+	private double calculateBandwidthMean() {
+		Long mean = 0L;
+		for (Long band : bandwidths)
+			mean += band;
+		return mean.doubleValue()/bandwidths.size();
+	}
+	
+	private double calculateCPULoadMean() {
+		double mean = 0.0;
+		for (double load : cpuLoads)
+			mean += load;
+		return mean/cpuLoads.size();
+	}
 	
 	protected void startELBTable(ELBInit event) {
 		elbTable = new ELBTable(event.getReplicationDegree());

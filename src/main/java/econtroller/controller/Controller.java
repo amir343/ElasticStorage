@@ -22,6 +22,8 @@ import econtroller.actuator.NodeRequest;
 import econtroller.design.ControlRepository;
 import econtroller.design.ControllerDesign;
 import econtroller.gui.ControllerGUI;
+import econtroller.modeler.ModelPort;
+import econtroller.modeler.StartModeler;
 import econtroller.sensor.SensorChannel;
 import econtroller.sensor.StopSense;
 
@@ -39,6 +41,7 @@ public class Controller extends ComponentDefinition {
 	
 	Positive<SensorChannel> sensor = requires(SensorChannel.class);
 	Positive<ActuatorChannel> actuatorChannel = requires(ActuatorChannel.class);
+	Positive<ModelPort> modeler = requires(ModelPort.class);
 	Positive<Network> network = requires(Network.class);
 	Positive<Timer> timer = requires(Timer.class);
 	
@@ -78,11 +81,15 @@ public class Controller extends ComponentDefinition {
 		}
 	};
 	
+	/**
+	 * This handler is triggered when the cloudProvider responds back to the connection establishment request
+	 */
 	Handler<ConnectionEstablished> connectionEstablishedHandler = new Handler<ConnectionEstablished>() {
 		@Override
 		public void handle(ConnectionEstablished event) {
 			logger.info("Connecterd to cloud provider.");
 			connectedToCloudProvider = true;
+			trigger(new StartModeler(cloudProviderAddress), modeler);
 			trigger(new Sense(event.getNodes()), sensor);
 		}
 	}; 
