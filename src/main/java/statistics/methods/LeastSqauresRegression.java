@@ -20,22 +20,9 @@ public class LeastSqauresRegression {
 	private List<Double> inputOffsets = new ArrayList<Double>();
 	private List<Double> outputOffsets = new ArrayList<Double>();
 
-	private double inputOP;
-	private double outputOP;
-
 	public void addRawData(double rawInput, double rawOutput) {
 		rawInputs.add(rawInput);
 		rawOutputs.add(rawOutput);
-		inputOffsets.add(rawInput - inputOP);
-		outputOffsets.add(rawOutput - outputOP);
-	}
-
-	public void setInputOperatingPoint(double inputOP) {
-		this.inputOP = inputOP;		
-	}
-
-	public void setOutputOperatingPoint(double outoutOP) {
-		this.outputOP = outoutOP;
 	}
 
 	public double get_a() {
@@ -44,6 +31,8 @@ public class LeastSqauresRegression {
 	}
 
 	private void calculateQuantities() {
+		calculateInputOffsets();
+		calculateOutputOffsets();
 		double s1 = calculateS1();
 		double s2 = calculateS2();
 		double s3 = calculateS3();
@@ -51,6 +40,20 @@ public class LeastSqauresRegression {
 		double s5 = calculateS5();
 		a = (s3*s4 - s2*s5) / (s1*s3 - s2*s2);
 		b = (s1*s5 - s2*s4) / (s1*s3 - s2*s2);
+	}
+
+	private void calculateOutputOffsets() {
+		outputOffsets.clear();
+		double mean = getOutputOperatingPoint();
+		for (double out : rawOutputs)
+			outputOffsets.add(out - mean);
+	}
+
+	private void calculateInputOffsets() {
+		inputOffsets.clear();
+		double mean = getInputOperatingPoint();
+		for (double in : rawInputs)
+			inputOffsets.add(in - mean);
 	}
 
 	private double calculateS1() {
@@ -97,24 +100,20 @@ public class LeastSqauresRegression {
 		return b;
 	}
 
-	public double get_s1() {
-		return calculateS1();
+	public double getInputOperatingPoint() {
+		double mean = 0.0;
+		for (int i=0; i<rawInputs.size()-1; i++) {
+			mean += rawInputs.get(i);
+		}
+		return mean/(rawInputs.size()-1);
 	}
 
-	public double get_s2() {
-		return calculateS2();
-	}
-
-	public double get_s3() {
-		return calculateS3();
-	}
-
-	public double get_s4() {
-		return calculateS4();
-	}
-
-	public double get_s5() {
-		return calculateS5();
+	public double getOutputOperatingPoint() {
+		double mean = 0.0;
+		for (int i=1; i<rawOutputs.size(); i++) {
+			mean += rawOutputs.get(i);
+		}
+		return mean/(rawOutputs.size()-1);
 	}
 	
 	public void print() {

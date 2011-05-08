@@ -21,36 +21,24 @@ public class RegressionTest {
 	public void setup() {
 		regression = new LeastSqauresRegression();
 		
-		regression.setInputOperatingPoint(7.7d);
-		regression.setOutputOperatingPoint(1.17d);
-		
-		regression.addRawData(4, 0.62);
-		regression.addRawData(5, 0.72);
-		regression.addRawData(5, 0.76);
-		regression.addRawData(6, 0.52);
-		regression.addRawData(7, 0.91);
-		regression.addRawData(8, 0.92);
-		regression.addRawData(9, 0.97);
-		regression.addRawData(10, 1.52);
-		regression.addRawData(11, 1.42);
-		regression.addRawData(12, 1.99);
-		regression.addRawData(13, 1.95);
+		regression.addRawData(4d, 0.62d);
+		regression.addRawData(5d, 0.72d);
+		regression.addRawData(5d, 0.76d);
+		regression.addRawData(6d, 0.52d);
+		regression.addRawData(7d, 0.91d);
+		regression.addRawData(8d, 0.92d);
+		regression.addRawData(9d, 0.97d);
+		regression.addRawData(10d, 1.52d);
+		regression.addRawData(11d, 1.42d);
+		regression.addRawData(12d, 1.99d);
+		regression.addRawData(13d, 1.95d);
 
 	}
 	
 	@Test
 	public void test_least_square_regression_returns_correct_a_b() {
-		assertEquals(-0.05086422703356771, regression.get_a(), 0.001);
-		assertEquals(0.18658288011609822, regression.get_b(), 0.001);
-	}
-	
-	@Test
-	public void test_least_square_regression_calculate_correct_s_i() {
-		assertEquals(2.1231, regression.get_s1(), 0.001);
-		assertEquals(10.465, regression.get_s2(), 0.001);
-		assertEquals(68.1, regression.get_s3(), 0.001);
-		assertEquals(1.8445, regression.get_s4(), 0.001);
-		assertEquals(12.174, regression.get_s5(), 0.001);
+		assertEquals(-0.05669, regression.get_a(), 0.001);
+		assertEquals(0.18658, regression.get_b(), 0.001);
 	}
 	
 }
