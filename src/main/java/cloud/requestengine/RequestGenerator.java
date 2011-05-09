@@ -127,14 +127,16 @@ public class RequestGenerator extends ComponentDefinition {
 	Handler<SendRawData> sendRawDataHandler = new Handler<SendRawData>() {
 		@Override
 		public void handle(SendRawData event) {
-			Long responseTimeSum = 0L;
-			for (RequestStatistic req : completedRequestClone) {
-				responseTimeSum += req.getResponseTime();
+			if (completedRequestClone.size() != 0) {
+				Long responseTimeSum = 0L;
+				for (RequestStatistic req : completedRequestClone) {
+					responseTimeSum += req.getResponseTime();
+				}
+				double mean = responseTimeSum.doubleValue()/completedRequestClone.size();
+				completedRequestClone.clear();
+				ResponseTimeTD data = new ResponseTimeTD(event.getNrNodes(), mean, event.getController());
+				trigger(data, generator);			
 			}
-			double mean = responseTimeSum.doubleValue()/completedRequestClone.size();
-			completedRequestClone.clear();
-			ResponseTimeTD data = new ResponseTimeTD(event.getNrNodes(), mean, event.getController());
-			trigger(data, generator);			
 		}
 	};
 

@@ -49,7 +49,6 @@ public class ResponseTimeService {
 
 	    Shape shape = new Rectangle2D.Double(-1, -1, 2, 2);
 	    renderer.setSeriesShape(0, shape);
-	    
 
 	    plot.setRenderer(renderer);
 

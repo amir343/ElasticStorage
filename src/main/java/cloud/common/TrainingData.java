@@ -24,7 +24,7 @@ public class TrainingData extends Message {
 		this.nrNodes = nrNodes;
 	}
 
-	public Double getLoadMean() {
+	public Double getCPULoadMean() {
 		return loadMean;
 	}
 

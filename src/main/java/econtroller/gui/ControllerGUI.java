@@ -1,6 +1,5 @@
 package econtroller.gui;
 
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -19,6 +18,11 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
+
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+
+import cloud.gui.IntegerTextField;
 
 import common.AbstractGUI;
 
@@ -86,6 +90,13 @@ public class ControllerGUI extends AbstractGUI {
 	private JPanel costPanel;
 	private JPanel nrInstancePanel;
 	private Modeler modeler;
+	private ChartPanel cpuChartPanel;
+	private ChartPanel bandwidthChartPanel;
+	private ChartPanel rtChartPanel;
+	private ChartPanel costChartPanel;
+	private ChartPanel nrInstanceChartPanel;
+	private JButton estimateParametersButton;
+	private JButton resetModelerButton;
 	
 	public ControllerGUI() {
 		createMenuBar();
@@ -126,19 +137,22 @@ public class ControllerGUI extends AbstractGUI {
 
 	private void createModelerPanel() {
 		modelerPanel = new JPanel();
-		modelerPanel.setLayout(new FlowLayout());
+		modelerPanel.setLayout(new GridLayout(1,1));
 		
 		createModelerControlPanel();
 		
 		
-		tabbedPane.addTab("Black Box System Identification", modelerPanel);
+		tabbedPane.addTab("System Identification", modelerPanel);
 	}
 
 	private void createModelerControlPanel() {
 		modelerControlPanelSection = new JPanel();
 		GroupLayout group = new GroupLayout(modelerControlPanelSection);
 		modelerControlPanelSection.setLayout(group);
-		modelerControlPanelSection.setBorder(BorderFactory.createTitledBorder("Control Panel"));
+		group.setAutoCreateGaps(true);
+		group.setAutoCreateContainerGaps(true);
+		
+		modelerControlPanelSection.setBorder(BorderFactory.createTitledBorder("Black Box System Identification"));
 
 		createMaximumInstanceSection();
 		createControlPanelButtons();
@@ -147,38 +161,78 @@ public class ControllerGUI extends AbstractGUI {
 		group.setHorizontalGroup(
 				group.createSequentialGroup()
 				.addGroup(group.
-						createParallelGroup().addComponent(maxNrInstancesLbl).addComponent(startModelerButton).addComponent(cpuPanel).addComponent(responseTimePanel).addComponent(nrInstancePanel))
+						createParallelGroup()
+							.addComponent(maxNrInstancesLbl)
+							.addComponent(startModelerButton)
+							.addComponent(estimateParametersButton)
+							.addComponent(cpuPanel)
+							.addComponent(responseTimePanel)
+							.addComponent(nrInstancePanel))
 				.addGroup(group.
-						createParallelGroup().addComponent(maxInstanceText).addComponent(stopModelerButton).addComponent(bandwidthPanel).addComponent(costPanel))
+						createParallelGroup()
+							.addComponent(maxInstanceText)
+							.addComponent(stopModelerButton)
+							.addComponent(resetModelerButton)
+							.addComponent(bandwidthPanel)
+							.addComponent(costPanel))
 		);
 		
 		group.setVerticalGroup(
 				group.createSequentialGroup()
-				.addGroup(group.createParallelGroup().addComponent(maxNrInstancesLbl).addComponent(maxInstanceText))
-				.addGroup(group.createParallelGroup().addComponent(startModelerButton).addComponent(stopModelerButton))
-				.addGroup(group.createParallelGroup().addComponent(cpuPanel).addComponent(bandwidthPanel))
-				.addGroup(group.createParallelGroup().addComponent(responseTimePanel).addComponent(costPanel))
-				.addGroup(group.createSequentialGroup().addComponent(nrInstancePanel))
-		);		
+				.addGroup(group.
+						createParallelGroup()
+							.addComponent(maxNrInstancesLbl)
+							.addComponent(maxInstanceText)
+						 )
+				.addGroup(group.
+						createParallelGroup()
+							.addComponent(startModelerButton)
+							.addComponent(stopModelerButton)
+						 )
+				.addGroup(group.
+						createParallelGroup()
+							.addComponent(estimateParametersButton)
+							.addComponent(resetModelerButton)
+						 )
+				.addGroup(group.
+						createParallelGroup()
+							.addComponent(cpuPanel)
+							.addComponent(bandwidthPanel)
+						 )
+				.addGroup(group.
+						createParallelGroup()
+							.addComponent(responseTimePanel)
+							.addComponent(costPanel)
+						 )
+				.addGroup(group.
+						createSequentialGroup()
+							.addComponent(nrInstancePanel)
+						 )
+		);
 		
 		modelerPanel.add(modelerControlPanelSection);
 	}
 
 	private void createChartPanels() {
 		cpuPanel = new JPanel();
-		cpuPanel.setBorder(BorderFactory.createTitledBorder("Average CPU"));
+		cpuPanel.setLayout(new GridLayout(1,1));
+		cpuPanel.setBorder(BorderFactory.createTitledBorder(""));
 		
 		bandwidthPanel = new JPanel();
-		bandwidthPanel.setBorder(BorderFactory.createTitledBorder("Average Bandwidth"));
+		bandwidthPanel.setLayout(new GridLayout(1,1));
+		bandwidthPanel.setBorder(BorderFactory.createTitledBorder(""));
 		
 		responseTimePanel = new JPanel();
-		responseTimePanel.setBorder(BorderFactory.createTitledBorder("Average Response Time"));
+		responseTimePanel.setLayout(new GridLayout(1,1));
+		responseTimePanel.setBorder(BorderFactory.createTitledBorder(""));
 		
 		costPanel = new JPanel();
-		costPanel.setBorder(BorderFactory.createTitledBorder("Total Cost"));
+		costPanel.setLayout(new GridLayout(1,1));
+		costPanel.setBorder(BorderFactory.createTitledBorder(""));
 		
 		nrInstancePanel = new JPanel();
-		nrInstancePanel.setBorder(BorderFactory.createTitledBorder("Nr of Instances"));
+		nrInstancePanel.setLayout(new GridLayout(1,1));
+		nrInstancePanel.setBorder(BorderFactory.createTitledBorder(""));
 		
 	}
 
@@ -188,16 +242,42 @@ public class ControllerGUI extends AbstractGUI {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				startModelerButton.setEnabled(false);
-				modeler.startModeler();
+				modeler.startModeler(Integer.parseInt(maxInstanceText.getText()));
 			}
 		});
 		
 		stopModelerButton = new JButton("Stop");
+		stopModelerButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				startModelerButton.setEnabled(true);
+				stopModelerButton.setEnabled(false);
+				modeler.stopModeler();
+			}
+		});
+		
+		estimateParametersButton = new JButton("Estimate Paramters");
+		estimateParametersButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				String result = modeler.estimateParameters();
+			}
+		});
+		
+		resetModelerButton = new JButton("Reset");
+		resetModelerButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				modeler.reset();
+			}
+		});
+		
+		
 	}
 
 	private void createMaximumInstanceSection() {
-		maxNrInstancesLbl = new JLabel("Maximum Number of Instances");
-		maxInstanceText = new JTextField();
+		maxNrInstancesLbl = new JLabel("# of Instances");
+		maxInstanceText = new IntegerTextField("8");
 	}
 
 	private void creatControlPanel() {
@@ -435,6 +515,56 @@ public class ControllerGUI extends AbstractGUI {
 	public void setModeler(Modeler modeler) {
 		this.modeler = modeler;
 	}
+
+	public void updateBandwidthChart(JFreeChart bandwidthChart) {
+		if (bandwidthChartPanel != null)
+			bandwidthPanel.remove(bandwidthChartPanel);
+		bandwidthChartPanel = new ChartPanel(bandwidthChart);
+		bandwidthPanel.add(bandwidthChartPanel);
+		bandwidthPanel.revalidate();
+	}
+
+	public void updateCpuLoadChart(JFreeChart cpuChart) {
+		if (cpuChartPanel != null)
+			cpuPanel.remove(cpuChartPanel);
+		cpuChartPanel = new ChartPanel(cpuChart);
+		cpuChartPanel.setSize(cpuPanel.getWidth(), cpuPanel.getHeight());
+		cpuPanel.add(cpuChartPanel);
+		cpuPanel.revalidate();
+	}
+
+	public void updateResponseTimeChart(JFreeChart responseTimeChart) {
+		if (rtChartPanel != null)
+			responseTimePanel.remove(rtChartPanel);
+		rtChartPanel = new ChartPanel(responseTimeChart);
+		responseTimePanel.add(rtChartPanel);
+		responseTimePanel.revalidate();
+	}
+
+	public void updateTotalCostChart(JFreeChart totalCostChart) {
+		if (costChartPanel != null)
+			costPanel.remove(costChartPanel);
+		costChartPanel = new ChartPanel(totalCostChart);
+		costPanel.add(costChartPanel);
+		costPanel.revalidate();		
+	}
+
+	public void updateNrOfInstancesChart(JFreeChart nrInstancesChart) {
+		if (nrInstanceChartPanel != null)
+			nrInstancePanel.remove(nrInstanceChartPanel);
+		nrInstanceChartPanel = new ChartPanel(nrInstancesChart);
+		nrInstancePanel.add(nrInstanceChartPanel);
+		nrInstancePanel.revalidate();		
+	}
+	
+//	private void updateChart(JPanel panel, ChartPanel chartPanel, JFreeChart chart) {
+//		if (chartPanel != null)
+//			panel.remove(nrInstanceChartPanel);
+//		chartPanel = new ChartPanel(chart);
+//		panel.add(chartPanel);
+//		nrInstancePanel.revalidate();		
+//
+//	}
 
 
 }

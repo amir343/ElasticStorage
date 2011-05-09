@@ -44,8 +44,10 @@ public class InstanceManagement {
 	}
 	
 	public void kill(Node node) {
-		currentProcesses.get(node).kill();
-		currentProcesses.remove(node);
+		if (currentProcesses.get(node) != null){
+			currentProcesses.get(node).kill();
+			currentProcesses.remove(node);
+		}
 	}
 	
 	public List<Address> getAllNodes() {

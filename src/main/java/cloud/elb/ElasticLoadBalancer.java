@@ -201,7 +201,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 	};
 	
 	/**
-	 * This handler is triggerd when ELB receives a request from cloudProvider to send the training data to controller
+	 * This handler is triggered when ELB receives a request from cloudProvider to send the training data to controller
 	 */
 	Handler<SendRawData> sendRawDataHandler = new Handler<SendRawData>() {
 		@Override
@@ -232,6 +232,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 	};
 
 	private double calculateBandwidthMean() {
+		if (bandwidths.size() == 0) return 0.0;
 		Long mean = 0L;
 		for (Long band : bandwidths)
 			mean += band;
@@ -239,6 +240,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 	}
 	
 	private double calculateCPULoadMean() {
+		if (cpuLoads.size() == 0) return 0.0;
 		double mean = 0.0;
 		for (double load : cpuLoads)
 			mean += load;

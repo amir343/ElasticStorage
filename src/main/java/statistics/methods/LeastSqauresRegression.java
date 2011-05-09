@@ -20,6 +20,13 @@ public class LeastSqauresRegression {
 	private List<Double> inputOffsets = new ArrayList<Double>();
 	private List<Double> outputOffsets = new ArrayList<Double>();
 
+	public void clear() {
+		rawInputs.clear();
+		rawOutputs.clear();
+		inputOffsets.clear();
+		outputOffsets.clear();
+	}
+	
 	public void addRawData(double rawInput, double rawOutput) {
 		rawInputs.add(rawInput);
 		rawOutputs.add(rawOutput);
@@ -101,6 +108,7 @@ public class LeastSqauresRegression {
 	}
 
 	public double getInputOperatingPoint() {
+		if (rawInputs.size() <= 1) return 0.0;
 		double mean = 0.0;
 		for (int i=0; i<rawInputs.size()-1; i++) {
 			mean += rawInputs.get(i);
@@ -109,6 +117,7 @@ public class LeastSqauresRegression {
 	}
 
 	public double getOutputOperatingPoint() {
+		if (rawOutputs.size() <= 1) return 0.0;
 		double mean = 0.0;
 		for (int i=1; i<rawOutputs.size(); i++) {
 			mean += rawOutputs.get(i);
@@ -116,10 +125,16 @@ public class LeastSqauresRegression {
 		return mean/(rawOutputs.size()-1);
 	}
 	
-	public void print() {
+	public String print() {
+		StringBuilder sb = new StringBuilder();
 		for (int i=0; i<rawInputs.size(); i++) {
-			System.out.println((i+1) + "\t" + rawInputs.get(i) + "\t" + rawOutputs.get(i) + "\t" + inputOffsets.get(i) + "\t" + outputOffsets.get(i));
+			sb.append(((i+1) + "\t" + rawInputs.get(i) + "\t" + rawOutputs.get(i) + "\t" + inputOffsets.get(i) + "\t" + outputOffsets.get(i))).append("\n");
 		}
+		return sb.toString();
+	}
+
+	public int getNumberOfSamples() {
+		return rawInputs.size();
 	}
 
 }

@@ -1,19 +1,30 @@
 package econtroller.modeler;
 
-import common.GUI;
+import java.util.UUID;
 
 import logger.Logger;
 import logger.LoggerFactory;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.data.xy.XYDataset;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
+
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
 import se.sics.kompics.Negative;
 import se.sics.kompics.Positive;
 import se.sics.kompics.address.Address;
 import se.sics.kompics.network.Network;
+import se.sics.kompics.timer.CancelTimeout;
 import se.sics.kompics.timer.ScheduleTimeout;
 import se.sics.kompics.timer.Timer;
+import statistics.methods.LeastSqauresRegression;
 import cloud.common.RequestTrainingData;
 import cloud.common.TrainingData;
+import econtroller.controller.NewNodeRequest;
 import econtroller.gui.ControllerGUI;
 
 /**
@@ -35,11 +46,29 @@ public class Modeler extends ComponentDefinition {
 
 	// Variables
 	private static final long SAMPLING_INTERVAL = 30000;
+	private static final long ACUATION_INTERVAL = 120000;
 	private Address cloudProvider;
 	private Address self;
-
 	private ControllerGUI gui;
+	private int nrInstances = 8;
+	private int currentlyOrdered = 0;
+	private boolean add = true;
+	private long start;
+	private UUID samplingTimeoutId;
+	private UUID actuationTimeoutId;
+	
+	private LeastSqauresRegression cpuLSR = new LeastSqauresRegression();
+	private LeastSqauresRegression bandwidthLSR = new LeastSqauresRegression();
+	private LeastSqauresRegression costLSR = new LeastSqauresRegression();
+	private LeastSqauresRegression responseTimeLSR = new LeastSqauresRegression();
 
+	private XYSeries nrInstancesSeries = new XYSeries("# of Instances");
+	private XYSeries rtSeries = new XYSeries("Average ResponseTime");
+	private XYSeries cpuSeries = new XYSeries("Average CPU Load");
+	private XYSeries costSeries = new XYSeries("Total Cost");
+	private XYSeries bandwidthSeries = new XYSeries("Average Bandwidth");
+	
+	
 	public Modeler() {
 		gui = ControllerGUI.getInstance();
 		gui.setModeler(this);
@@ -49,6 +78,7 @@ public class Modeler extends ComponentDefinition {
 		subscribe(startModelerHandler, modeler);
 		
 		subscribe(sampleTraingingDataHandler, timer);
+		subscribe(instanceCreationHandler, timer);
 		
 		subscribe(trainingDataHanler, network);
 	}
@@ -58,6 +88,11 @@ public class Modeler extends ComponentDefinition {
 		public void handle(ModelerInit event) {
 			self = event.getSelf();
 			logger.info("Modeler started...");
+			gui.updateBandwidthChart(getBandwidthChart());
+			gui.updateCpuLoadChart(getCPUChart());
+			gui.updateResponseTimeChart(getResponseTimeChart());
+			gui.updateTotalCostChart(getTotalCostChart());
+			gui.updateNrOfInstancesChart(getNrInstancesChart());
 		}
 	};	
 	
@@ -82,6 +117,32 @@ public class Modeler extends ComponentDefinition {
 			scheduleSampling();
 		}
 	};
+
+	/**
+	 * This handler is responsible for adding and remove instances so the modeler can have a range for the system inputs
+	 */
+	Handler<InstanceCreation> instanceCreationHandler = new Handler<InstanceCreation>() {
+		@Override
+		public void handle(InstanceCreation event) {
+			if (add) {
+				if (currentlyOrdered < nrInstances-1) {
+					requestNewNode();
+				} else {
+					add = false;
+					removeNode();
+				}
+			} else {
+				if (currentlyOrdered > 0) {
+					removeNode();
+				} else {
+					add = true;
+					estimateParameters();
+					requestNewNode();
+				}
+			}
+			scheduleAcutation();
+		}
+	};
 	
 	/**
 	 * This handler is responsible for sorting out the response (raw data tuples) it receives from cloudProvider
@@ -91,28 +152,135 @@ public class Modeler extends ComponentDefinition {
 		public void handle(TrainingData event) {
 			if (event.getBandwidthMean() != null) {
 				logger.debug("Bandwidth: <" + event.getNrNodes() + ", " + event.getBandwidthMean() + ">");
+				bandwidthLSR.addRawData(event.getNrNodes(), event.getBandwidthMean());
+				bandwidthSeries.add(System.currentTimeMillis()-start, event.getBandwidthMean());
+				gui.updateBandwidthChart(getBandwidthChart());
 			} 
-			if (event.getLoadMean() != null) {
-				logger.debug("CPU Load: <" + event.getNrNodes() + ", " + event.getLoadMean() + ">");
+			if (event.getCPULoadMean() != null) {
+				logger.debug("CPU Load: <" + event.getNrNodes() + ", " + event.getCPULoadMean() + ">");
+				cpuLSR.addRawData(event.getNrNodes(), event.getCPULoadMean());
+				cpuSeries.add(System.currentTimeMillis()-start, event.getCPULoadMean());
+				gui.updateCpuLoadChart(getCPUChart());
 			}
 			if (event.getResponseTimeMean() != null) {
 				logger.debug("ResponseTime: <" + event.getNrNodes() + ", " + event.getResponseTimeMean() + ">");
+				responseTimeLSR.addRawData(event.getNrNodes(), event.getResponseTimeMean());
+				rtSeries.add(System.currentTimeMillis()-start, event.getResponseTimeMean());
+				gui.updateResponseTimeChart(getResponseTimeChart());
 			}
 			if (event.getTotalCost() != null) {
 				logger.debug("TotalCost: <" + event.getNrNodes() + ", " + event.getTotalCost() + ">");
+				costLSR.addRawData(event.getNrNodes(), event.getTotalCost());
+				costSeries.add(System.currentTimeMillis()-start, event.getTotalCost());
+				gui.updateTotalCostChart(getTotalCostChart());
 			}
+			nrInstancesSeries.add(System.currentTimeMillis()-start, event.getNrNodes());
+			gui.updateNrOfInstancesChart(getNrInstancesChart());
 		}
 	};
 
 	protected void scheduleSampling() {
 		ScheduleTimeout st = new ScheduleTimeout(SAMPLING_INTERVAL);
 		st.setTimeoutEvent(new SampleTrainingData(st));
+		samplingTimeoutId = st.getTimeoutEvent().getTimeoutId();
 		trigger(st, timer);
-		
 	}
 
-	public void startModeler() {
-		trigger(new RequestTrainingData(self, cloudProvider), network);
-		scheduleSampling();		
+	public String estimateParameters() {
+		String s1 = "cpu: <a,b> = <" + cpuLSR.get_a() + ", " + cpuLSR.get_b() + "> [numberOfSamples= " + cpuLSR.getNumberOfSamples() + "]";
+		String s2 = "bandwidth: <a,b> = <" + bandwidthLSR.get_a() + ", " + bandwidthLSR.get_b() + "> [numberOfSamples= " + bandwidthLSR.getNumberOfSamples() + "]";
+		String s3 = "response time: <a,b> = <" + responseTimeLSR.get_a() + ", " + responseTimeLSR.get_b() + "> [numberOfSamples= " + responseTimeLSR.getNumberOfSamples() + "]";
+		String s4 = "total cost: <a,b> = <" + costLSR.get_a() + ", " + costLSR.get_b() + "> [numberOfSamples= " + costLSR.getNumberOfSamples() + "]";
+		StringBuilder sb = new StringBuilder();
+		logger.warn(s1);
+		logger.warn(s2);
+		logger.warn(s3);
+		logger.warn(s4);
+		logger.warn("cpu table\n" + cpuLSR.print());
+		logger.warn("bandwidth table\n" + bandwidthLSR.print());
+		logger.warn("cost table\n" + costLSR.print());
+		logger.warn("response time table\n" + responseTimeLSR.print());
+		sb.append(s1).append("\n");
+		sb.append(s2).append("\n");
+		sb.append(s3).append("\n");
+		sb.append(s4).append("\n");
+		return sb.toString();
 	}
+
+	protected void removeNode() {
+		currentlyOrdered--;
+		trigger(new RemoveNode(self, cloudProvider), network);
+	}
+
+	protected void requestNewNode() {
+		currentlyOrdered++;
+		trigger(new NewNodeRequest(self, cloudProvider), network);
+	}
+
+	public void startModeler(int maximumNrInstances) {
+		start = System.currentTimeMillis();
+		trigger(new RequestTrainingData(self, cloudProvider), network);
+		nrInstances = maximumNrInstances;		
+		scheduleSampling();
+		scheduleAcutation();
+	}
+	
+	public void stopModeler() {
+		trigger(new CancelTimeout(actuationTimeoutId), timer);
+		trigger(new CancelTimeout(samplingTimeoutId), timer);
+	}
+
+	
+	private void scheduleAcutation() {
+		ScheduleTimeout st = new ScheduleTimeout(ACUATION_INTERVAL);
+		st.setTimeoutEvent(new InstanceCreation(st));
+		actuationTimeoutId = st.getTimeoutEvent().getTimeoutId();
+		trigger(st, timer);		
+	}
+
+	private JFreeChart getCPUChart() {
+		JFreeChart chart = ChartFactory.createXYLineChart("Average CPU Load", "Time (ms)", "Average CPU Load", getDataset(cpuSeries), PlotOrientation.VERTICAL, true, true, false);
+		return chart;
+	}
+
+	private JFreeChart getResponseTimeChart() {
+		JFreeChart chart = ChartFactory.createXYLineChart("Average Response Time", "Time (ms)", "Average Response Time (ms)", getDataset(rtSeries), PlotOrientation.VERTICAL, true, true, false);
+		return chart;
+	}
+
+	private JFreeChart getBandwidthChart() {
+		JFreeChart chart = ChartFactory.createXYLineChart("Average Bandwidth", "Time (ms)", "Average Bandwidth (B/s)", getDataset(bandwidthSeries), PlotOrientation.VERTICAL, true, true, false);
+		return chart;
+	}
+
+	private JFreeChart getNrInstancesChart() {
+		JFreeChart chart = ChartFactory.createXYLineChart("Number of Instances", "Time (ms)", "# of Instances", getDataset(nrInstancesSeries), PlotOrientation.VERTICAL, true, true, false);
+		return chart;
+	}
+
+	private JFreeChart getTotalCostChart() {
+		JFreeChart chart = ChartFactory.createXYLineChart("Total Cost", "Time (ms)", "Total Cost ($)", getDataset(costSeries), PlotOrientation.VERTICAL, true, true, false);
+		return chart;
+	}
+
+	private XYDataset getDataset(XYSeries series) {
+		XYSeriesCollection dataSet = new XYSeriesCollection();
+		dataSet.addSeries(series);
+		return dataSet;
+	}
+
+	public void reset() {
+		cpuSeries.clear();
+		rtSeries.clear();
+		bandwidthSeries.clear();
+		nrInstancesSeries.clear();
+		costSeries.clear();
+		
+		bandwidthLSR.clear();
+		costLSR.clear();
+		cpuLSR.clear();
+		responseTimeLSR.clear();
+		
+	}
+	
 }

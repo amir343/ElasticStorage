@@ -6,7 +6,6 @@ import instance.common.ShutDown;
 import instance.common.ShutDownAck;
 import instance.os.InstanceCost;
 
-import java.awt.geom.GeneralPath;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,11 +39,11 @@ import cloud.common.TrainingData;
 import cloud.epfd.HealthCheckerInit;
 import cloud.gui.CloudGUI;
 import cloud.requestengine.ResponseTimeService;
-import cloud.requestengine.ResponseTimeTD;
 import econtroller.controller.Connect;
 import econtroller.controller.ConnectionEstablished;
 import econtroller.controller.Disconnect;
 import econtroller.controller.NewNodeRequest;
+import econtroller.modeler.RemoveNode;
 
 /**
  * 
@@ -76,7 +75,7 @@ public class CloudAPI extends ComponentDefinition {
 	protected Address controllerAddress;
 	protected boolean connectedToController = false;
 	private List<Node> currentNodes = new ArrayList<Node>();
-	
+	private int numberOfInstances = 0;
 	private Double totalCost = 0.0;
 
 	
@@ -96,6 +95,7 @@ public class CloudAPI extends ComponentDefinition {
 		subscribe(newNodeRequestHandler, network);
 		subscribe(instanceCostHandler, network);
 		subscribe(requestTrainingDataHandler, network);
+		subscribe(removeNodeHandler, network);
 	}
 	
 	Handler<CloudAPIInit> initHandler = new Handler<CloudAPIInit>() {
@@ -120,6 +120,7 @@ public class CloudAPI extends ComponentDefinition {
 			gui.addNewInstance(event.getNode());		
 			gui.instanceAdded();
 			currentNodes.add(event.getNode());
+			numberOfInstances++;
 			logger.info("Node " + event.getNode() + " initialized   [ok]");
 			trigger(new ConsiderInstance(event.getNode()), epfd);
 			if (connectedToController) trigger(new NewNodeToMonitor(self, controllerAddress, event.getNode().getAddress()), network);
@@ -242,17 +243,32 @@ public class CloudAPI extends ComponentDefinition {
 	Handler<RequestTrainingData> requestTrainingDataHandler = new Handler<RequestTrainingData>() {
 		@Override
 		public void handle(RequestTrainingData event) {
-			trigger(new SendRawData(event.getSource(), currentNodes.size()), elb);
-			TrainingData data = new TrainingData(self, event.getSource(), currentNodes.size());
+			trigger(new SendRawData(event.getSource(), numberOfInstances), elb);
+			TrainingData data = new TrainingData(self, event.getSource(), numberOfInstances);
 			data.setTotalCost(totalCost);
 			trigger(data, network);
 			
 		}
 	};
 	
+	/**
+	 * This handler is triggered when the modeler from controller request to remove a node
+	 */
+	Handler<RemoveNode> removeNodeHandler = new Handler<RemoveNode>() {
+		@Override
+		public void handle(RemoveNode event) {
+			if (currentNodes.size() != 0) {
+				gui.removeNodeFromCurrentInstances(currentNodes.get(0));
+				kill(currentNodes.get(0));
+			}
+		}
+	};
+	
 	public void kill(Node node) {
-		trigger(new ShutDown(self, node.getAddress()), network);
+		numberOfInstances--;
 		logger.debug("Shuting down Node " + node);
+		logger.debug("Number of instances: " + numberOfInstances);
+		trigger(new ShutDown(self, node.getAddress()), network);
 		trigger(new InstanceKilled(node), epfd);
 		trigger(new RemoveReplica(node), elb);
 		instanceManagement.kill(node);	
