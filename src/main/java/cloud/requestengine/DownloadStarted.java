@@ -10,12 +10,12 @@ import se.sics.kompics.network.Message;
  *
  */
 
-public class RequestDone extends Message {
+public class DownloadStarted extends Message {
 
 	private static final long serialVersionUID = 4603408788313957328L;
 	private String requestID;
 
-	public RequestDone(Address source, Address destination, String requestID) {
+	public DownloadStarted(Address source, Address destination, String requestID) {
 		super(source, destination);
 		this.requestID = requestID;
 	}

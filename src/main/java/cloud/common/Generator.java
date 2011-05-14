@@ -2,7 +2,7 @@ package cloud.common;
 
 import instance.common.Request;
 import cloud.elb.BlocksActivated;
-import cloud.requestengine.RequestDone;
+import cloud.requestengine.DownloadStarted;
 import cloud.requestengine.RequestGeneratorInit;
 import se.sics.kompics.PortType;
 
@@ -16,7 +16,7 @@ import se.sics.kompics.PortType;
 public class Generator extends PortType {
 	{
 		negative(RequestGeneratorInit.class);
-		negative(RequestDone.class);
+		negative(DownloadStarted.class);
 		negative(SendRawData.class);
 		negative(BlocksActivated.class);
 		positive(SendRawData.class);

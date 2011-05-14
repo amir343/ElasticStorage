@@ -59,7 +59,7 @@ public class RequestGenerator extends ComponentDefinition {
 		reqGen = this;
 		
 		subscribe(initHandler, generator);
-		subscribe(requestDoneHandler, generator);
+		subscribe(downloadStartedHandler, generator);
 		subscribe(sendRawDataHandler, generator);
 		
 		subscribe(requestEngineTimeout, timer);
@@ -97,9 +97,9 @@ public class RequestGenerator extends ComponentDefinition {
 	/**
 	 * This handler is triggered when a transfer finishes and calculates the response time for further presentation
 	 */
-	Handler<RequestDone> requestDoneHandler = new Handler<RequestDone>() {
+	Handler<DownloadStarted> downloadStartedHandler = new Handler<DownloadStarted>() {
 		@Override
-		public void handle(RequestDone event) {
+		public void handle(DownloadStarted event) {
 			UUID id = UUID.fromString(event.getRequestID());
 			currentRequests.get(id).setEnd(System.currentTimeMillis());
 			completedRequest.add(currentRequests.get(id));

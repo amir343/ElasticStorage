@@ -33,7 +33,7 @@ import cloud.common.SendRawData;
 import cloud.common.SuspectNode;
 import cloud.common.TrainingData;
 import cloud.gui.CloudGUI;
-import cloud.requestengine.RequestDone;
+import cloud.requestengine.DownloadStarted;
 import cloud.requestengine.RequestGeneratorInit;
 
 /**
@@ -72,7 +72,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 		subscribe(responseTimeHandler, generator);
 
 		subscribe(blocksAckHandler, network);
-		subscribe(requestDoneHandler, network);
+		subscribe(downloadStartedHandler, network);
 		subscribe(myCPULoadHandler, network);
 		subscribe(activateBlockHandler, network);
 	}
@@ -177,9 +177,9 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 	/**
 	 * This handler is triggered when a transfer finishes
 	 */
-	Handler<RequestDone> requestDoneHandler = new Handler<RequestDone>() {
+	Handler<DownloadStarted> downloadStartedHandler = new Handler<DownloadStarted>() {
 		@Override
-		public void handle(RequestDone event) {
+		public void handle(DownloadStarted event) {
 			trigger(event, generator);
 		}
 	};

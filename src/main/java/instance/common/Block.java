@@ -81,7 +81,7 @@ public class Block implements Serializable {
 		StringBuilder sb = new StringBuilder();
 		sb.append("{");
 			sb.append("name: ").append(name).append(", ");
-			sb.append("size: ").append(size).append(", ");
+			sb.append("size: ").append(size);
 		sb.append("}");
 		return sb.toString();
 	}

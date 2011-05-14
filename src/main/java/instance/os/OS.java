@@ -77,7 +77,7 @@ import cloud.common.NodeConfiguration;
 import cloud.common.RequestMessage;
 import cloud.elb.ActivateBlock;
 import cloud.elb.MyCPULoadAndBandwidth;
-import cloud.requestengine.RequestDone;
+import cloud.requestengine.DownloadStarted;
 import econtroller.sensor.Monitor;
 
 /**
@@ -336,7 +336,6 @@ public class OS extends ComponentDefinition {
 				trigger(new BlockTransfered(self, request.getDestinationNode(), process.getBlockSize(), process.getRequest().getBlockId()), network);
 			} else {
 				logger.debug("Transfering finished for " + event.getPid() );
-				trigger(new RequestDone(self, cloudProvider, request.getId()), network);
 			}
 		}
 
@@ -627,13 +626,13 @@ public class OS extends ComponentDefinition {
 		trigger(st, timer);		
 	}
 
-	protected void waitForSystemStartUp() {
+	private void waitForSystemStartUp() {
 		ScheduleTimeout st = new ScheduleTimeout(WAIT);
 		st.setTimeoutEvent(new WaitTimeout(st));
 		trigger(st, timer);		
 	}
 
-	protected void readFromDiskIntoMemory(BlockResponse response) {
+	private void readFromDiskIntoMemory(BlockResponse response) {
 		Process process = response.getProcess();
 		Block block = response.getBlock();
 		process.setBlockSize(block.getSize());
@@ -644,7 +643,7 @@ public class OS extends ComponentDefinition {
 		trigger(st, timer);		
 	}
 
-	protected synchronized void scheduleTransferForBlock(Process process) {
+	private synchronized void scheduleTransferForBlock(Process process) {
 		if (currentTransfers.size() == 0) {
 			logger.debug("Transfer started " + process);
 			scheduleTimeoutFor(process, BANDWIDTH);
@@ -659,6 +658,7 @@ public class OS extends ComponentDefinition {
 			logger.debug("Transfer started " + process);
 			scheduleTimeoutFor(process, newBandwidth);
 		}
+		trigger(new DownloadStarted(self, cloudProvider, process.getRequest().getId()), network);
 	}
 
 	private void rescheduleAllTimers(long newBandwidth, long now) {
