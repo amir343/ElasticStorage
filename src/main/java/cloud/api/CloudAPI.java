@@ -7,7 +7,9 @@ import instance.common.ShutDownAck;
 import instance.os.InstanceCost;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import logger.Logger;
 import logger.LoggerFactory;
@@ -35,7 +37,6 @@ import cloud.common.RestoreNode;
 import cloud.common.SendRawData;
 import cloud.common.Suspect;
 import cloud.common.SuspectNode;
-import cloud.common.TrainingData;
 import cloud.epfd.HealthCheckerInit;
 import cloud.gui.CloudGUI;
 import cloud.requestengine.ResponseTimeService;
@@ -75,9 +76,8 @@ public class CloudAPI extends ComponentDefinition {
 	protected Address controllerAddress;
 	protected boolean connectedToController = false;
 	private List<Node> currentNodes = new ArrayList<Node>();
+	private Map<Address, Double> costTable = new HashMap<Address, Double>();
 	private int numberOfInstances = 0;
-	private Double totalCost = 0.0;
-
 	
 	public CloudAPI() {
 		api = this;
@@ -231,23 +231,28 @@ public class CloudAPI extends ComponentDefinition {
 		@Override
 		public void handle(InstanceCost event) {
 			gui.updateCostForNode(event.getNode(), event.getCost());
-			synchronized (totalCost) {
-				totalCost += Double.valueOf(event.getCost());
-			}
+			costTable.put(event.getSource(), Double.parseDouble(event.getCost()));
 		}
 	};
 	
 	/**
-	 * This handler is triggered when the modeler requests training data from cloudAPI
+	 * This handler is triggered when the modeler requests training data from cloudAPI.
+	 * It distributes this request to corresponding components 
 	 */
 	Handler<RequestTrainingData> requestTrainingDataHandler = new Handler<RequestTrainingData>() {
 		@Override
 		public void handle(RequestTrainingData event) {
-			trigger(new SendRawData(event.getSource(), numberOfInstances), elb);
-			TrainingData data = new TrainingData(self, event.getSource(), numberOfInstances);
+			SendRawData data = new SendRawData(event.getSource(), numberOfInstances);
+			double totalCost = calculateTotalCost();
 			data.setTotalCost(totalCost);
-			trigger(data, network);
-			
+			trigger(data, elb);			
+		}
+
+		private double calculateTotalCost() {
+			double cost = 0;
+			for (Address address : costTable.keySet())
+				cost += costTable.get(address);
+			return cost;
 		}
 	};
 	

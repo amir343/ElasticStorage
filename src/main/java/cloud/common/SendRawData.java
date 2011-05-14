@@ -14,6 +14,9 @@ public class SendRawData extends Event {
 	
 	private Address controller;
 	private int nrNodes;
+	private double totalCost;
+	private double averageThroughput;
+	private double averageResponseTime;
 
 	public SendRawData(Address controller, int numberOfNodes) {
 		this.controller = controller;
@@ -28,4 +31,28 @@ public class SendRawData extends Event {
 		return nrNodes;
 	}
 
+	public double getTotalCost() {
+		return totalCost;
+	}
+
+	public void setTotalCost(double totalCost) {
+		this.totalCost = totalCost;
+	}
+
+	public double getAverageThroughput() {
+		return averageThroughput;
+	}
+
+	public void setAverageThroughput(double averageThroughput) {
+		this.averageThroughput = averageThroughput;
+	}
+
+	public void setAverageResponseTime(double averageResponseTime) {
+		this.averageResponseTime = averageResponseTime;
+	}
+
+	public double getAverageResponseTime() {
+		return averageResponseTime;
+	}
+	
 }

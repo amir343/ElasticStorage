@@ -46,6 +46,7 @@ public class RequestGenerator extends ComponentDefinition {
 	private List<RequestStatistic> completedRequest = new ArrayList<RequestStatistic>();
 	private List<RequestStatistic> completedRequestClone = new ArrayList<RequestStatistic>();
 	private ResponseTimeService responseTimeService = ResponseTimeService.getInstance();
+	private List<Integer> throughputCollection = new ArrayList<Integer>();
 	protected List<Block> blocks;
 	private List<UUID> timerIds = new ArrayList<UUID>();
 	private RequestGenerator reqGen;
@@ -127,21 +128,19 @@ public class RequestGenerator extends ComponentDefinition {
 	Handler<SendRawData> sendRawDataHandler = new Handler<SendRawData>() {
 		@Override
 		public void handle(SendRawData event) {
-			if (completedRequestClone.size() != 0) {
-				Long responseTimeSum = 0L;
-				for (RequestStatistic req : completedRequestClone) {
-					responseTimeSum += req.getResponseTime();
-				}
-				double mean = responseTimeSum.doubleValue()/completedRequestClone.size();
-				completedRequestClone.clear();
-				ResponseTimeTD data = new ResponseTimeTD(event.getNrNodes(), mean, event.getController());
-				trigger(data, generator);			
-			}
+			double averageResponseTime = calculateAverageResponseTime();
+			double averageThroughput = calculateAverageThroughput();
+			
+			event.setAverageResponseTime(averageResponseTime);
+			event.setAverageThroughput(averageThroughput);
+			
+			trigger(event, generator);			
 		}
 	};
 
 	protected void scheduleRequestGeneratorEngine() {
 		long timeout = distribution.getNextValue();
+		throughputCollection.add((int) (timeout/1000));
 		logger.debug("Next request will be sent in " + timeout + " (ms)");
 		if (timeout > 0 && timeout != Long.MAX_VALUE) {
 			ScheduleTimeout st = new ScheduleTimeout(timeout);
@@ -153,11 +152,38 @@ public class RequestGenerator extends ComponentDefinition {
 			trigger(st, timer);
 		}
 	}
-		
+
+	private double calculateAverageResponseTime() {
+		Long responseTimeSum = 0L;
+		for (RequestStatistic req : completedRequestClone) {
+			responseTimeSum += req.getResponseTime();
+		}
+		double mean;
+		if (completedRequestClone.size() == 0)
+			mean = 0.0;
+		else
+			 mean = responseTimeSum.doubleValue()/completedRequestClone.size();
+		completedRequestClone.clear();
+		return mean;
+	}
+
+	protected double calculateAverageThroughput() {
+		int throughputSum = 0;
+		double mean;
+		for (Integer tp : throughputCollection) {
+			throughputSum += tp;
+		}
+		if (throughputCollection.size() == 0)
+			mean = 0;
+		else
+			mean = throughputSum/throughputCollection.size();
+		throughputCollection.clear();
+		return mean;
+	}
+
 	protected void setupGUIConnection() {
 		gui.setRequestGenerator(reqGen);		
 	}
-
 
 	public void updateDistribution(Distribution currentDistribution) {
 		this.distribution = currentDistribution;

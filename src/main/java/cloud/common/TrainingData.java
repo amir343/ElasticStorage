@@ -14,18 +14,19 @@ public class TrainingData extends Message {
 
 	private static final long serialVersionUID = -4971188701344810800L;
 	private int nrNodes;
-	private Double loadMean;
+	private Double cpuLoadMean;
 	private Double bandwidthMean;
 	private Double totalCost;
 	private Double responseTimeMean;
-
+	private Double throughputMean;
+	
 	public TrainingData(Address source, Address destination, int nrNodes) {
 		super(source, destination);
 		this.nrNodes = nrNodes;
 	}
 
 	public Double getCPULoadMean() {
-		return loadMean;
+		return cpuLoadMean;
 	}
 
 	public Double getBandwidthMean() {
@@ -37,7 +38,7 @@ public class TrainingData extends Message {
 	}
 
 	public void setCpuLoalMean(Double cpuLoadMean) {
-		this.loadMean = cpuLoadMean;
+		this.cpuLoadMean = cpuLoadMean;
 	}
 
 	public void setBandwidthMean(Double bandwidthMean) {
@@ -59,5 +60,26 @@ public class TrainingData extends Message {
 	public Double getResponseTimeMean() {
 		return responseTimeMean;
 	}
+
+	public Double getThroughputMean() {
+		return throughputMean;
+	}
+
+	public void setThroughputMean(Double throughputMean) {
+		this.throughputMean = throughputMean;
+	}
+	
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("{");
+			sb.append("throughput: ").append(throughputMean).append(", ");
+			sb.append("cpu: ").append(cpuLoadMean).append(", ");
+			sb.append("bandwidth: ").append(bandwidthMean).append(", ");
+			sb.append("cost: ").append(totalCost).append(", ");
+			sb.append("responseTime: ").append(responseTimeMean);
+		sb.append("}");
+		return sb.toString();
+	}
+	
 
 }

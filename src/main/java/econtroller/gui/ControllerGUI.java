@@ -97,6 +97,8 @@ public class ControllerGUI extends AbstractGUI {
 	private ChartPanel nrInstanceChartPanel;
 	private JButton estimateParametersButton;
 	private JButton resetModelerButton;
+	private ChartPanel throughputChartPanel;
+	private JPanel throughputPanel;
 	
 	public ControllerGUI() {
 		createMenuBar();
@@ -165,16 +167,17 @@ public class ControllerGUI extends AbstractGUI {
 							.addComponent(maxNrInstancesLbl)
 							.addComponent(startModelerButton)
 							.addComponent(estimateParametersButton)
-							.addComponent(cpuPanel)
+							.addComponent(nrInstancePanel)
 							.addComponent(responseTimePanel)
-							.addComponent(nrInstancePanel))
+							.addComponent(cpuPanel))
 				.addGroup(group.
 						createParallelGroup()
 							.addComponent(maxInstanceText)
 							.addComponent(stopModelerButton)
 							.addComponent(resetModelerButton)
 							.addComponent(bandwidthPanel)
-							.addComponent(costPanel))
+							.addComponent(costPanel)
+							.addComponent(throughputPanel))
 		);
 		
 		group.setVerticalGroup(
@@ -196,7 +199,7 @@ public class ControllerGUI extends AbstractGUI {
 						 )
 				.addGroup(group.
 						createParallelGroup()
-							.addComponent(cpuPanel)
+							.addComponent(nrInstancePanel)
 							.addComponent(bandwidthPanel)
 						 )
 				.addGroup(group.
@@ -205,8 +208,9 @@ public class ControllerGUI extends AbstractGUI {
 							.addComponent(costPanel)
 						 )
 				.addGroup(group.
-						createSequentialGroup()
-							.addComponent(nrInstancePanel)
+						createParallelGroup()
+							.addComponent(cpuPanel)
+							.addComponent(throughputPanel)
 						 )
 		);
 		
@@ -233,6 +237,10 @@ public class ControllerGUI extends AbstractGUI {
 		nrInstancePanel = new JPanel();
 		nrInstancePanel.setLayout(new GridLayout(1,1));
 		nrInstancePanel.setBorder(BorderFactory.createTitledBorder(""));
+		
+		throughputPanel = new JPanel();
+		throughputPanel.setLayout(new GridLayout(1,1));
+		throughputPanel.setBorder(BorderFactory.createTitledBorder(""));
 		
 	}
 
@@ -556,15 +564,13 @@ public class ControllerGUI extends AbstractGUI {
 		nrInstancePanel.add(nrInstanceChartPanel);
 		nrInstancePanel.revalidate();		
 	}
+
+	public void updateThroughputChart(JFreeChart averageThroughputChart) {
+		if (throughputChartPanel != null)
+			throughputPanel.remove(throughputChartPanel);
+		throughputChartPanel = new ChartPanel(averageThroughputChart);
+		throughputPanel.add(throughputChartPanel);
+		throughputPanel.revalidate();		
+	}
 	
-//	private void updateChart(JPanel panel, ChartPanel chartPanel, JFreeChart chart) {
-//		if (chartPanel != null)
-//			panel.remove(nrInstanceChartPanel);
-//		chartPanel = new ChartPanel(chart);
-//		panel.add(chartPanel);
-//		nrInstancePanel.revalidate();		
-//
-//	}
-
-
 }

@@ -64,6 +64,7 @@ public class Modeler extends ComponentDefinition {
 
 	private XYSeries nrInstancesSeries = new XYSeries("# of Instances");
 	private XYSeries rtSeries = new XYSeries("Average ResponseTime");
+	private XYSeries tpSeries = new XYSeries("Average Throughput");
 	private XYSeries cpuSeries = new XYSeries("Average CPU Load");
 	private XYSeries costSeries = new XYSeries("Total Cost");
 	private XYSeries bandwidthSeries = new XYSeries("Average Bandwidth");
@@ -93,6 +94,7 @@ public class Modeler extends ComponentDefinition {
 			gui.updateResponseTimeChart(getResponseTimeChart());
 			gui.updateTotalCostChart(getTotalCostChart());
 			gui.updateNrOfInstancesChart(getNrInstancesChart());
+			gui.updateThroughputChart(getAverageThroughputChart());
 		}
 	};	
 	
@@ -150,29 +152,30 @@ public class Modeler extends ComponentDefinition {
 	Handler<TrainingData> trainingDataHanler = new Handler<TrainingData>() {
 		@Override
 		public void handle(TrainingData event) {
+			logger.info("Training data is received: " + event.toString());
 			if (event.getBandwidthMean() != null) {
-				logger.debug("Bandwidth: <" + event.getNrNodes() + ", " + event.getBandwidthMean() + ">");
 				bandwidthLSR.addRawData(event.getNrNodes(), event.getBandwidthMean());
 				bandwidthSeries.add(System.currentTimeMillis()-start, event.getBandwidthMean());
 				gui.updateBandwidthChart(getBandwidthChart());
 			} 
 			if (event.getCPULoadMean() != null) {
-				logger.debug("CPU Load: <" + event.getNrNodes() + ", " + event.getCPULoadMean() + ">");
 				cpuLSR.addRawData(event.getNrNodes(), event.getCPULoadMean());
 				cpuSeries.add(System.currentTimeMillis()-start, event.getCPULoadMean());
 				gui.updateCpuLoadChart(getCPUChart());
 			}
 			if (event.getResponseTimeMean() != null) {
-				logger.debug("ResponseTime: <" + event.getNrNodes() + ", " + event.getResponseTimeMean() + ">");
 				responseTimeLSR.addRawData(event.getNrNodes(), event.getResponseTimeMean());
 				rtSeries.add(System.currentTimeMillis()-start, event.getResponseTimeMean());
 				gui.updateResponseTimeChart(getResponseTimeChart());
 			}
 			if (event.getTotalCost() != null) {
-				logger.debug("TotalCost: <" + event.getNrNodes() + ", " + event.getTotalCost() + ">");
 				costLSR.addRawData(event.getNrNodes(), event.getTotalCost());
 				costSeries.add(System.currentTimeMillis()-start, event.getTotalCost());
 				gui.updateTotalCostChart(getTotalCostChart());
+			}
+			if (event.getThroughputMean() != null) {
+				tpSeries.add(System.currentTimeMillis()-start, event.getThroughputMean());
+				gui.updateThroughputChart(getAverageThroughputChart());
 			}
 			nrInstancesSeries.add(System.currentTimeMillis()-start, event.getNrNodes());
 			gui.updateNrOfInstancesChart(getNrInstancesChart());
@@ -263,6 +266,11 @@ public class Modeler extends ComponentDefinition {
 		return chart;
 	}
 
+	private JFreeChart getAverageThroughputChart() {
+		JFreeChart chart = ChartFactory.createXYLineChart("Average Throughput", "Time (ms)", "Average Throughput (every seconds)", getDataset(tpSeries), PlotOrientation.VERTICAL, true, true, false);
+		return chart;
+	}
+
 	private XYDataset getDataset(XYSeries series) {
 		XYSeriesCollection dataSet = new XYSeriesCollection();
 		dataSet.addSeries(series);
@@ -275,6 +283,7 @@ public class Modeler extends ComponentDefinition {
 		bandwidthSeries.clear();
 		nrInstancesSeries.clear();
 		costSeries.clear();
+		tpSeries.clear();
 		
 		bandwidthLSR.clear();
 		costLSR.clear();

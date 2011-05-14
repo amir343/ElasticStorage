@@ -35,7 +35,6 @@ import cloud.common.TrainingData;
 import cloud.gui.CloudGUI;
 import cloud.requestengine.RequestDone;
 import cloud.requestengine.RequestGeneratorInit;
-import cloud.requestengine.ResponseTimeTD;
 
 /**
  * 
@@ -206,27 +205,24 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 	Handler<SendRawData> sendRawDataHandler = new Handler<SendRawData>() {
 		@Override
 		public void handle(SendRawData event) {
-			trigger(new SendRawData(event.getController(), event.getNrNodes()), generator);
-
-			double cpuLoadMean = calculateCPULoadMean();
-			double bandwidthMean = calculateBandwidthMean();
-			cpuLoads.clear();
-			bandwidths.clear();
-			TrainingData data = new TrainingData(self, event.getController(), event.getNrNodes());
-			data.setCpuLoalMean(cpuLoadMean);
-			data.setBandwidthMean(bandwidthMean);
-			trigger(data, network);			
+			trigger(event, generator);
 		}
 	};
 	
 	/**
 	 * This handler is triggered when RequestGenerator provides the average response time
 	 */
-	Handler<ResponseTimeTD> responseTimeHandler = new Handler<ResponseTimeTD>() {
+	Handler<SendRawData> responseTimeHandler = new Handler<SendRawData>() {
 		@Override
-		public void handle(ResponseTimeTD event) {
+		public void handle(SendRawData event) {
 			TrainingData data = new TrainingData(self, event.getController(), event.getNrNodes());
-			data.setResponseTimeMean(event.getMean());
+			
+			data.setResponseTimeMean(event.getAverageResponseTime());
+			data.setThroughputMean(event.getAverageThroughput());
+			data.setCpuLoalMean(calculateCPULoadMean());
+			data.setBandwidthMean(calculateBandwidthMean());
+			data.setTotalCost(event.getTotalCost());
+			
 			trigger(data, network);
 		}
 	};
