@@ -3,6 +3,8 @@ package instance.common;
 import java.io.Serializable;
 import java.util.Comparator;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 /**
  * 
  * @author Amir Moulavi
@@ -46,9 +48,23 @@ public class Block implements Serializable {
 	public void setTimeEnteredInMemory(long timeEnteredInMemory) {
 		this.timeEnteredInMemory = timeEnteredInMemory;
 	}
+
+	public boolean equals(Object an) {
+		if (an == null)
+			return false;
+		if (!(an instanceof Block))
+			return false;
+		Block ob = (Block)an;
+		if (this.name.equals(ob.getName()) && this.size == ob.getSize())
+			return true;
+		return false;
+	}
+	
+	public int hashCode() {
+		return new HashCodeBuilder().append(name).append(size).hashCode();
+	}
 	
 	public static class FrequencyComparator implements Comparator<Block> {
-		
 		@Override
 		public int compare(Block o1, Block o2) {
 			if (o1.getNrOfAccessedTimes() < o2.getNrOfAccessedTimes()) return 1;

@@ -85,7 +85,16 @@ public class ELBTable {
 				logger.debug("Block " + entry.getBlock().toString() + " is activated");
 			entry.activateFor(node);
 		}
-		
+	}
+	
+	public void activateBlockForNode(Node node, Block block) {
+		for (ELBEntry entry : entries) {
+			if (entry.getBlock().equals(block)) {
+				entry.activateFor(node);
+				logger.debug("Block " + entry.getBlock().toString() + " is activated");
+				return;
+			}
+		}
 	}
 
 	public List<Block> getblocks() {

@@ -1,9 +1,5 @@
 package cloud.requestengine;
 
-import instance.common.Block;
-
-import java.util.List;
-
 import se.sics.kompics.Init;
 
 /**
@@ -15,14 +11,5 @@ import se.sics.kompics.Init;
 
 public class RequestGeneratorInit extends Init {
 
-	private List<Block> blocks;
-
-	public RequestGeneratorInit(List<Block> blocks) {
-		this.blocks = blocks;
-	}
-	
-	public List<Block> getBlocks() {
-		return blocks;
-	}
 
 }

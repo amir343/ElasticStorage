@@ -5,8 +5,10 @@ import instance.common.Request;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import logger.Logger;
@@ -47,7 +49,7 @@ public class RequestGenerator extends ComponentDefinition {
 	private List<RequestStatistic> completedRequestClone = new ArrayList<RequestStatistic>();
 	private ResponseTimeService responseTimeService = ResponseTimeService.getInstance();
 	private List<Integer> throughputCollection = new ArrayList<Integer>();
-	protected List<Block> blocks;
+	private Set<Block> blocks = new HashSet<Block>();
 	private List<UUID> timerIds = new ArrayList<UUID>();
 	private RequestGenerator reqGen;
 	private boolean running = false;
@@ -67,7 +69,6 @@ public class RequestGenerator extends ComponentDefinition {
 	Handler<RequestGeneratorInit> initHandler = new Handler<RequestGeneratorInit>() {
 		@Override
 		public void handle(RequestGeneratorInit event) {
-			blocks = event.getBlocks();
 			setupGUIConnection();
 			logger.info("Request Engine started...");
 		}

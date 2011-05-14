@@ -72,6 +72,7 @@ public class TrainingData extends Message {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("{");
+			sb.append("# nodes: ").append(nrNodes).append(", ");
 			sb.append("throughput: ").append(throughputMean).append(", ");
 			sb.append("cpu: ").append(cpuLoadMean).append(", ");
 			sb.append("bandwidth: ").append(bandwidthMean).append(", ");

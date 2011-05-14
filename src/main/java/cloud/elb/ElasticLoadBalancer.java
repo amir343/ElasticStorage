@@ -74,6 +74,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 		subscribe(blocksAckHandler, network);
 		subscribe(requestDoneHandler, network);
 		subscribe(myCPULoadHandler, network);
+		subscribe(activateBlockHandler, network);
 	}
 
 	Handler<ELBInit> initHandler = new Handler<ELBInit>() {
@@ -81,6 +82,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 		public void handle(ELBInit event) {
 			startELBTable(event);
 			self = event.getSelf();
+			trigger(new RequestGeneratorInit(), generator);
 			logger.info("Elastic Load Balancer is started...");
 		}
 	};
@@ -138,8 +140,22 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 		@Override
 		public void handle(BlocksAck event) {
 			elbTable.activeBlocksForNode(event.getNode());
-			trigger(new RequestGeneratorInit(elbTable.getblocks()), generator);
+			trigger(new BlocksActivated(elbTable.getblocks()), generator);
 		}
+	};
+	
+	/**
+	 * This handler is triggered when the newly joined instance informs about a block that is available and can be served from that instance
+	 */
+	Handler<ActivateBlock> activateBlockHandler = new Handler<ActivateBlock>() {
+		@Override
+		public void handle(ActivateBlock event) {
+			elbTable.activateBlockForNode(event.getNode(), event.getBlock());
+			BlocksActivated blocksActivated = new BlocksActivated();
+			blocksActivated.addBlock(event.getBlock());
+			trigger(blocksActivated, generator);
+		}
+		
 	};
 	
 	/**

@@ -75,6 +75,7 @@ import cloud.common.Alive;
 import cloud.common.HeartbeatMessage;
 import cloud.common.NodeConfiguration;
 import cloud.common.RequestMessage;
+import cloud.elb.ActivateBlock;
 import cloud.elb.MyCPULoadAndBandwidth;
 import cloud.requestengine.RequestDone;
 import econtroller.sensor.Monitor;
@@ -332,7 +333,7 @@ public class OS extends ComponentDefinition {
 		private void informDownloader(TransferingFinished event, Process process, Request request) {
 			if (request.getDestinationNode() != null) {
 				logger.info("Rebalancing finished for " + event.getPid());
-				trigger(new BlockTransfered(self, request.getDestinationNode(), process.getBlockSize()), network);
+				trigger(new BlockTransfered(self, request.getDestinationNode(), process.getBlockSize(), process.getRequest().getBlockId()), network);
 			} else {
 				logger.debug("Transfering finished for " + event.getPid() );
 				trigger(new RequestDone(self, cloudProvider, request.getId()), network);
@@ -540,6 +541,9 @@ public class OS extends ComponentDefinition {
 		public void handle(BlockTransfered event) {
 			String process = pt.keySet().iterator().next();
 			pt.remove(process);
+			Block block = new Block (event.getBlockName(), event.getBlockSize());
+			ActivateBlock activateBlock = new ActivateBlock(self, cloudProvider, node, block);
+			trigger(activateBlock, network);
 			endProcessOnCPU(process);
 			trigger(new DiskWriteOperation(event.getBlockSize()), cpu);
 			calculateNewBandwidth();
@@ -548,9 +552,7 @@ public class OS extends ComponentDefinition {
 				logger.info("Starting with " + blocks.size() + " block(s) in hand");
 				LoadBlock load = new LoadBlock(blocks);
 				trigger(load, disk);
-				trigger(new BlocksAck(self, cloudProvider, node), network);
 				gui.initializeDataBlocks(blocks);
-				trigger(new InstanceStarted(self, cloudProvider, node), network);				
 			}
 		}
 
@@ -750,7 +752,6 @@ public class OS extends ComponentDefinition {
 			trigger(load, disk);
 			trigger(new BlocksAck(self, cloudProvider, node), network);
 			gui.initializeDataBlocks(blocks);
-			trigger(new InstanceStarted(self, cloudProvider, node), network);
 		} else {
 			logger.warn("I should get blocks from " + event.getNodeConfiguration().getDataBlocksMap().size() + " other instance(s)");
 			Map<String, Address> dataBlocks = event.getNodeConfiguration().getDataBlocksMap();
@@ -759,6 +760,7 @@ public class OS extends ComponentDefinition {
 			}
 			addToBandwidthDiagram(BANDWIDTH);
 		}
+		trigger(new InstanceStarted(self, cloudProvider, node), network);
 	}
 	
 	private void addToBandwidthDiagram(long bandWidth) {
