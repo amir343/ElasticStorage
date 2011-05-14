@@ -82,7 +82,7 @@ public final class Node implements Serializable {
 		builder.append(this.port);
 		builder.append(this.address);
 		builder.append(this.nodeName);
-		return builder.hashCode();
+		return builder.toHashCode();
 	}
 
 	public static Address getAddressFromString(String string) {

@@ -77,6 +77,7 @@ public class CloudProvider extends ComponentDefinition {
 		
 		connect(elb.required(Network.class), network.provided(Network.class));
 		connect(elb.required(Generator.class), rg.provided(Generator.class));
+		connect(elb.required(Timer.class), timer.provided(Timer.class));
 		
 		connect(rg.required(Timer.class), timer.provided(Timer.class));
 	}

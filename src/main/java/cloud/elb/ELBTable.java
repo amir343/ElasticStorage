@@ -84,6 +84,7 @@ public class ELBTable {
 			if (!entry.isActive())
 				logger.debug("Block " + entry.getBlock().toString() + " is activated");
 			entry.activateFor(node);
+			logger.debug("Number of replicas for block " + entry.getName() + ": " + entry.getNrOfReplicas());
 		}
 	}
 	

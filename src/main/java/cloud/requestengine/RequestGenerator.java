@@ -25,6 +25,7 @@ import statistics.distribution.Distribution;
 import cloud.common.Generator;
 import cloud.common.RequestEngineTimeout;
 import cloud.common.SendRawData;
+import cloud.elb.BlocksActivated;
 import cloud.gui.CloudGUI;
 
 /**
@@ -61,6 +62,7 @@ public class RequestGenerator extends ComponentDefinition {
 		subscribe(initHandler, generator);
 		subscribe(downloadStartedHandler, generator);
 		subscribe(sendRawDataHandler, generator);
+		subscribe(blocksActivatedHandler, generator);
 		
 		subscribe(requestEngineTimeout, timer);
 		subscribe(RTCollectionTimeoutHandler, timer);
@@ -84,6 +86,7 @@ public class RequestGenerator extends ComponentDefinition {
 				timerIds.remove(event.getTimeoutId());
 			}
 			for (Block block : blocks) {
+				logger.debug("Preparing request for block "+ block);
 				Request request = new Request(UUID.randomUUID().toString(), block.getName());
 				RequestStatistic stat = new RequestStatistic();
 				stat.setStart(System.currentTimeMillis());
@@ -136,6 +139,16 @@ public class RequestGenerator extends ComponentDefinition {
 			event.setAverageThroughput(averageThroughput);
 			
 			trigger(event, generator);			
+		}
+	};
+	
+	/**
+	 * This handler is triggered when the engine receives blocks that are activated from ELB
+	 */
+	Handler<BlocksActivated> blocksActivatedHandler = new Handler<BlocksActivated>() {
+		@Override
+		public void handle(BlocksActivated event) {
+			blocks.addAll(event.getBlocks());
 		}
 	};
 

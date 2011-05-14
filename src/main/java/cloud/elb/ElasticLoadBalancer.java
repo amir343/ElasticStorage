@@ -18,6 +18,8 @@ import se.sics.kompics.Negative;
 import se.sics.kompics.Positive;
 import se.sics.kompics.address.Address;
 import se.sics.kompics.network.Network;
+import se.sics.kompics.timer.ScheduleTimeout;
+import se.sics.kompics.timer.Timer;
 import cloud.api.RebalanceDataBlocks;
 import cloud.api.RebalanceResponseMap;
 import cloud.common.ELB;
@@ -45,17 +47,19 @@ import cloud.requestengine.RequestGeneratorInit;
 
 public class ElasticLoadBalancer extends ComponentDefinition {
 
+
 	private Logger logger = LoggerFactory.getLogger(ElasticLoadBalancer.class, CloudGUI.getInstance());
 	
 	// Ports
 	Negative<ELB> elb = provides(ELB.class);
 	Positive<Generator> generator = requires(Generator.class);
 	Positive<Network> network = requires(Network.class);
+	Positive<Timer> timer = requires(Timer.class);
 
 	private LeastCPULoadAlgorithm loadBalancerAlgorithm = LeastCPULoadAlgorithm.getInstance();
 	private ELBTable elbTable;
 	protected Address self;
-	
+	private static final long ELB_TREE_UPDATE_INTERVAL = 30000;
 	private List<Double> cpuLoads = new ArrayList<Double>();
 	private List<Long> bandwidths = new ArrayList<Long>();
 
@@ -75,6 +79,8 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 		subscribe(downloadStartedHandler, network);
 		subscribe(myCPULoadHandler, network);
 		subscribe(activateBlockHandler, network);
+		
+		subscribe(elbTreeUpdateHandler, timer);
 	}
 
 	Handler<ELBInit> initHandler = new Handler<ELBInit>() {
@@ -84,6 +90,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 			self = event.getSelf();
 			trigger(new RequestGeneratorInit(), generator);
 			logger.info("Elastic Load Balancer is started...");
+			scheduleUpdateELBTree();
 		}
 	};
 	
@@ -170,7 +177,8 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 				loadBalancerAlgorithm.increaseNrOfSentRequestFor(node);
 				logger.debug("Will send to " + node);
 				trigger(new RequestMessage(self, node.getAddress(), event), network);
-			}
+			} else
+				logger.error("No node found to send the next request in elbTable");
 		}
 	};
 	
@@ -242,6 +250,17 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 			trigger(data, network);
 		}
 	};
+	
+	/**
+	 * This handler is triggered when timer times out and it should update the ELB tree
+	 */
+	Handler<UpdateELBTree> elbTreeUpdateHandler = new Handler<UpdateELBTree>() {
+		@Override
+		public void handle(UpdateELBTree event) {
+			CloudGUI.getInstance().updateTree(elbTable);
+			scheduleUpdateELBTree();
+		}
+	};
 
 	private double calculateBandwidthMean() {
 		if (bandwidths.size() == 0) return 0.0;
@@ -251,6 +270,12 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 		return mean.doubleValue()/bandwidths.size();
 	}
 	
+	protected void scheduleUpdateELBTree() {
+		ScheduleTimeout st = new ScheduleTimeout(ELB_TREE_UPDATE_INTERVAL);
+		st.setTimeoutEvent(new UpdateELBTree(st));
+		trigger(st, timer);
+	}
+
 	private double calculateCPULoadMean() {
 		if (cpuLoads.size() == 0) return 0.0;
 		double mean = 0.0;

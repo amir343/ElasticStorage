@@ -61,7 +61,7 @@ public class Block implements Serializable {
 	}
 	
 	public int hashCode() {
-		return new HashCodeBuilder().append(name).append(size).hashCode();
+		return new HashCodeBuilder().append(name).append(size).toHashCode();
 	}
 	
 	public static class FrequencyComparator implements Comparator<Block> {

@@ -24,7 +24,9 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTree;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.tree.DefaultMutableTreeNode;
 
 import logger.Logger;
 import logger.LoggerFactory;
@@ -36,6 +38,8 @@ import statistics.distribution.Distribution;
 import statistics.distribution.DistributionRepository;
 import cloud.api.CloudAPI;
 import cloud.api.CloudSnapshot;
+import cloud.elb.ELBEntry;
+import cloud.elb.ELBTable;
 import cloud.requestengine.RequestGenerator;
 import cloud.requestengine.ResponseTimeService;
 
@@ -104,9 +108,12 @@ public class CloudGUI extends AbstractGUI {
 	private SnapshotPopupListener snapshotPopupListener = new SnapshotPopupListener(this);
 	private List<CloudSnapshot> snapshots = new ArrayList<CloudSnapshot>();
 	private String[] instanceTableColumn = new String[]{"Name", "Address", "Status", "Cost ($)"};
+	private JPanel elbTab;
+	private JTree elbTree;
 	
 	public CloudGUI() {
 		createTabs();
+		createMenuBar();
 		addWindowListener();
 		this.setSize(400,600);
 		registerListeners();
@@ -133,13 +140,24 @@ public class CloudGUI extends AbstractGUI {
 	
 	private void createTabs() {
 		tabbedPane = new JTabbedPane();
-		createMenuBar();
 		createInstanceControlPanel();
+		createELBTab();
 		createRequestEngineTab();
 		createStatisticsTab();
 		createLogPanel();
 		setLayout(new GridLayout(1, 1));
 		add(tabbedPane);
+	}
+
+	private void createELBTab() {
+		elbTab = new JPanel();
+		elbTab.setLayout(new GridLayout(1,1));
+		
+		DefaultMutableTreeNode treeRoot = new DefaultMutableTreeNode("Elastic Load Balancer Table");
+		elbTree = new JTree(treeRoot);
+		
+		elbTab.add(elbTree);
+		tabbedPane.addTab("Load Balancer", elbTab);
 	}
 
 	private void createStatisticsTab() {
@@ -661,7 +679,29 @@ public class CloudGUI extends AbstractGUI {
 	@Override
 	public void createFileMenuItems() {
 		// TODO Auto-generated method stub
-		
+	}
+	
+	public void updateTree(ELBTable table) {
+		elbTab.remove(elbTree);
+		DefaultMutableTreeNode treeRoot = new DefaultMutableTreeNode("Elastic Load Balancer Table");
+		for (ELBEntry entry : table.getEntries()) {
+			DefaultMutableTreeNode replicas = new DefaultMutableTreeNode("Replicas (" + entry.getNrOfReplicas() + ")");
+			for (Node node : entry.getReplicas()) {
+				DefaultMutableTreeNode replica = new DefaultMutableTreeNode(node);
+				replicas.add(replica);
+			}
+			
+			DefaultMutableTreeNode block;
+			if (entry.isActive())
+				 block = new DefaultMutableTreeNode(entry.getName() + " (active)");
+			else
+				 block = new DefaultMutableTreeNode(entry.getName());
+			block.add(replicas);
+			treeRoot.add(block);
+		}
+		elbTree = new JTree(treeRoot);
+		elbTab.add(elbTree);
+		elbTab.revalidate();
 	}
 
 
