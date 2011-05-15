@@ -29,9 +29,9 @@ public class TestScenario {
     		{
     			cloudProviderAddress("127.0.0.1", 23444);
     			node("node1", "127.0.0.1", 23445).
-    				cpu(4.2).
+    				cpu(2.2).
     				memoryGB(8).
-    				bandwidthMB(5);
+    				bandwidthMB(2);
     			data("block1", 2, Size.MB);
     			data("block2", 4, Size.MB);
     			data("block3", 3, Size.MB);
@@ -44,14 +44,14 @@ public class TestScenario {
     	
     	cloud.start();
     	
-//    	ControllerApplication controller = new ControllerApplication(ElasticController.class) {
-//    		{
-//    			controllerAddress("127.0.0.1", 23443);
-//    		}
-//    	};
-//    	
-//    	controller.start();
-//    	
+    	ControllerApplication controller = new ControllerApplication(ElasticController.class) {
+    		{
+    			controllerAddress("127.0.0.1", 23443);
+    		}
+    	};
+    	
+    	controller.start();
+    	
     	
     }
     

@@ -21,7 +21,6 @@ import se.sics.kompics.network.Network;
 import se.sics.kompics.timer.CancelTimeout;
 import se.sics.kompics.timer.ScheduleTimeout;
 import se.sics.kompics.timer.Timer;
-import statistics.methods.LeastSqauresRegression;
 import cloud.common.RequestTrainingData;
 import cloud.common.TrainingData;
 import econtroller.controller.NewNodeRequest;
@@ -45,8 +44,8 @@ public class Modeler extends ComponentDefinition {
 	Positive<Timer> timer = requires(Timer.class);
 
 	// Variables
-	private static final long SAMPLING_INTERVAL = 30000;
-	private static final long ACUATION_INTERVAL = 120000;
+	private static final long SAMPLING_INTERVAL = 10000;
+	private static final long ACUATION_INTERVAL = 90000;
 	private Address cloudProvider;
 	private Address self;
 	private ControllerGUI gui;
@@ -57,10 +56,7 @@ public class Modeler extends ComponentDefinition {
 	private UUID samplingTimeoutId;
 	private UUID actuationTimeoutId;
 	
-	private LeastSqauresRegression cpuLSR = new LeastSqauresRegression();
-	private LeastSqauresRegression bandwidthLSR = new LeastSqauresRegression();
-	private LeastSqauresRegression costLSR = new LeastSqauresRegression();
-	private LeastSqauresRegression responseTimeLSR = new LeastSqauresRegression();
+	private DataFilesGenerator generator = new DataFilesGenerator();
 
 	private XYSeries nrInstancesSeries = new XYSeries("# of Instances");
 	private XYSeries rtSeries = new XYSeries("Average ResponseTime");
@@ -153,23 +149,20 @@ public class Modeler extends ComponentDefinition {
 		@Override
 		public void handle(TrainingData event) {
 			logger.info("Training data is received: " + event.toString());
+			generator.add(event);
 			if (event.getBandwidthMean() != null) {
-				bandwidthLSR.addRawData(event.getNrNodes(), event.getBandwidthMean());
 				bandwidthSeries.add(System.currentTimeMillis()-start, event.getBandwidthMean());
 				gui.updateBandwidthChart(getBandwidthChart());
 			} 
 			if (event.getCPULoadMean() != null) {
-				cpuLSR.addRawData(event.getNrNodes(), event.getCPULoadMean());
 				cpuSeries.add(System.currentTimeMillis()-start, event.getCPULoadMean());
 				gui.updateCpuLoadChart(getCPUChart());
 			}
 			if (event.getResponseTimeMean() != null) {
-				responseTimeLSR.addRawData(event.getNrNodes(), event.getResponseTimeMean());
 				rtSeries.add(System.currentTimeMillis()-start, event.getResponseTimeMean());
 				gui.updateResponseTimeChart(getResponseTimeChart());
 			}
 			if (event.getTotalCost() != null) {
-				costLSR.addRawData(event.getNrNodes(), event.getTotalCost());
 				costSeries.add(System.currentTimeMillis()-start, event.getTotalCost());
 				gui.updateTotalCostChart(getTotalCostChart());
 			}
@@ -190,24 +183,26 @@ public class Modeler extends ComponentDefinition {
 	}
 
 	public String estimateParameters() {
-		String s1 = "cpu: <a,b> = <" + cpuLSR.get_a() + ", " + cpuLSR.get_b() + "> [numberOfSamples= " + cpuLSR.getNumberOfSamples() + "]";
-		String s2 = "bandwidth: <a,b> = <" + bandwidthLSR.get_a() + ", " + bandwidthLSR.get_b() + "> [numberOfSamples= " + bandwidthLSR.getNumberOfSamples() + "]";
-		String s3 = "response time: <a,b> = <" + responseTimeLSR.get_a() + ", " + responseTimeLSR.get_b() + "> [numberOfSamples= " + responseTimeLSR.getNumberOfSamples() + "]";
-		String s4 = "total cost: <a,b> = <" + costLSR.get_a() + ", " + costLSR.get_b() + "> [numberOfSamples= " + costLSR.getNumberOfSamples() + "]";
-		StringBuilder sb = new StringBuilder();
-		logger.warn(s1);
-		logger.warn(s2);
-		logger.warn(s3);
-		logger.warn(s4);
-		logger.warn("cpu table\n" + cpuLSR.print());
-		logger.warn("bandwidth table\n" + bandwidthLSR.print());
-		logger.warn("cost table\n" + costLSR.print());
-		logger.warn("response time table\n" + responseTimeLSR.print());
-		sb.append(s1).append("\n");
-		sb.append(s2).append("\n");
-		sb.append(s3).append("\n");
-		sb.append(s4).append("\n");
-		return sb.toString();
+//		String s1 = "cpu: <a,b> = <" + cpuLSR.get_a() + ", " + cpuLSR.get_b() + "> [numberOfSamples= " + cpuLSR.getNumberOfSamples() + "]";
+//		String s2 = "bandwidth: <a,b> = <" + bandwidthLSR.get_a() + ", " + bandwidthLSR.get_b() + "> [numberOfSamples= " + bandwidthLSR.getNumberOfSamples() + "]";
+//		String s3 = "response time: <a,b> = <" + responseTimeLSR.get_a() + ", " + responseTimeLSR.get_b() + "> [numberOfSamples= " + responseTimeLSR.getNumberOfSamples() + "]";
+//		String s4 = "total cost: <a,b> = <" + costLSR.get_a() + ", " + costLSR.get_b() + "> [numberOfSamples= " + costLSR.getNumberOfSamples() + "]";
+//		StringBuilder sb = new StringBuilder();
+//		logger.warn(s1);
+//		logger.warn(s2);
+//		logger.warn(s3);
+//		logger.warn(s4);
+//		logger.warn("cpu table\n" + cpuLSR.print());
+//		logger.warn("bandwidth table\n" + bandwidthLSR.print());
+//		logger.warn("cost table\n" + costLSR.print());
+//		logger.warn("response time table\n" + responseTimeLSR.print());
+//		sb.append(s1).append("\n");
+//		sb.append(s2).append("\n");
+//		sb.append(s3).append("\n");
+//		sb.append(s4).append("\n");
+//		return sb.toString();
+		generator.dump();
+		return "Done";
 	}
 
 	protected void removeNode() {
@@ -285,11 +280,7 @@ public class Modeler extends ComponentDefinition {
 		costSeries.clear();
 		tpSeries.clear();
 		
-		bandwidthLSR.clear();
-		costLSR.clear();
-		cpuLSR.clear();
-		responseTimeLSR.clear();
-		
+		generator.clear();
 	}
 	
 }

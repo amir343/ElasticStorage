@@ -5,6 +5,7 @@ import instance.common.InstanceStarted;
 import instance.common.ShutDown;
 import instance.common.ShutDownAck;
 import instance.os.InstanceCost;
+import instance.os.RebalanceRequest;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -290,9 +291,13 @@ public class CloudAPI extends ComponentDefinition {
 			Node node = getNewNodeInfo();
 			nodeConfiguration.setNodeInfo(node);
 		}
-		trigger(new GetReplicas(nodeConfiguration), elb);
-		logger.debug("Requesting replicas from ELB...");
-		dnsService.addDNSEntry(nodeConfiguration.getNode());
+		if (currentNodes.size() != 0) {
+			trigger(new RebalanceDataBlocks(nodeConfiguration), elb);
+		} else {
+			trigger(new GetReplicas(nodeConfiguration), elb);
+			logger.debug("Requesting replicas from ELB...");
+			dnsService.addDNSEntry(nodeConfiguration.getNode());
+		}
 	}
 
 	private Node getNewNodeInfo() {

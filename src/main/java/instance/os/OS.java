@@ -547,7 +547,7 @@ public class OS extends ComponentDefinition {
 			trigger(new DiskWriteOperation(event.getBlockSize()), cpu);
 			calculateNewBandwidth();
 			addToBandwidthDiagram(currentBandwidth);
-			if (pt.size() == 0) {
+			if (acceptRequest == true) {
 				logger.info("Starting with " + blocks.size() + " block(s) in hand");
 				LoadBlock load = new LoadBlock(blocks);
 				trigger(load, disk);

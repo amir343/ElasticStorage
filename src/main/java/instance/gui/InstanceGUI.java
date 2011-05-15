@@ -264,7 +264,7 @@ public class InstanceGUI extends AbstractGUI {
 	}
 	
 	public void initializeDataBlocks(List<Block> blocks) {
-		if (blocks != null) {
+		if (blocks != null & model.getRowCount() == 0) {
 			for (Block block : blocks) {
 				if (StringUtils.isNotEmpty(block.getName())) {
 					model.insertRow(model.getRowCount(), new Object[]{block.getName(), Size.getSizeString(block.getSize()), 0, 0});
