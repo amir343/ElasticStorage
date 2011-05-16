@@ -117,7 +117,7 @@ public class Modeler extends ComponentDefinition {
 	};
 
 	/**
-	 * This handler is responsible for adding and remove instances so the modeler can have a range for the system inputs
+	 * This handler is responsible for adding and removing instances so the modeler can have a range for the system inputs
 	 */
 	Handler<InstanceCreation> instanceCreationHandler = new Handler<InstanceCreation>() {
 		@Override

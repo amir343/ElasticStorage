@@ -48,6 +48,7 @@ public class Sensor extends ComponentDefinition {
 	protected Address self;
 	private UUID lastTimeout;
 	private long SENSE_INTERVAL = 5000;
+	private boolean enabled;
 	
 	public Sensor() {
 		subscribe(initHandler, control);
@@ -69,8 +70,10 @@ public class Sensor extends ComponentDefinition {
 			self = event.getControllerConfiguration().getSelfAddress();
 		}
 	};
-	protected boolean enabled;
 	
+	/**
+	 * This handler is triggered when controller issues a START signal with a frequency of sensing
+	 */
 	Handler<StartSense> startSenseHandler = new Handler<StartSense>() {
 		@Override
 		public void handle(StartSense event) {
@@ -80,6 +83,9 @@ public class Sensor extends ComponentDefinition {
 		}
 	};
 	
+	/**
+	 * This handler is triggered when controller issues a STOP signal to the Sensor
+	 */
 	Handler<StopSense> stopSenseHandler = new Handler<StopSense>() {
 		@Override
 		public void handle(StopSense event) {
@@ -88,6 +94,9 @@ public class Sensor extends ComponentDefinition {
 		}
 	};
 	
+	/**
+	 * This handler is triggered when controller sends a set of instances that Sensor should sense
+	 */
 	Handler<Sense> senseHandler = new Handler<Sense>() {
 		@Override
 		public void handle(Sense event) {
@@ -97,6 +106,9 @@ public class Sensor extends ComponentDefinition {
 		}
 	};
 	
+	/**
+	 * This handler is triggered to send out monitoring message and schedule the next sensing
+	 */
 	Handler<SenseTimeout> senseTimeout = new Handler<SenseTimeout>() {
 		@Override
 		public void handle(SenseTimeout event) {
@@ -105,6 +117,9 @@ public class Sensor extends ComponentDefinition {
 		}
 	};
 	
+	/**
+	 * This handler is triggered when the sensor receives monitor response from an instance
+	 */
 	Handler<MonitorResponse> monitorResponseHandler = new Handler<MonitorResponse>() {
 		@Override
 		public void handle(MonitorResponse event) {
@@ -117,6 +132,9 @@ public class Sensor extends ComponentDefinition {
 		}
 	};
 	
+	/**
+	 * This handler is triggered when a new instance joins the cloud environment
+	 */
 	Handler<NewNodeToMonitor> newNodeToMonitorHandler = new Handler<NewNodeToMonitor>() {
 		@Override
 		public void handle(NewNodeToMonitor event) {
@@ -126,7 +144,7 @@ public class Sensor extends ComponentDefinition {
 		}
 	};
 
-	protected void scheduleSensingNodes() {
+	private void scheduleSensingNodes() {
 		if (enabled) {
 			ScheduleTimeout st = new ScheduleTimeout(SENSE_INTERVAL);
 			SenseTimeout sense = new SenseTimeout(st);
@@ -136,12 +154,12 @@ public class Sensor extends ComponentDefinition {
 		}
 	}
 
-	protected void cancelAnyPreviousTimer() {
+	private void cancelAnyPreviousTimer() {
 		CancelTimeout cancelTimeout = new CancelTimeout(lastTimeout);
 		trigger(cancelTimeout, timer);
 	}
 
-	protected void sendOutMonitorMessage() {
+	private void sendOutMonitorMessage() {
 		synchronized (currentNodes) {
 			for (Address address : currentNodes) {
 				trigger(new Monitor(self, address), network);

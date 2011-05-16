@@ -44,6 +44,9 @@ public class Actuator extends ComponentDefinition {
 		}
 	};
 	
+	/**
+	 * This handler is triggered when it receives a signal from controller in order to request a new node
+	 */
 	Handler<NodeRequest> nodeRequestHandler = new Handler<NodeRequest>() {
 		@Override
 		public void handle(NodeRequest event) {

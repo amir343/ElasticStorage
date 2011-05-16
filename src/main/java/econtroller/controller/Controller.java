@@ -94,6 +94,9 @@ public class Controller extends ComponentDefinition {
 		}
 	}; 
 	
+	/**
+	 * This handler is triggered to check if the controller is connected to cloud provider or not
+	 */
 	Handler<ConnectionTimeout> connectionTimeoutHandler = new Handler<ConnectionTimeout>() {
 		@Override
 		public void handle(ConnectionTimeout event) {
@@ -104,6 +107,9 @@ public class Controller extends ComponentDefinition {
 		}
 	};
 	
+	/***
+	 * This handler is triggered when it receives monitor information from sensor component	
+	 */
 	Handler<MonitorResponse> monitorResponseHandler = new Handler<MonitorResponse>() {
 		@Override
 		public void handle(MonitorResponse event) {
@@ -113,6 +119,9 @@ public class Controller extends ComponentDefinition {
 		}
 	};
 	
+	/**
+	 * This handler is triggered periodically to initiate the controller action 
+	 */
 	Handler<ActuateTimeout> actuateTimeoutHandler = new Handler<ActuateTimeout>() {
 		@Override
 		public void handle(ActuateTimeout event) {
