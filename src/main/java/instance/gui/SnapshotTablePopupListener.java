@@ -9,6 +9,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 
+import common.AbstractGUI;
+
 /**
  * 
  * @author Amir Moulavi
@@ -22,9 +24,9 @@ public class SnapshotTablePopupListener extends MouseAdapter {
 	private JMenuItem saveMenuItem;
 	private JMenuItem saveAllMenuItem;
 	private JMenuItem deleteMenuItem;
-	private InstanceGUI gui;
+	private AbstractGUI gui;
 	
-	public SnapshotTablePopupListener(InstanceGUI gui) {
+	public SnapshotTablePopupListener(AbstractGUI gui) {
 		this.gui = gui;
 		SaveSnapshotActionListener saveSnapshotActionListener = new SaveSnapshotActionListener(gui);
 		SaveAllSnapshotActionListener saveAllSnapshotActionListener = new SaveAllSnapshotActionListener(gui);

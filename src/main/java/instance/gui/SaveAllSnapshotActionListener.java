@@ -5,7 +5,7 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JFileChooser;
 
-import cloud.gui.CloudGUI;
+import common.AbstractGUI;
 
 /**
  * 
@@ -16,21 +16,13 @@ import cloud.gui.CloudGUI;
 
 public class SaveAllSnapshotActionListener implements ActionListener {
 
-	private InstanceGUI instanceGui;
 	private String choosertitle = "Choose where to save all snapshots";
-	private CloudGUI cloudGui;
-	private boolean instance;
+	private AbstractGUI gui;
 	
-	public SaveAllSnapshotActionListener(InstanceGUI gui) {
-		this.instanceGui = gui;
-		this.instance = true;
+	public SaveAllSnapshotActionListener(AbstractGUI gui) {
+		this.gui = gui;
 	}
 
-	public SaveAllSnapshotActionListener(CloudGUI gui) {
-		this.cloudGui = gui;
-		this.instance = false;
-	}
-	
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		JFileChooser fileChooser = new JFileChooser();
@@ -38,12 +30,8 @@ public class SaveAllSnapshotActionListener implements ActionListener {
 		fileChooser.setDialogTitle(choosertitle);
 		fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 		fileChooser.setAcceptAllFileFilterUsed(false);
-		if (fileChooser.showOpenDialog(instanceGui) == JFileChooser.APPROVE_OPTION) {
-			if (instance)
-				instanceGui.saveAllSnapshotsTo(fileChooser.getSelectedFile());
-			else
-				cloudGui.saveAllSnapshotsTo(fileChooser.getSelectedFile());
-		}
+		if (fileChooser.showOpenDialog(gui) == JFileChooser.APPROVE_OPTION)
+			gui.saveAllSnapshotsTo(fileChooser.getSelectedFile());
 
 	}
 

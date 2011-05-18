@@ -3,7 +3,7 @@ package instance.gui;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import cloud.gui.CloudGUI;
+import common.AbstractGUI;
 
 /**
  * 
@@ -14,26 +14,15 @@ import cloud.gui.CloudGUI;
 
 public class DeleteSnapshotActionListener implements ActionListener {
 
-	private InstanceGUI instanceGui;
-	private CloudGUI cloudGui;
-	private boolean instance;
-	
-	public DeleteSnapshotActionListener(InstanceGUI gui) {
-		this.instanceGui = gui;
-		this.instance = true;
-	}
+	private AbstractGUI gui;
 
-	public DeleteSnapshotActionListener(CloudGUI gui) {
-		this.cloudGui = gui;
-		this.instance = false;
+	public DeleteSnapshotActionListener(AbstractGUI gui) {
+		this.gui = gui;
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if (instance)
-			instanceGui.deleteAllSnapshots();
-		else
-			cloudGui.deleteAllSnapshots();
+			gui.deleteAllSnapshots();
 	}
 
 }

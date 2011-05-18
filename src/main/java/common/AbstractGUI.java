@@ -8,10 +8,12 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -19,10 +21,12 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 
 import org.apache.commons.io.FileUtils;
+import org.jfree.chart.JFreeChart;
 
 import cloud.gui.SnapshotActionListener;
 
@@ -94,6 +98,18 @@ public abstract class AbstractGUI extends JFrame implements GUI {
 		}
 	}
 	
+	protected void writePNG(JFreeChart jFreeChart, File snapshotDir, String name) {
+		if (jFreeChart != null) {
+			BufferedImage cpuImage = jFreeChart.createBufferedImage(833, 500);
+			File cpuFile = new File(snapshotDir.getPath() + File.separatorChar + name);
+			try {
+				ImageIO.write(cpuImage, "PNG", cpuFile);
+			} catch (IOException e) {
+				log(e.getMessage());
+			}
+		}
+	}
+	
 	protected void createLogPanel() {
 		logPanel = new JPanel();
 		logPanel.setLayout(new GridLayout(1, 1));
@@ -153,6 +169,12 @@ public abstract class AbstractGUI extends JFrame implements GUI {
 	public abstract void createFileMenuItems();
 
 	public abstract void takeSnapshot();
+
+	public abstract void saveAllSnapshotsTo(File selectedFile);
+
+	public abstract void deleteAllSnapshots();
+
+	public abstract JTable getSnapshotTable();
 
 
 }

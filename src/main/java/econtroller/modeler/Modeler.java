@@ -55,6 +55,7 @@ public class Modeler extends ComponentDefinition {
 	private long start;
 	private UUID samplingTimeoutId;
 	private UUID actuationTimeoutId;
+	private int snapshotId = 0;
 	
 	private DataFilesGenerator generator = new DataFilesGenerator();
 
@@ -270,6 +271,18 @@ public class Modeler extends ComponentDefinition {
 		XYSeriesCollection dataSet = new XYSeriesCollection();
 		dataSet.addSeries(series);
 		return dataSet;
+	}
+	
+	public void takeSnapshot() {
+		snapshotId++;
+		ModelerSnapshot snapshot = new ModelerSnapshot(snapshotId);
+		snapshot.setCpuChart(getCPUChart());
+		snapshot.setResponseTimeChart(getResponseTimeChart());
+		snapshot.setBandwidthChart(getBandwidthChart());
+		snapshot.setNrInstanceChart(getNrInstancesChart());
+		snapshot.setTotalCostChart(getTotalCostChart());
+		snapshot.setAverageThroughputChart(getAverageThroughputChart());
+		gui.addSnapshot(snapshot);
 	}
 
 	public void reset() {

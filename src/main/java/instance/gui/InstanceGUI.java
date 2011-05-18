@@ -401,36 +401,12 @@ public class InstanceGUI extends AbstractGUI {
 		if (!snapshotDir.exists()) {
 			snapshotDir.mkdir();
 		
-			writeCPULoadDiagram(snapshot, snapshotDir);
-			writeBandwidthDiagram(snapshot, snapshotDir);
+			writePNG(snapshot.getCpuChart(), snapshotDir, "CpuLoadDiagram.png");
+			writePNG(snapshot.getBandwidthChart(), snapshotDir, "BandwidthDiagram.png");
 			saveLogTo(snapshotDir, snapshot.getLog());
 		}
 	}
 
-	private void writeBandwidthDiagram(InstanceSnapshot snapshot, File snapshotDir) {
-		if (snapshot.getBandwidthChart() != null) {
-			BufferedImage bandwidthImage = snapshot.getBandwidthChart().createBufferedImage(833, 500);
-			File bandwidthFile = new File(snapshotDir.getPath() + File.separatorChar + "BandwidthDiagram.png");
-			try {
-				ImageIO.write(bandwidthImage, "PNG", bandwidthFile);
-			} catch (IOException e) {
-				log(e.getMessage());
-			}			
-		}
-	}
-
-	private void writeCPULoadDiagram(InstanceSnapshot snapshot, File snapshotDir) {
-		if (snapshot.getCpuChart() != null) {
-			BufferedImage cpuImage = snapshot.getCpuChart().createBufferedImage(833, 500);
-			File cpuFile = new File(snapshotDir.getPath() + File.separatorChar + "CpuLoadDiagram.png");
-			try {
-				ImageIO.write(cpuImage, "PNG", cpuFile);
-			} catch (IOException e) {
-				log(e.getMessage());
-			}
-		}
-	}
-	
 	private InstanceSnapshot getSnapshotWithId(int id) {
 		for (InstanceSnapshot snapshot : snapshots) {
 			if (snapshot.getId() == id)

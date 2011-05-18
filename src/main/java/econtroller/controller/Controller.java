@@ -102,6 +102,7 @@ public class Controller extends ComponentDefinition {
 		public void handle(ConnectionTimeout event) {
 			if (!connectedToCloudProvider) {
 				gui.enableConnectionSection();
+				gui.disableSystemIdentificationPanel();
 				logger.warn("Cloud provider seems to be down");
 			}
 		}
@@ -149,6 +150,7 @@ public class Controller extends ComponentDefinition {
 	public void connectToCloudProvider(String ip, String port) {
 		cloudProviderAddress = getAddressFor(ip, port);
 		trigger(new Connect(self, cloudProviderAddress), network);
+		gui.enableSystemIdentificationPanel();
 		scheduleConnectionTimeout();
 	}
 
@@ -162,6 +164,7 @@ public class Controller extends ComponentDefinition {
 		if (cloudProviderAddress != null) { 
 			trigger(new Disconnect(self, cloudProviderAddress), network);
 			logger.info("Disconnected from Cloud Provider");
+			gui.disableSystemIdentificationPanel();
 		}
 		else
 			logger.warn("No Cloud Provider is available to disconnect from.");

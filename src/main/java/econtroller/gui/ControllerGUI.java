@@ -1,5 +1,7 @@
 package econtroller.gui;
 
+import instance.gui.SnapshotTablePopupListener;
+
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -7,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.BorderFactory;
@@ -15,9 +18,15 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JSlider;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.table.DefaultTableModel;
+
+import logger.Logger;
+import logger.LoggerFactory;
 
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
@@ -28,6 +37,7 @@ import common.AbstractGUI;
 
 import econtroller.controller.Controller;
 import econtroller.modeler.Modeler;
+import econtroller.modeler.ModelerSnapshot;
 
 /**
  * 
@@ -38,6 +48,8 @@ import econtroller.modeler.Modeler;
 
 public class ControllerGUI extends AbstractGUI {
 
+	private Logger logger = LoggerFactory.getLogger(ControllerGUI.class, this);
+	
 	private static final long serialVersionUID = 8924494948307221974L;
 	private static final int SENSE_MIN = 5;
 	private static final int SENSE_MAX = 120;
@@ -99,6 +111,13 @@ public class ControllerGUI extends AbstractGUI {
 	private JButton resetModelerButton;
 	private ChartPanel throughputChartPanel;
 	private JPanel throughputPanel;
+	private JPanel snapshotPanel;
+	private DefaultTableModel snapshotModel;
+	private JTable snapshotTable;
+	private String[] snapshotTableColumns = new String[]{"Snapshot ID", "Date"};
+	private SnapshotTablePopupListener snapshotPopupListener = new SnapshotTablePopupListener(this);
+	private List<ModelerSnapshot> snapshots = new ArrayList<ModelerSnapshot>();
+
 	
 	public ControllerGUI() {
 		createMenuBar();
@@ -132,9 +151,35 @@ public class ControllerGUI extends AbstractGUI {
 		tabbedPane = new JTabbedPane();
 		creatControlPanel();
 		createModelerPanel();
+		createSnapshotPanel();
 		createLogPanel();
 		setLayout(new GridLayout(1, 1));
 		add(tabbedPane);
+	}
+
+	private void createSnapshotPanel() {
+		snapshotPanel = new JPanel();
+		snapshotPanel.setLayout(new GridLayout(1,1));
+		
+		createSnapshotTable();
+		
+		tabbedPane.addTab("Snapshot", snapshotPanel);
+	}
+
+	private void createSnapshotTable() {
+		snapshotModel = new DefaultTableModel(new String[][]{}, snapshotTableColumns);
+		snapshotTable = new JTable(snapshotModel){
+			private static final long serialVersionUID = 6454534842446167244L;
+			public boolean isCellEditable(int rowIndex, int colIndex) {
+		          return false;
+	        }
+		};
+		
+		snapshotTable.addMouseListener(snapshotPopupListener);
+		snapshotTable.getColumnModel().getColumn(0).setPreferredWidth(20);
+		JScrollPane pane = new JScrollPane(snapshotTable);
+		snapshotPanel.add(pane);
+		
 	}
 
 	private void createModelerPanel() {
@@ -143,8 +188,8 @@ public class ControllerGUI extends AbstractGUI {
 		
 		createModelerControlPanel();
 		
-		
 		tabbedPane.addTab("System Identification", modelerPanel);
+		tabbedPane.setEnabledAt(1, false);
 	}
 
 	private void createModelerControlPanel() {
@@ -264,7 +309,7 @@ public class ControllerGUI extends AbstractGUI {
 			}
 		});
 		
-		estimateParametersButton = new JButton("Estimate Paramters");
+		estimateParametersButton = new JButton("Dump data into files");
 		estimateParametersButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -422,12 +467,6 @@ public class ControllerGUI extends AbstractGUI {
 		cloudProviderSection.add(cloudProviderConnectionPanel);
 	}
 
-	@Override
-	public void saveSelectedSnapshotTo(File selectedFile) {
-		// TODO Auto-generated method stub
-		
-	}
-	
 	public void disableConnectionSection() {
 		ipLbl.setEnabled(false);
 		ipTxt.setEnabled(false);
@@ -489,8 +528,7 @@ public class ControllerGUI extends AbstractGUI {
 
 	@Override
 	public void takeSnapshot() {
-		// TODO Auto-generated method stub
-		
+		modeler.takeSnapshot();		
 	}
 
 	@Override
@@ -571,6 +609,80 @@ public class ControllerGUI extends AbstractGUI {
 		throughputChartPanel = new ChartPanel(averageThroughputChart);
 		throughputPanel.add(throughputChartPanel);
 		throughputPanel.revalidate();		
+	}
+
+	@Override
+	public void saveAllSnapshotsTo(File selectedDir) {
+		for (ModelerSnapshot snapshot : snapshots) {
+			saveSnapshotTo(selectedDir, snapshot);
+		}		
+	}
+
+	@Override
+	public void deleteAllSnapshots() {
+		snapshots.clear();
+		for (int i=snapshotModel.getRowCount()-1; i>=0; i--)
+			snapshotModel.removeRow(i);		
+	}
+
+	@Override
+	public JTable getSnapshotTable() {
+		return snapshotTable;
+	}
+
+	public void addSnapshot(ModelerSnapshot snapshot) {
+		if (null != snapshot) {
+			snapshotModel.insertRow(snapshotModel.getRowCount(), new Object[]{snapshot.getId(), snapshot.getDate()});
+			snapshot.addLogText(logTextArea.getText());
+			snapshots.add(snapshot);
+		} else {
+			logger.error("snapshot can not be null");
+		}
+	}
+	
+	@Override
+	public void saveSelectedSnapshotTo(File selectedDir) {
+		int id = (Integer) snapshotModel.getValueAt(snapshotTable.getSelectedRow(), 0);
+		ModelerSnapshot snapshot = getSnapshotWithId(id);
+		saveSnapshotTo(selectedDir, snapshot);
+	}
+	
+	private void saveSnapshotTo(File selectedFile, ModelerSnapshot snapshot) {
+		File nodeDir = new File(selectedFile.getPath() + File.separatorChar + this.getTitle());
+		if (!nodeDir.exists()) nodeDir.mkdir();
+		File snapshotDir = new File(nodeDir.getPath() + File.separatorChar + snapshot.getId());
+		if (!snapshotDir.exists()) {
+			snapshotDir.mkdir();
+		
+			writePNG(snapshot.getAverageThroughputChart(), snapshotDir, "AverageThroughput.png");
+			writePNG(snapshot.getBandwidthChart(), snapshotDir, "AverageBandwidth.png");
+			writePNG(snapshot.getCpuChart(), snapshotDir, "AverageCPULoad.png");
+			writePNG(snapshot.getNrInstancesChart(), snapshotDir, "NumberOfInstances.png");
+			writePNG(snapshot.getResponseTimeChart(), snapshotDir, "AverageResponseTime.png");
+			writePNG(snapshot.getTotalCostChart(), snapshotDir, "TotalCost.png");
+			saveLogTo(snapshotDir, snapshot.getLogText());
+		}
+	}
+	
+	private ModelerSnapshot getSnapshotWithId(int id) {
+		for (ModelerSnapshot snapshot : snapshots) {
+			if (snapshot.getId() == id)
+				return snapshot;
+		}
+		return null;
+	}
+	
+	public void enableSystemIdentificationPanel() {
+		tabbedPane.setEnabledAt(1, true);
+		startModelerButton.setEnabled(true);
+		stopModelerButton.setEnabled(true);
+	}
+
+	public void disableSystemIdentificationPanel() {
+		tabbedPane.setEnabledAt(1, false);
+		modeler.stopModeler();
+		startModelerButton.setEnabled(true);
+		stopModelerButton.setEnabled(false);
 	}
 	
 }
