@@ -19,6 +19,7 @@ public class CostService {
 	private long start;
 	private BandwidthCost bandwidthCost;
 	private CPUCost cpuCost;
+	private Double previousCost;
 
 	public CostService() {
 		start = System.currentTimeMillis();
@@ -36,6 +37,19 @@ public class CostService {
 		totalCost += computeDataTransferCost(megaBytesDownloadedSoFar);
 		
 		return totalCost;
+	}
+	
+	public double computeCostInThisPeriod(int megaBytesDownloadedSoFar) {
+		if (previousCost == null) {
+			previousCost = computeCostSoFar(megaBytesDownloadedSoFar);
+			return previousCost;
+		} else {
+			double costSoFar = computeCostSoFar(megaBytesDownloadedSoFar);
+			double newCost = costSoFar - previousCost;
+			previousCost = costSoFar;
+			return newCost;
+			
+		}
 	}
 
 	private double computeDataTransferCost(int megaBytesDownloadedSoFar) {

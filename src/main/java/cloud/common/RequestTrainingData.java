@@ -16,7 +16,6 @@ public class RequestTrainingData extends Message {
 
 	public RequestTrainingData(Address source, Address destination) {
 		super(source, destination);
-		// TODO Auto-generated constructor stub
 	}
 
 }

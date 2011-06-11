@@ -130,7 +130,7 @@ public class OS extends ComponentDefinition {
 	protected boolean acceptRequest = true;
 	private boolean enabled = true;	
 	private int megaBytesDownloadedSoFar = 0;
-	protected double currentCost = 0.0;
+	protected double totalCost = 0.0;
 	
 	public OS() {
 		gui = InstanceGUI.getInstance();
@@ -570,12 +570,14 @@ public class OS extends ComponentDefinition {
 	Handler<CalculateCost> calculateCostHandler = new Handler<CalculateCost>() {
 		@Override
 		public void handle(CalculateCost event) {
-			currentCost = costService.computeCostSoFar(megaBytesDownloadedSoFar);
+			totalCost = costService.computeCostSoFar(megaBytesDownloadedSoFar);
+			double costToSend = costService.computeCostInThisPeriod(megaBytesDownloadedSoFar);
 			DecimalFormat df = new DecimalFormat("##.####");
-			String currentCostString = df.format(currentCost);
-			gui.updateCurrentCost(currentCostString);
-			logger.debug("This instance costed $ " + currentCostString + " so far");
-			trigger(new InstanceCost(self, cloudProvider, node, currentCostString), network);
+			String totalCostString = df.format(totalCost);
+			String periodicCostString = df.format(costToSend);
+			gui.updateCurrentCost(totalCostString);
+			logger.debug("This instance costed $ " + periodicCostString + " so far");
+			trigger(new InstanceCost(self, cloudProvider, node, totalCostString, periodicCostString), network);
 			scheduleCostCalculation();
 		}
 	};
