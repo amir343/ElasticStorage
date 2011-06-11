@@ -5,7 +5,6 @@ import instance.common.InstanceStarted;
 import instance.common.ShutDown;
 import instance.common.ShutDownAck;
 import instance.os.InstanceCost;
-import instance.os.RebalanceRequest;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,6 +77,7 @@ public class CloudAPI extends ComponentDefinition {
 	protected boolean connectedToController = false;
 	private List<Node> currentNodes = new ArrayList<Node>();
 	private Map<Address, Double> costTable = new HashMap<Address, Double>();
+	private Map<Address, Double> periodicCostTable = new HashMap<Address, Double>();
 	private int numberOfInstances = 0;
 	
 	public CloudAPI() {
@@ -231,8 +231,9 @@ public class CloudAPI extends ComponentDefinition {
 	Handler<InstanceCost> instanceCostHandler = new Handler<InstanceCost>() {
 		@Override
 		public void handle(InstanceCost event) {
-			gui.updateCostForNode(event.getNode(), event.getCost());
-			costTable.put(event.getSource(), Double.parseDouble(event.getCost()));
+			gui.updateCostForNode(event.getNode(), event.getTotalCost());
+			costTable.put(event.getSource(), Double.parseDouble(event.getTotalCost()));
+			periodicCostTable.put(event.getSource(), Double.parseDouble(event.getPeriodicCost()));
 		}
 	};
 	
@@ -244,15 +245,15 @@ public class CloudAPI extends ComponentDefinition {
 		@Override
 		public void handle(RequestTrainingData event) {
 			SendRawData data = new SendRawData(event.getSource(), numberOfInstances);
-			double totalCost = calculateTotalCost();
-			data.setTotalCost(totalCost);
+			double periodicTotalCost = calculateTotalCost();
+			data.setTotalCost(periodicTotalCost);
 			trigger(data, elb);			
 		}
 
 		private double calculateTotalCost() {
 			double cost = 0;
-			for (Address address : costTable.keySet())
-				cost += costTable.get(address);
+			for (Address address : periodicCostTable.keySet())
+				cost += periodicCostTable.get(address);
 			return cost;
 		}
 	};
