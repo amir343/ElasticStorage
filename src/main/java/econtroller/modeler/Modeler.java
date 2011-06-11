@@ -44,12 +44,13 @@ public class Modeler extends ComponentDefinition {
 	Positive<Timer> timer = requires(Timer.class);
 
 	// Variables
-	private static final long SAMPLING_INTERVAL = 10000;
-	private static final long ACUATION_INTERVAL = 90000;
+	private long SAMPLING_INTERVAL = 10000;
+	private long ORDER_INTERVAL = 90000;
 	private Address cloudProvider;
 	private Address self;
 	private ControllerGUI gui;
-	private int nrInstances = 8;
+	private int maxNrInstances = 8;
+	private int minNrInstances = 2;
 	private int currentlyOrdered = 0;
 	private boolean add = true;
 	private long start;
@@ -124,14 +125,14 @@ public class Modeler extends ComponentDefinition {
 		@Override
 		public void handle(InstanceCreation event) {
 			if (add) {
-				if (currentlyOrdered < nrInstances-1) {
+				if (currentlyOrdered < maxNrInstances-1 ) {
 					requestNewNode();
 				} else {
 					add = false;
 					removeNode();
 				}
 			} else {
-				if (currentlyOrdered > 0) {
+				if (currentlyOrdered > minNrInstances ) {
 					removeNode();
 				} else {
 					add = true;
@@ -184,24 +185,6 @@ public class Modeler extends ComponentDefinition {
 	}
 
 	public String estimateParameters() {
-//		String s1 = "cpu: <a,b> = <" + cpuLSR.get_a() + ", " + cpuLSR.get_b() + "> [numberOfSamples= " + cpuLSR.getNumberOfSamples() + "]";
-//		String s2 = "bandwidth: <a,b> = <" + bandwidthLSR.get_a() + ", " + bandwidthLSR.get_b() + "> [numberOfSamples= " + bandwidthLSR.getNumberOfSamples() + "]";
-//		String s3 = "response time: <a,b> = <" + responseTimeLSR.get_a() + ", " + responseTimeLSR.get_b() + "> [numberOfSamples= " + responseTimeLSR.getNumberOfSamples() + "]";
-//		String s4 = "total cost: <a,b> = <" + costLSR.get_a() + ", " + costLSR.get_b() + "> [numberOfSamples= " + costLSR.getNumberOfSamples() + "]";
-//		StringBuilder sb = new StringBuilder();
-//		logger.warn(s1);
-//		logger.warn(s2);
-//		logger.warn(s3);
-//		logger.warn(s4);
-//		logger.warn("cpu table\n" + cpuLSR.print());
-//		logger.warn("bandwidth table\n" + bandwidthLSR.print());
-//		logger.warn("cost table\n" + costLSR.print());
-//		logger.warn("response time table\n" + responseTimeLSR.print());
-//		sb.append(s1).append("\n");
-//		sb.append(s2).append("\n");
-//		sb.append(s3).append("\n");
-//		sb.append(s4).append("\n");
-//		return sb.toString();
 		generator.dump();
 		return "Done";
 	}
@@ -216,10 +199,13 @@ public class Modeler extends ComponentDefinition {
 		trigger(new NewNodeRequest(self, cloudProvider), network);
 	}
 
-	public void startModeler(int maximumNrInstances) {
+	public void startModeler(int maximumNrInstances, int minimumNrInstances, int sampleInterval, int orderInterval) {
 		start = System.currentTimeMillis();
 		trigger(new RequestTrainingData(self, cloudProvider), network);
-		nrInstances = maximumNrInstances;		
+		maxNrInstances = maximumNrInstances;
+		minNrInstances = minimumNrInstances;
+		SAMPLING_INTERVAL = sampleInterval * 1000;
+		ORDER_INTERVAL = orderInterval * 1000;
 		scheduleSampling();
 		scheduleAcutation();
 	}
@@ -231,7 +217,7 @@ public class Modeler extends ComponentDefinition {
 
 	
 	private void scheduleAcutation() {
-		ScheduleTimeout st = new ScheduleTimeout(ACUATION_INTERVAL);
+		ScheduleTimeout st = new ScheduleTimeout(ORDER_INTERVAL);
 		st.setTimeoutEvent(new InstanceCreation(st));
 		actuationTimeoutId = st.getTimeoutEvent().getTimeoutId();
 		trigger(st, timer);		

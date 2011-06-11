@@ -2,6 +2,7 @@ package econtroller.gui;
 
 import instance.gui.SnapshotTablePopupListener;
 
+import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
@@ -28,6 +29,9 @@ import javax.swing.table.DefaultTableModel;
 import logger.Logger;
 import logger.LoggerFactory;
 
+import org.eclipse.swt.custom.TextChangeListener;
+import org.eclipse.swt.custom.TextChangedEvent;
+import org.eclipse.swt.custom.TextChangingEvent;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 
@@ -118,6 +122,18 @@ public class ControllerGUI extends AbstractGUI {
 	private SnapshotTablePopupListener snapshotPopupListener = new SnapshotTablePopupListener(this);
 	private List<ModelerSnapshot> snapshots = new ArrayList<ModelerSnapshot>();
 
+	private IntegerTextField minInstanceText;
+
+	private Container instanceLayout;
+
+	private JLabel samplingOrderLbl;
+
+	private IntegerTextField samplingText;
+
+	private IntegerTextField orderingText;
+
+	private Container sampleOrderLayout;
+
 	
 	public ControllerGUI() {
 		createMenuBar();
@@ -201,7 +217,8 @@ public class ControllerGUI extends AbstractGUI {
 		
 		modelerControlPanelSection.setBorder(BorderFactory.createTitledBorder("Black Box System Identification"));
 
-		createMaximumInstanceSection();
+		createSamplingAndNodeOrderingSection();
+		createNrInstanceSection();
 		createControlPanelButtons();
 		createChartPanels();
 		
@@ -209,6 +226,7 @@ public class ControllerGUI extends AbstractGUI {
 				group.createSequentialGroup()
 				.addGroup(group.
 						createParallelGroup()
+							.addComponent(samplingOrderLbl)
 							.addComponent(maxNrInstancesLbl)
 							.addComponent(startModelerButton)
 							.addComponent(estimateParametersButton)
@@ -217,7 +235,8 @@ public class ControllerGUI extends AbstractGUI {
 							.addComponent(cpuPanel))
 				.addGroup(group.
 						createParallelGroup()
-							.addComponent(maxInstanceText)
+							.addComponent(sampleOrderLayout)
+							.addComponent(instanceLayout)
 							.addComponent(stopModelerButton)
 							.addComponent(resetModelerButton)
 							.addComponent(bandwidthPanel)
@@ -229,8 +248,13 @@ public class ControllerGUI extends AbstractGUI {
 				group.createSequentialGroup()
 				.addGroup(group.
 						createParallelGroup()
+						.addComponent(samplingOrderLbl)
+						.addComponent(sampleOrderLayout)
+						 )
+				.addGroup(group.
+						createParallelGroup()
 							.addComponent(maxNrInstancesLbl)
-							.addComponent(maxInstanceText)
+							.addComponent(instanceLayout)
 						 )
 				.addGroup(group.
 						createParallelGroup()
@@ -295,7 +319,12 @@ public class ControllerGUI extends AbstractGUI {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				startModelerButton.setEnabled(false);
-				modeler.startModeler(Integer.parseInt(maxInstanceText.getText()));
+				disableSIConfigs();
+				modeler.startModeler(Integer.parseInt(maxInstanceText.getText()), 
+									 Integer.parseInt(minInstanceText.getText()),
+									 Integer.parseInt(samplingText.getText()),
+									 Integer.parseInt(orderingText.getText())
+				);
 			}
 		});
 		
@@ -306,6 +335,7 @@ public class ControllerGUI extends AbstractGUI {
 				startModelerButton.setEnabled(true);
 				stopModelerButton.setEnabled(false);
 				modeler.stopModeler();
+				enableSIConfigs();
 			}
 		});
 		
@@ -328,11 +358,40 @@ public class ControllerGUI extends AbstractGUI {
 		
 	}
 
-	private void createMaximumInstanceSection() {
+	private void createNrInstanceSection() {
 		maxNrInstancesLbl = new JLabel("# of Instances");
+		minInstanceText = new IntegerTextField("2");
 		maxInstanceText = new IntegerTextField("8");
+		instanceLayout = new Container();
+		instanceLayout.setLayout(new GridLayout(1, 2));
+		instanceLayout.add(minInstanceText);
+		instanceLayout.add(maxInstanceText);
+	}
+	
+	private void createSamplingAndNodeOrderingSection() {
+		samplingOrderLbl = new JLabel("Sampling & Ordering (s)");
+		samplingText = new IntegerTextField("10");
+		orderingText = new IntegerTextField("90");
+		sampleOrderLayout = new Container();
+		sampleOrderLayout.setLayout(new GridLayout(1, 2));
+		sampleOrderLayout.add(samplingText);
+		sampleOrderLayout.add(orderingText);
+	}
+	
+	private void disableSIConfigs() {
+		samplingText.setEnabled(false);
+		orderingText.setEnabled(false);
+		minInstanceText.setEnabled(false);
+		maxInstanceText.setEnabled(false);
 	}
 
+	private void enableSIConfigs() {
+		samplingText.setEnabled(true);
+		orderingText.setEnabled(true);
+		minInstanceText.setEnabled(true);
+		maxInstanceText.setEnabled(true);
+	}
+	
 	private void creatControlPanel() {
 		controlPanel = new JPanel();
 		controlPanel.setLayout(new GridLayout(2, 1));

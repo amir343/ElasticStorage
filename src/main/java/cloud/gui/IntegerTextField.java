@@ -37,7 +37,6 @@ public class IntegerTextField extends JTextField {
         if(c == '-' && getDocument().getLength() > 0) 
         	ev.consume();
         else super.processKeyEvent(ev);
-
     }
 
 }
