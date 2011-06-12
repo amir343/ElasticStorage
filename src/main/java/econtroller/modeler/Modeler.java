@@ -125,7 +125,7 @@ public class Modeler extends ComponentDefinition {
 		@Override
 		public void handle(InstanceCreation event) {
 			if (add) {
-				if (currentlyOrdered < maxNrInstances-1 ) {
+				if (currentlyOrdered < maxNrInstances ) {
 					requestNewNode();
 				} else {
 					add = false;
@@ -136,7 +136,7 @@ public class Modeler extends ComponentDefinition {
 					removeNode();
 				} else {
 					add = true;
-					estimateParameters();
+//					estimateParameters();
 					requestNewNode();
 				}
 			}
@@ -204,6 +204,7 @@ public class Modeler extends ComponentDefinition {
 		trigger(new RequestTrainingData(self, cloudProvider), network);
 		maxNrInstances = maximumNrInstances;
 		minNrInstances = minimumNrInstances;
+		currentlyOrdered = minimumNrInstances;
 		SAMPLING_INTERVAL = sampleInterval * 1000;
 		ORDER_INTERVAL = orderInterval * 1000;
 		scheduleSampling();
