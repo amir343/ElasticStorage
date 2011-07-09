@@ -71,11 +71,11 @@ public class SenseData extends Message {
 	
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
-		sb.append("SenseData: {");
-		sb.append("cpuAverage: ").append(cpuLoad).append(", ");
-		sb.append("bandwidthAverage: ").append(bandwidthMean).append(", ");
-		sb.append("totalCost: ").append(totalCost).append(", ");
-		sb.append("averageResponseTime: ").append(averageResponseTime);
+		sb.append("SenseData: \n{\n");
+		sb.append("\tcpuAverage: ").append(cpuLoad).append("\n");
+		sb.append("\tbandwidthAverage: ").append(bandwidthMean).append("\n");
+		sb.append("\ttotalCost: ").append(totalCost).append("\n");
+		sb.append("\taverageResponseTime: ").append(averageResponseTime).append("\n");
 		sb.append("}");
 		return sb.toString();
 	}

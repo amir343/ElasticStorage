@@ -5,7 +5,6 @@ import instance.common.Block;
 import instance.common.BlocksAck;
 import instance.common.Request;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -60,8 +59,8 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 	private ELBTable elbTable;
 	protected Address self;
 	private static final long ELB_TREE_UPDATE_INTERVAL = 30000;
-	private List<Double> cpuLoads = new ArrayList<Double>();
-	private List<Long> bandwidths = new ArrayList<Long>();
+	private Map<Address, Double> cpuLoads = new HashMap<Address, Double>();
+	private Map<Address, Long> bandwidths = new HashMap<Address, Long>();
 
 	public ElasticLoadBalancer() {
 		subscribe(initHandler, elb);
@@ -200,8 +199,8 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 		@Override
 		public void handle(MyCPULoadAndBandwidth event) {
 			loadBalancerAlgorithm.updateCPULoadFor(event.getNode(), event.getCpuLoad());
-			cpuLoads.add(event.getCpuLoad());
-			bandwidths.add(event.getCurrentBandwidth());
+			cpuLoads.put(event.getSource(), event.getCpuLoad());
+			bandwidths.put(event.getSource(), event.getCurrentBandwidth());
 		}
 	};
 	
@@ -272,10 +271,14 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 
 	private double calculateBandwidthMean() {
 		if (bandwidths.size() == 0) return 0.0;
-		Long mean = 0L;
-		for (Long band : bandwidths)
-			mean += band;
-		return mean.doubleValue()/bandwidths.size();
+		Long sum = 0L;
+		double average = 0.0;
+		synchronized (bandwidths) {
+			for (Address node: bandwidths.keySet())
+				sum += bandwidths.get(node);
+			average = sum.doubleValue()/bandwidths.size();
+		}
+		return average;
 	}
 	
 	protected void scheduleUpdateELBTree() {
@@ -286,10 +289,14 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 
 	private double calculateCPULoadMean() {
 		if (cpuLoads.size() == 0) return 0.0;
-		double mean = 0.0;
-		for (double load : cpuLoads)
-			mean += load;
-		return mean/cpuLoads.size();
+		double sum = 0.0;
+		double average = 0.0;
+		synchronized (cpuLoads) {
+			for (Address node: cpuLoads.keySet())
+				sum += cpuLoads.get(node);
+			average = sum/cpuLoads.size();
+		}
+		return average;
 	}
 	
 	protected void startELBTable(ELBInit event) {

@@ -274,8 +274,8 @@ public class CloudAPI extends ComponentDefinition {
 		}
 	};
 	
-	private void collectData(Address source, boolean trainingData) {
-		SendRawData data = new SendRawData(source, numberOfInstances, trainingData);
+	private void collectData(Address source, boolean isTrainingData) {
+		SendRawData data = new SendRawData(source, numberOfInstances, isTrainingData);
 		double periodicTotalCost = calculateTotalCost();
 		data.setTotalCost(periodicTotalCost);
 		trigger(data, elb);
