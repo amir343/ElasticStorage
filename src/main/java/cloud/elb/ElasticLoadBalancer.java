@@ -239,15 +239,23 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 	Handler<SendRawData> responseTimeHandler = new Handler<SendRawData>() {
 		@Override
 		public void handle(SendRawData event) {
-			TrainingData data = new TrainingData(self, event.getController(), event.getNrNodes());
-			
-			data.setResponseTimeMean(event.getAverageResponseTime());
-			data.setThroughputMean(event.getAverageThroughput());
-			data.setCpuLoalMean(calculateCPULoadMean());
-			data.setBandwidthMean(calculateBandwidthMean());
-			data.setTotalCost(event.getTotalCost());
-			
-			trigger(data, network);
+			if (event.isTrainingData()) {
+				TrainingData data = new TrainingData(self, event.getController(), event.getNrNodes());
+				data.setResponseTimeMean(event.getAverageResponseTime());
+				data.setThroughputMean(event.getAverageThroughput());
+				data.setCpuLoalMean(calculateCPULoadMean());
+				data.setBandwidthMean(calculateBandwidthMean());
+				data.setTotalCost(event.getTotalCost());
+				trigger(data, network);
+			} else {
+				SenseData data = new SenseData(self, event.getController(), event.getNrNodes());
+				data.setResponseTimeMean(event.getAverageResponseTime());
+				data.setThroughputMean(event.getAverageThroughput());
+				data.setCpuLoalMean(calculateCPULoadMean());
+				data.setBandwidthMean(calculateBandwidthMean());
+				data.setTotalCost(event.getTotalCost());
+				trigger(data, network);
+			}
 		}
 	};
 	

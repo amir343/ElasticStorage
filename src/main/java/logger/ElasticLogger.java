@@ -21,7 +21,7 @@ public class ElasticLogger implements Logger {
 		this.start = start;
 	}
 
-	public synchronized void log(String text, String level) {
+	public synchronized void log(Object text, String level) {
 		String log;
 		if (level != null)
 			log = String.format("[%010.4f] %s {%s} %s", now(), level, className, text);
@@ -31,27 +31,27 @@ public class ElasticLogger implements Logger {
 	}
 
 	@Override
-	public void raw(String text) {
+	public void raw(Object text) {
 		log(text, null);		
 	}
 
 	@Override
-	public void info(String text) {
+	public void info(Object text) {
 		log(text, "INFO");
 	}
 
 	@Override
-	public void debug(String text) {
+	public void debug(Object text) {
 		log(text, "DEBUG");
 	}
 
 	@Override
-	public void warn(String text) {
+	public void warn(Object text) {
 		log(text, "WARN");
 	}
 
 	@Override
-	public void error(String text) {
+	public void error(Object text) {
 		log(text, "ERROR");
 	}
 

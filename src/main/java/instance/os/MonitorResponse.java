@@ -10,6 +10,7 @@ import se.sics.kompics.network.Message;
  *
  */
 
+@Deprecated
 public class MonitorResponse extends Message {
 
 	private static final long serialVersionUID = 2502892632597196129L;

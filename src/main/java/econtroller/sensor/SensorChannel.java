@@ -1,9 +1,9 @@
 package econtroller.sensor;
 
-import instance.os.MonitorResponse;
+import se.sics.kompics.PortType;
+import cloud.elb.SenseData;
 import econtroller.controller.Sense;
 import econtroller.controller.StartSense;
-import se.sics.kompics.PortType;
 
 /**
  * 
@@ -17,6 +17,6 @@ public class SensorChannel extends PortType {
 		negative(Sense.class);
 		negative(StartSense.class);
 		negative(StopSense.class);
-		positive(MonitorResponse.class);
+		positive(SenseData.class);
 	}
 }

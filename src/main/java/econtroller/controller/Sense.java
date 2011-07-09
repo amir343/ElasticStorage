@@ -14,14 +14,14 @@ import se.sics.kompics.address.Address;
 
 public class Sense extends Event {
 
-	private List<Address> nodes;
+	private Address cloudProvider;
 
-	public Sense(List<Address> nodes) {
-		this.nodes = nodes;
+	public Sense(Address cloudProviderAddress) {
+		this.cloudProvider = cloudProviderAddress;
 	}
 
-	public List<Address> getNodes() {
-		return nodes;
+	public Address getCloudProvider() {
+		return cloudProvider;
 	}
-
+	
 }

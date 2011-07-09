@@ -9,14 +9,14 @@ package logger;
 
 public interface Logger {
 
-	void raw(String text);
+	void raw(Object text);
 	
-	void info(String text);
+	void info(Object text);
 
-	void warn(String text);
+	void warn(Object text);
 
-	void error(String text);
+	void error(Object text);
 
-	void debug(String text);
+	void debug(Object text);
 
 }

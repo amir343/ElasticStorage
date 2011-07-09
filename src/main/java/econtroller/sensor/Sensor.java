@@ -1,9 +1,7 @@
 package econtroller.sensor;
 
 import instance.os.MonitorPacket;
-import instance.os.MonitorResponse;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -23,6 +21,8 @@ import se.sics.kompics.timer.CancelTimeout;
 import se.sics.kompics.timer.ScheduleTimeout;
 import se.sics.kompics.timer.Timer;
 import cloud.api.NewNodeToMonitor;
+import cloud.api.RequestSensingData;
+import cloud.elb.SenseData;
 import econtroller.controller.Sense;
 import econtroller.controller.StartSense;
 import econtroller.gui.ControllerGUI;
@@ -44,8 +44,8 @@ public class Sensor extends ComponentDefinition {
 	Positive<Network> network = requires(Network.class);
 	
 	private Set<Address> currentNodes = new HashSet<Address>();
-	private Map<Address, List<MonitorPacket>> monitors = new HashMap<Address, List<MonitorPacket>>();
 	protected Address self;
+	private Address cloudProvider;
 	private UUID lastTimeout;
 	private long SENSE_INTERVAL = 5000;
 	private boolean enabled;
@@ -100,9 +100,7 @@ public class Sensor extends ComponentDefinition {
 	Handler<Sense> senseHandler = new Handler<Sense>() {
 		@Override
 		public void handle(Sense event) {
-			synchronized (currentNodes) {
-				currentNodes.addAll(event.getNodes());
-			}
+			cloudProvider = event.getCloudProvider();
 		}
 	};
 	
@@ -120,14 +118,10 @@ public class Sensor extends ComponentDefinition {
 	/**
 	 * This handler is triggered when the sensor receives monitor response from an instance
 	 */
-	Handler<MonitorResponse> monitorResponseHandler = new Handler<MonitorResponse>() {
+	Handler<SenseData> monitorResponseHandler = new Handler<SenseData>() {
 		@Override
-		public void handle(MonitorResponse event) {
-			logger.info("Got back MonitorResponse from " + event.getSource());
-			if (null == monitors.get(event.getSource())) {
-				monitors.put(event.getSource(), new ArrayList<MonitorPacket>());
-			}
-			monitors.get(event.getSource()).add(event.getMonitorPacket());
+		public void handle(SenseData event) {
+			logger.info(event.toString());
 			trigger(event, sensorChannel);
 		}
 	};
@@ -160,11 +154,6 @@ public class Sensor extends ComponentDefinition {
 	}
 
 	private void sendOutMonitorMessage() {
-		synchronized (currentNodes) {
-			for (Address address : currentNodes) {
-				trigger(new Monitor(self, address), network);
-			}
-		}
-		
+		trigger(new RequestSensingData(self, cloudProvider), network);
 	}
 }

@@ -12,15 +12,17 @@ import se.sics.kompics.address.Address;
 
 public class SendRawData extends Event {
 	
+	private boolean trainingData = false;
 	private Address controller;
 	private int nrNodes;
 	private double totalCost;
 	private double averageThroughput;
 	private double averageResponseTime;
 
-	public SendRawData(Address controller, int numberOfNodes) {
+	public SendRawData(Address controller, int numberOfNodes, boolean trainingData) {
 		this.controller = controller;
 		this.nrNodes = numberOfNodes;
+		this.trainingData = trainingData;
 	}
 
 	public Address getController() {
@@ -53,6 +55,10 @@ public class SendRawData extends Event {
 
 	public double getAverageResponseTime() {
 		return averageResponseTime;
+	}
+
+	public boolean isTrainingData() {
+		return trainingData;
 	}
 	
 }

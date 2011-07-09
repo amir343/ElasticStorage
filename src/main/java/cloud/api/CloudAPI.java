@@ -96,6 +96,7 @@ public class CloudAPI extends ComponentDefinition {
 		subscribe(newNodeRequestHandler, network);
 		subscribe(instanceCostHandler, network);
 		subscribe(requestTrainingDataHandler, network);
+		subscribe(requestSensingData, network);
 		subscribe(removeNodeHandler, network);
 	}
 	
@@ -244,19 +245,21 @@ public class CloudAPI extends ComponentDefinition {
 	Handler<RequestTrainingData> requestTrainingDataHandler = new Handler<RequestTrainingData>() {
 		@Override
 		public void handle(RequestTrainingData event) {
-			SendRawData data = new SendRawData(event.getSource(), numberOfInstances);
-			double periodicTotalCost = calculateTotalCost();
-			data.setTotalCost(periodicTotalCost);
-			trigger(data, elb);			
-		}
-
-		private double calculateTotalCost() {
-			double cost = 0;
-			for (Address address : periodicCostTable.keySet())
-				cost += periodicCostTable.get(address);
-			return cost;
+			collectData(event.getSource(), true);			
 		}
 	};
+
+	/**
+	 * This handler is triggered when the sensor request data to sense. This data will be used by the
+	 * controller to act accordingly.
+	 */
+	Handler<RequestSensingData> requestSensingData = new Handler<RequestSensingData>() {
+		@Override
+		public void handle(RequestSensingData event) {
+			collectData(event.getSource(), false);
+		}
+	};
+	
 	
 	/**
 	 * This handler is triggered when the modeler from controller request to remove a node
@@ -270,6 +273,20 @@ public class CloudAPI extends ComponentDefinition {
 			}
 		}
 	};
+	
+	private void collectData(Address source, boolean trainingData) {
+		SendRawData data = new SendRawData(source, numberOfInstances, trainingData);
+		double periodicTotalCost = calculateTotalCost();
+		data.setTotalCost(periodicTotalCost);
+		trigger(data, elb);
+	}
+	
+	private double calculateTotalCost() {
+		double cost = 0;
+		for (Address address : periodicCostTable.keySet())
+			cost += periodicCostTable.get(address);
+		return cost;
+	}
 	
 	public void kill(Node node) {
 		numberOfInstances--;

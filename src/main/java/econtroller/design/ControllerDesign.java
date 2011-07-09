@@ -1,8 +1,8 @@
 package econtroller.design;
 
-import econtroller.controller.Controller;
-import instance.os.MonitorPacket;
 import se.sics.kompics.address.Address;
+import cloud.elb.SenseData;
+import econtroller.controller.Controller;
 
 /**
  * 
@@ -14,7 +14,7 @@ import se.sics.kompics.address.Address;
 
 public interface ControllerDesign {
 
-	void sense(Address address, MonitorPacket monitorPacket);
+	void sense(Address address, SenseData monitorPacket);
 	
 	void action();
 

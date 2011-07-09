@@ -6,6 +6,8 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.UUID;
 
+import cloud.elb.SenseData;
+
 import logger.Logger;
 import logger.LoggerFactory;
 import se.sics.kompics.ComponentDefinition;
@@ -90,7 +92,7 @@ public class Controller extends ComponentDefinition {
 			logger.info("Connecterd to cloud provider.");
 			connectedToCloudProvider = true;
 			trigger(new StartModeler(cloudProviderAddress), modeler);
-			trigger(new Sense(event.getNodes()), sensor);
+			trigger(new Sense(cloudProviderAddress), sensor);
 		}
 	}; 
 	
@@ -111,11 +113,11 @@ public class Controller extends ComponentDefinition {
 	/***
 	 * This handler is triggered when it receives monitor information from sensor component	
 	 */
-	Handler<MonitorResponse> monitorResponseHandler = new Handler<MonitorResponse>() {
+	Handler<SenseData> monitorResponseHandler = new Handler<SenseData>() {
 		@Override
-		public void handle(MonitorResponse event) {
+		public void handle(SenseData event) {
 			if (controller != null) {
-				controller.sense(event.getSource(), event.getMonitorPacket());
+				controller.sense(event.getSource(), event);
 			}
 		}
 	};
