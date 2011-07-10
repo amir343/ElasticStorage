@@ -100,18 +100,13 @@ public class ControllerGUI extends AbstractGUI {
 	private String[] snapshotTableColumns = new String[]{"Snapshot ID", "Date"};
 	private SnapshotTablePopupListener snapshotPopupListener = new SnapshotTablePopupListener(this);
 	private List<ModelerSnapshot> snapshots = new ArrayList<ModelerSnapshot>();
-
 	private IntegerTextField minInstanceText;
-
 	private Container instanceLayout;
-
 	private JLabel samplingOrderLbl;
-
 	private IntegerTextField samplingText;
-
 	private IntegerTextField orderingText;
-
 	private Container sampleOrderLayout;
+    private JCheckBox orderedEnabled;
 
 	
 	public ControllerGUI() {
@@ -206,6 +201,7 @@ public class ControllerGUI extends AbstractGUI {
 				group.createSequentialGroup()
 				.addGroup(group.
 						createParallelGroup()
+							.addComponent(orderedEnabled)
 							.addComponent(samplingOrderLbl)
 							.addComponent(maxNrInstancesLbl)
 							.addComponent(startModelerButton)
@@ -226,6 +222,10 @@ public class ControllerGUI extends AbstractGUI {
 		
 		group.setVerticalGroup(
 				group.createSequentialGroup()
+				.addGroup(group.
+						createParallelGroup()
+						.addComponent(orderedEnabled)
+						 )
 				.addGroup(group.
 						createParallelGroup()
 						.addComponent(samplingOrderLbl)
@@ -300,7 +300,8 @@ public class ControllerGUI extends AbstractGUI {
 			public void actionPerformed(ActionEvent e) {
 				startModelerButton.setEnabled(false);
 				disableSIConfigs();
-				modeler.startModeler(Integer.parseInt(maxInstanceText.getText()), 
+				modeler.startModeler(orderedEnabled.isSelected(),
+                                     Integer.parseInt(maxInstanceText.getText()),
 									 Integer.parseInt(minInstanceText.getText()),
 									 Integer.parseInt(samplingText.getText()),
 									 Integer.parseInt(orderingText.getText())
@@ -349,6 +350,8 @@ public class ControllerGUI extends AbstractGUI {
 	}
 	
 	private void createSamplingAndNodeOrderingSection() {
+        orderedEnabled = new JCheckBox("Ordering enabled");
+        orderedEnabled.setSelected(true);
 		samplingOrderLbl = new JLabel("Sampling & Ordering (s)");
 		samplingText = new IntegerTextField("10");
 		orderingText = new IntegerTextField("90");
@@ -359,6 +362,7 @@ public class ControllerGUI extends AbstractGUI {
 	}
 	
 	private void disableSIConfigs() {
+        orderedEnabled.setEnabled(false);
 		samplingText.setEnabled(false);
 		orderingText.setEnabled(false);
 		minInstanceText.setEnabled(false);
@@ -366,6 +370,7 @@ public class ControllerGUI extends AbstractGUI {
 	}
 
 	private void enableSIConfigs() {
+        orderedEnabled.setEnabled(true);
 		samplingText.setEnabled(true);
 		orderingText.setEnabled(true);
 		minInstanceText.setEnabled(true);

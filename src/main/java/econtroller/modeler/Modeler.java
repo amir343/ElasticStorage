@@ -64,9 +64,10 @@ public class Modeler extends ComponentDefinition {
 	private XYSeries cpuSeries = new XYSeries("Average CPU Load");
 	private XYSeries costSeries = new XYSeries("Total Cost");
 	private XYSeries bandwidthSeries = new XYSeries("Average Bandwidth");
-	
-	
-	public Modeler() {
+    private boolean orderingEnabled = true;
+
+
+    public Modeler() {
 		gui = ControllerGUI.getInstance();
 		gui.setModeler(this);
 		
@@ -122,22 +123,23 @@ public class Modeler extends ComponentDefinition {
 	Handler<InstanceCreation> instanceCreationHandler = new Handler<InstanceCreation>() {
 		@Override
 		public void handle(InstanceCreation event) {
-			if (add) {
-				if (currentlyOrdered < maxNrInstances ) {
-					requestNewNode();
-				} else {
-					add = false;
-					removeNode();
-				}
-			} else {
-				if (currentlyOrdered > minNrInstances ) {
-					removeNode();
-				} else {
-					add = true;
-//					estimateParameters();
-					requestNewNode();
-				}
-			}
+            if (orderingEnabled) {
+                if (add) {
+                    if (currentlyOrdered < maxNrInstances ) {
+                        requestNewNode();
+                    } else {
+                        add = false;
+                        removeNode();
+                    }
+                } else {
+                    if (currentlyOrdered > minNrInstances ) {
+                        removeNode();
+                    } else {
+                        add = true;
+                        requestNewNode();
+                    }
+                }
+            }
 			scheduleAcutation();
 		}
 	};
@@ -197,7 +199,8 @@ public class Modeler extends ComponentDefinition {
 		trigger(new NewNodeRequest(self, cloudProvider), network);
 	}
 
-	public void startModeler(int maximumNrInstances, int minimumNrInstances, int sampleInterval, int orderInterval) {
+	public void startModeler(boolean orderingEnabled, int maximumNrInstances, int minimumNrInstances, int sampleInterval, int orderInterval) {
+        this.orderingEnabled = orderingEnabled;
 		start = System.currentTimeMillis();
 		trigger(new RequestTrainingData(self, cloudProvider), network);
 		maxNrInstances = maximumNrInstances;
