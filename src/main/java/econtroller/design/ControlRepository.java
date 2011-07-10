@@ -79,7 +79,7 @@ public class ControlRepository {
 			String fileName = file.getName();
 			String packagePrefix = file.getPath().substring(file.getPath().indexOf("classes") + 8, file.getPath().length()).replace("/", ".");
 			if (fileName.endsWith(".class")) {
-				if (fileName.toLowerCase().indexOf("gui") < 0) {
+				if (!fileName.toLowerCase().contains("gui")) {
 					Class<?> klass = Class.forName(packagePrefix.substring(0, packagePrefix.length() - 6));
 					if (hasImplementedControllerDesignInterface(klass.getInterfaces())) {
 						klasses.put(klass.getSimpleName(), (ControllerDesign)klass.newInstance());

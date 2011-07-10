@@ -9,9 +9,9 @@ import scala.reflect.BeanProperty
  * @date 2011-07-09
  *
  */
-class SendRawData(@BeanProperty var controller:Address,
-                  @BeanProperty var numberOfNodes:Int,
-                  @BeanProperty var trainingData:Boolean) extends Event {
+class SendRawData(val controller:Address,
+                  val numberOfNodes:Int,
+                  val trainingData:Boolean) extends Event {
 
   @BeanProperty
   var totalCost: Double = _

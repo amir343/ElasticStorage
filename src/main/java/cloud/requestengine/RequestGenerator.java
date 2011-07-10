@@ -140,7 +140,7 @@ public class RequestGenerator extends ComponentDefinition {
 	Handler<BlocksActivated> blocksActivatedHandler = new Handler<BlocksActivated>() {
 		@Override
 		public void handle(BlocksActivated event) {
-			blocks.addAll(event.getBlocks());
+			blocks.addAll(event.blocks());
 		}
 	};
 

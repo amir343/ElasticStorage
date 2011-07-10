@@ -31,7 +31,7 @@ class NodeConfiguration(cpuSpeed:Double,
   var dataBlocksMap: java.util.Map[String, Address] = null
 
 
-  def setNodeInfo(node:Node) = {
+  def setNodeInfo(node:Node) {
     this.node = node
     this.name = node.getNodeName
   }

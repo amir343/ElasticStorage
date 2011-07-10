@@ -74,7 +74,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 		@Override
 		public void handle(ELBInit event) {
 			startELBTable(event);
-			self = event.getSelf();
+			self = event.self();
 			trigger(new RequestGeneratorInit(), generator);
 			logger.info("Elastic Load Balancer is started...");
 			scheduleUpdateELBTree();
@@ -88,8 +88,8 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 		@Override
 		public void handle(GetReplicas event) {
 			logger.debug("Preparing Replicas....");
-			List<Block> blocks = elbTable.prepareBlocksForNode(event.getNodeConfiguration().getNode());
-			NodeConfiguration nodeConfiguration = event.getNodeConfiguration();
+			List<Block> blocks = elbTable.prepareBlocksForNode(event.nodeConfiguration().getNode());
+			NodeConfiguration nodeConfiguration = event.nodeConfiguration();
 			nodeConfiguration.setBlocks(blocks);
 			trigger(new Replicas(nodeConfiguration), elb);
 			logger.debug(nodeConfiguration.getBlocks().size() + " Replicas created! ");
@@ -102,7 +102,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 	Handler<SuspectNode> suspectNodeHandler = new Handler<SuspectNode>() {
 		@Override
 		public void handle(SuspectNode event) {
-			elbTable.suspectEntriesForNode(event.getNode());
+			elbTable.suspectEntriesForNode(event.node());
 		}
 	};
 	
@@ -112,7 +112,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 	Handler<RestoreNode> restoreNodeHandler = new Handler<RestoreNode>() {
 		@Override
 		public void handle(RestoreNode event) {
-			elbTable.restoreEntriesForNode(event.getNode());			
+			elbTable.restoreEntriesForNode(event.node());
 		}
 	};
 	
@@ -122,7 +122,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 	Handler<RemoveReplica> removeReplicaHandler = new Handler<RemoveReplica>() {
 		@Override
 		public void handle(RemoveReplica event) {
-			elbTable.removeReplicasForNode(event.getNode());
+			elbTable.removeReplicasForNode(event.node());
 		}
 	};
 	
@@ -144,9 +144,9 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 	Handler<ActivateBlock> activateBlockHandler = new Handler<ActivateBlock>() {
 		@Override
 		public void handle(ActivateBlock event) {
-			elbTable.activateBlockForNode(event.getNode(), event.getBlock());
+			elbTable.activateBlockForNode(event.node(), event.block());
 			BlocksActivated blocksActivated = new BlocksActivated();
-			blocksActivated.addBlock(event.getBlock());
+			blocksActivated.addBlock(event.block());
 			trigger(blocksActivated, generator);
 		}
 		
@@ -227,8 +227,8 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 		@Override
 		public void handle(SendRawData event) {
 			if (event.trainingData()) {
-				TrainingData data = new TrainingData(self, event.getController());
-                data.setNrNodes(event.getNumberOfNodes());
+				TrainingData data = new TrainingData(self, event.controller());
+                data.setNrNodes(event.numberOfNodes());
 				data.setResponseTimeMean(event.getAverageResponseTime());
 				data.setThroughputMean(event.getAverageThroughput());
 				data.setCpuLoadMean(calculateCPULoadMean());
@@ -236,7 +236,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 				data.setTotalCost(event.getTotalCost());
 				trigger(data, network);
 			} else {
-				SenseData data = new SenseData(self, event.getController(), event.getNumberOfNodes());
+				SenseData data = new SenseData(self, event.controller(), event.numberOfNodes());
 				data.setResponseTimeMean(event.getAverageResponseTime());
 				data.setThroughputMean(event.getAverageThroughput());
 				data.setCpuLoalMean(calculateCPULoadMean());
@@ -289,8 +289,8 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 	}
 	
 	protected void startELBTable(ELBInit event) {
-		elbTable = new ELBTable(event.getReplicationDegree());
-		for (Block block : event.getBlocks()) {
+		elbTable = new ELBTable(event.replicationDegree());
+		for (Block block : event.blocks()) {
 			ELBEntry entry = new ELBEntry(block.getName(), block.getSize());
 			elbTable.addEntry(entry);
 		}

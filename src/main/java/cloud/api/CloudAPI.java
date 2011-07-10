@@ -126,7 +126,7 @@ public class CloudAPI extends ComponentDefinition {
 	Handler<Suspect> suspectHandler = new Handler<Suspect>() {
 		@Override
 		public void handle(Suspect event) {
-			Node node = dnsService.getNodeForAddress(event.getNode());
+			Node node = dnsService.getNodeForAddress(event.node());
 			if (node != null) {
 				trigger(new SuspectNode(node), elb);
 				gui.suspectInstance(node);
@@ -140,7 +140,7 @@ public class CloudAPI extends ComponentDefinition {
 	Handler<Restore> restoreHandler = new Handler<Restore>() {
 		@Override
 		public void handle(Restore event) {
-			Node node = dnsService.getNodeForAddress(event.getNode());
+			Node node = dnsService.getNodeForAddress(event.node());
 			if (node != null) {
 				trigger(new RestoreNode(node), elb);
 				gui.restoreInstance(node);
@@ -155,8 +155,8 @@ public class CloudAPI extends ComponentDefinition {
 	Handler<Replicas> replicasHandler = new Handler<Replicas>() {
 		@Override
 		public void handle(Replicas event) {
-			logger.debug("Received '" + event.getNodeConfiguration().getBlocks().size() + "' Block(s) from ELB for node " + event.getNodeConfiguration().getNode());
-			instanceManagement.initializeNode(event.getNodeConfiguration());
+			logger.debug("Received '" + event.nodeConfiguration().getBlocks().size() + "' Block(s) from ELB for node " + event.nodeConfiguration().getNode());
+			instanceManagement.initializeNode(event.nodeConfiguration());
 		}
 	};
 

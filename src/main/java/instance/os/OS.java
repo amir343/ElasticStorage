@@ -162,7 +162,7 @@ public class OS extends ComponentDefinition {
 		@Override
 		public void handle(RequestMessage event) {
 			if (instanceRunning()) {
-				Request req = event.getRequest();
+				Request req = event.request();
 				logger.debug("Received request for block " + req);
 				requestQueue.add(req);
 			}

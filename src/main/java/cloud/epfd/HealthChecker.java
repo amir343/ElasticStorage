@@ -126,7 +126,7 @@ public class HealthChecker extends ComponentDefinition {
 			availableInstances.remove(event.getAddress());
 			alive.remove(event.getAddress());
 			killedInstances.add(event.getAddress());
-			logger.debug("I will not consider the health for " + event.getNode());
+			logger.debug("I will not consider the health for " + event.node());
 		}
 	};
 
