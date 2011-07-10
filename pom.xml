@@ -29,7 +29,20 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
+        <repository>
+            <id>scala-tools.org releases</id>
+            <name>Scala-tools Maven2 Releases Snapshots Repository</name>
+            <url>http://scala-tools.org/repo-snapshots</url>
+        </repository>		
 	</repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>scala-tools.org</id>
+            <name>Scala-tools Maven2 Repository</name>
+            <url>http://scala-tools.org/repo-releases</url>
+        </pluginRepository>
+    </pluginRepositories>
 
 	<dependencies>
 		<dependency>
@@ -96,10 +109,17 @@
 		    <groupId>org.apache.commons</groupId>
 		    <artifactId>commons-math</artifactId>
 		    <version>2.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.scalatest</groupId>
+			<artifactId>scalatest_2.9.0</artifactId>
+			<version>1.6.2-SNAPSHOT</version>		
 		</dependency>		
 	</dependencies>
 
 	<build>
+	    <sourceDirectory>src/main/java</sourceDirectory>
+        <testSourceDirectory>src/test/scala</testSourceDirectory>
 		<plugins>
 			<plugin>
 				<inherited>true</inherited>
@@ -122,8 +142,21 @@
 					</descriptorRefs>
 				</configuration>
 			</plugin>
+			<plugin>
+                <groupId>org.scala-tools</groupId>
+                <artifactId>maven-scala-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                            <goal>testCompile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
 		</plugins>
 	</build>
+	
 	
     <developers>
 		<developer>

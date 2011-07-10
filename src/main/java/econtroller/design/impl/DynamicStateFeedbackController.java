@@ -20,10 +20,15 @@ public class DynamicStateFeedbackController implements ControllerDesign {
 	private Logger logger = LoggerFactory.getLogger(DynamicStateFeedbackController.class, ControllerGUI.getInstance());
 	private Controller controller;
 	
-	private final double k1 = 1.889978;
-	private final double k2 = 0.000063684;
-	private final double k3 = 0.0001345;
-	private final double k4 = 0.0000000018818;
+//	private final double k1 = 1.889978;
+//	private final double k2 = 0.000063684;
+//	private final double k3 = 0.0001345;
+//	private final double k4 = 0.0000000018818;
+	private final double k1 = 1.10354401957889;
+	private final double k2 = 3.58775446101134e-05;
+	private final double k3 = 2.61080347041644e-05;
+	private final double k4 = 2.02728144216861e-10;
+	
 	private double cpuLoadAverage;
 	private double bandwidthAverage;
 	private double throughPutAverage;
