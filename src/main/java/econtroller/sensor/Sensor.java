@@ -1,14 +1,11 @@
 package econtroller.sensor;
 
-import instance.os.MonitorPacket;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-
+import cloud.api.NewNodeToMonitor;
+import cloud.api.RequestSensingData;
+import cloud.elb.SenseData;
+import econtroller.controller.Sense;
+import econtroller.controller.StartSense;
+import econtroller.gui.ControllerGUI;
 import logger.Logger;
 import logger.LoggerFactory;
 import se.sics.kompics.ComponentDefinition;
@@ -20,12 +17,10 @@ import se.sics.kompics.network.Network;
 import se.sics.kompics.timer.CancelTimeout;
 import se.sics.kompics.timer.ScheduleTimeout;
 import se.sics.kompics.timer.Timer;
-import cloud.api.NewNodeToMonitor;
-import cloud.api.RequestSensingData;
-import cloud.elb.SenseData;
-import econtroller.controller.Sense;
-import econtroller.controller.StartSense;
-import econtroller.gui.ControllerGUI;
+
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * 

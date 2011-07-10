@@ -1,19 +1,14 @@
 package cloud.api;
 
+import cloud.common.NodeConfiguration;
 import instance.Node;
 import instance.common.Block;
+import se.sics.kompics.address.Address;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.List;
-
-import se.sics.kompics.address.Address;
-import cloud.common.NodeConfiguration;
 
 /**
  * 

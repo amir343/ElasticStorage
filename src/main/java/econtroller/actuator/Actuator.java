@@ -1,5 +1,8 @@
 package econtroller.actuator;
 
+import econtroller.ControllerConfiguration;
+import econtroller.controller.NewNodeRequest;
+import econtroller.gui.ControllerGUI;
 import logger.Logger;
 import logger.LoggerFactory;
 import se.sics.kompics.ComponentDefinition;
@@ -8,9 +11,6 @@ import se.sics.kompics.Negative;
 import se.sics.kompics.Positive;
 import se.sics.kompics.address.Address;
 import se.sics.kompics.network.Network;
-import econtroller.ControllerConfiguration;
-import econtroller.controller.NewNodeRequest;
-import econtroller.gui.ControllerGUI;
 
 /**
  * 

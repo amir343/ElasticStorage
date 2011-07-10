@@ -1,19 +1,5 @@
 package cloud;
 
-import org.apache.log4j.PropertyConfigurator;
-
-import scenarios.manager.CloudConfiguration;
-import se.sics.kompics.Component;
-import se.sics.kompics.ComponentDefinition;
-import se.sics.kompics.Fault;
-import se.sics.kompics.Handler;
-import se.sics.kompics.Kompics;
-import se.sics.kompics.address.Address;
-import se.sics.kompics.network.Network;
-import se.sics.kompics.network.mina.MinaNetwork;
-import se.sics.kompics.network.mina.MinaNetworkInit;
-import se.sics.kompics.timer.Timer;
-import se.sics.kompics.timer.java.JavaTimer;
 import cloud.api.CloudAPI;
 import cloud.common.CloudAPIInit;
 import cloud.common.ELB;
@@ -23,6 +9,15 @@ import cloud.elb.ElasticLoadBalancer;
 import cloud.epfd.HealthChecker;
 import cloud.gui.CloudGUI;
 import cloud.requestengine.RequestGenerator;
+import org.apache.log4j.PropertyConfigurator;
+import scenarios.manager.CloudConfiguration;
+import se.sics.kompics.*;
+import se.sics.kompics.address.Address;
+import se.sics.kompics.network.Network;
+import se.sics.kompics.network.mina.MinaNetwork;
+import se.sics.kompics.network.mina.MinaNetworkInit;
+import se.sics.kompics.timer.Timer;
+import se.sics.kompics.timer.java.JavaTimer;
 
 /**
  * 

@@ -1,10 +1,25 @@
 package cloud.gui;
 
+import cloud.api.CloudAPI;
+import cloud.api.CloudSnapshot;
+import cloud.elb.ELBEntry;
+import cloud.elb.ELBTable;
+import cloud.requestengine.RequestGenerator;
+import cloud.requestengine.ResponseTimeService;
+import common.AbstractGUI;
 import instance.Node;
+import logger.Logger;
+import logger.LoggerFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import statistics.distribution.Distribution;
+import statistics.distribution.DistributionRepository;
 
-import java.awt.BorderLayout;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.tree.DefaultMutableTreeNode;
+import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
@@ -12,38 +27,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.imageio.ImageIO;
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.JTree;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.tree.DefaultMutableTreeNode;
-
-import logger.Logger;
-import logger.LoggerFactory;
-
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
-
-import statistics.distribution.Distribution;
-import statistics.distribution.DistributionRepository;
-import cloud.api.CloudAPI;
-import cloud.api.CloudSnapshot;
-import cloud.elb.ELBEntry;
-import cloud.elb.ELBTable;
-import cloud.requestengine.RequestGenerator;
-import cloud.requestengine.ResponseTimeService;
-
-import common.AbstractGUI;
 
 /**
  * 
@@ -112,6 +95,7 @@ public class CloudGUI extends AbstractGUI {
 	private JTree elbTree;
 	
 	public CloudGUI() {
+        setUIManager();
 		createTabs();
 		createMenuBar();
 		addWindowListener();
@@ -121,7 +105,7 @@ public class CloudGUI extends AbstractGUI {
 		setVisible(true);
 	}
 
-	private void setupLocation() {
+    private void setupLocation() {
 		this.setLocation(400, 0);		
 	}
 

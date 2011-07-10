@@ -1,8 +1,8 @@
 package instance.common;
 
-import java.util.List;
-
 import se.sics.kompics.Event;
+
+import java.util.List;
 
 /**
  * 

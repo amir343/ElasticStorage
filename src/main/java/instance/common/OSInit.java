@@ -1,13 +1,12 @@
 package instance.common;
 
-import instance.Node;
-
-import java.util.List;
-
-import se.sics.kompics.Init;
-import se.sics.kompics.address.Address;
 import cloud.api.InstanceConfiguration;
 import cloud.common.NodeConfiguration;
+import instance.Node;
+import se.sics.kompics.Init;
+import se.sics.kompics.address.Address;
+
+import java.util.List;
 
 /**
  * 

@@ -1,7 +1,7 @@
 package instance.common;
 
-import se.sics.kompics.Init;
 import cloud.common.NodeConfiguration;
+import se.sics.kompics.Init;
 
 /**
  * 

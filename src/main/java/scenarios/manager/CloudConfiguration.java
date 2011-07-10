@@ -1,23 +1,17 @@
 package scenarios.manager;
 
+import cloud.common.NodeConfiguration;
 import instance.Instance;
 import instance.Node;
 import instance.common.Block;
+import org.apache.commons.lang.StringUtils;
+import se.sics.kompics.address.Address;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.apache.commons.lang.StringUtils;
-
-import se.sics.kompics.address.Address;
-import cloud.common.NodeConfiguration;
 
 /**
  * 

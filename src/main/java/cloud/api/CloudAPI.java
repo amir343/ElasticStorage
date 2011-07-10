@@ -1,16 +1,20 @@
 package cloud.api;
 
+import cloud.api.address.AddressManager;
+import cloud.common.*;
+import cloud.epfd.HealthCheckerInit;
+import cloud.gui.CloudGUI;
+import cloud.requestengine.ResponseTimeService;
+import econtroller.controller.Connect;
+import econtroller.controller.ConnectionEstablished;
+import econtroller.controller.Disconnect;
+import econtroller.controller.NewNodeRequest;
+import econtroller.modeler.RemoveNode;
 import instance.Node;
 import instance.common.InstanceStarted;
 import instance.common.ShutDown;
 import instance.common.ShutDownAck;
 import instance.os.InstanceCost;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import logger.Logger;
 import logger.LoggerFactory;
 import scenarios.manager.CloudConfiguration;
@@ -20,31 +24,11 @@ import se.sics.kompics.Positive;
 import se.sics.kompics.address.Address;
 import se.sics.kompics.network.Network;
 import se.sics.kompics.timer.Timer;
-import cloud.api.address.AddressManager;
-import cloud.common.CloudAPIInit;
-import cloud.common.ConsiderInstance;
-import cloud.common.ELB;
-import cloud.common.ELBInit;
-import cloud.common.EPFD;
-import cloud.common.GetReplicas;
-import cloud.common.InstanceKilled;
-import cloud.common.NodeConfiguration;
-import cloud.common.RemoveReplica;
-import cloud.common.Replicas;
-import cloud.common.RequestTrainingData;
-import cloud.common.Restore;
-import cloud.common.RestoreNode;
-import cloud.common.SendRawData;
-import cloud.common.Suspect;
-import cloud.common.SuspectNode;
-import cloud.epfd.HealthCheckerInit;
-import cloud.gui.CloudGUI;
-import cloud.requestengine.ResponseTimeService;
-import econtroller.controller.Connect;
-import econtroller.controller.ConnectionEstablished;
-import econtroller.controller.Disconnect;
-import econtroller.controller.NewNodeRequest;
-import econtroller.modeler.RemoveNode;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 

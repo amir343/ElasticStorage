@@ -1,17 +1,17 @@
 package econtroller.modeler;
 
-import java.util.UUID;
-
+import cloud.common.RequestTrainingData;
+import cloud.common.TrainingData;
+import econtroller.controller.NewNodeRequest;
+import econtroller.gui.ControllerGUI;
 import logger.Logger;
 import logger.LoggerFactory;
-
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
 import se.sics.kompics.Negative;
@@ -21,10 +21,8 @@ import se.sics.kompics.network.Network;
 import se.sics.kompics.timer.CancelTimeout;
 import se.sics.kompics.timer.ScheduleTimeout;
 import se.sics.kompics.timer.Timer;
-import cloud.common.RequestTrainingData;
-import cloud.common.TrainingData;
-import econtroller.controller.NewNodeRequest;
-import econtroller.gui.ControllerGUI;
+
+import java.util.UUID;
 
 /**
  * 

@@ -1,44 +1,29 @@
 package instance.cpu;
 
-import instance.common.AbstractOperation;
-import instance.common.CPUChannel;
-import instance.common.CPUInit;
-import instance.common.EndProcess;
-import instance.common.LoadCalculationTimeout;
-import instance.common.LoadSamplerTimeout;
-import instance.common.OperationFinishedTimeout;
-import instance.common.Ready;
+import instance.common.*;
 import instance.common.Ready.Device;
-import instance.common.Restart;
-import instance.common.StartProcess;
 import instance.gui.InstanceGUI;
-import instance.os.CPULoad;
-import instance.os.OS;
+import instance.os.*;
 import instance.os.Process;
-import instance.os.RestartSignal;
-import instance.os.SnapshotRequest;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import logger.Logger;
 import logger.LoggerFactory;
-
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.PlotOrientation;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
-
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
 import se.sics.kompics.Negative;
 import se.sics.kompics.Positive;
 import se.sics.kompics.timer.ScheduleTimeout;
 import se.sics.kompics.timer.Timer;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 

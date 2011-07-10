@@ -1,23 +1,6 @@
 package econtroller.controller;
 
-import instance.os.MonitorResponse;
-
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.UUID;
-
 import cloud.elb.SenseData;
-
-import logger.Logger;
-import logger.LoggerFactory;
-import se.sics.kompics.ComponentDefinition;
-import se.sics.kompics.Handler;
-import se.sics.kompics.Positive;
-import se.sics.kompics.address.Address;
-import se.sics.kompics.network.Network;
-import se.sics.kompics.timer.CancelTimeout;
-import se.sics.kompics.timer.ScheduleTimeout;
-import se.sics.kompics.timer.Timer;
 import econtroller.ControllerConfiguration;
 import econtroller.actuator.ActuatorChannel;
 import econtroller.actuator.NodeRequest;
@@ -28,6 +11,20 @@ import econtroller.modeler.ModelPort;
 import econtroller.modeler.StartModeler;
 import econtroller.sensor.SensorChannel;
 import econtroller.sensor.StopSense;
+import logger.Logger;
+import logger.LoggerFactory;
+import se.sics.kompics.ComponentDefinition;
+import se.sics.kompics.Handler;
+import se.sics.kompics.Positive;
+import se.sics.kompics.address.Address;
+import se.sics.kompics.network.Network;
+import se.sics.kompics.timer.CancelTimeout;
+import se.sics.kompics.timer.ScheduleTimeout;
+import se.sics.kompics.timer.Timer;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.UUID;
 
 /**
  * 

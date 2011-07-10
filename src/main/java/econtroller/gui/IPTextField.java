@@ -1,8 +1,7 @@
 package econtroller.gui;
 
+import javax.swing.*;
 import java.awt.event.KeyEvent;
-
-import javax.swing.JTextField;
 
 public class IPTextField extends JTextField {
 

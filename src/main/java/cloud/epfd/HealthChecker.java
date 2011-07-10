@@ -1,11 +1,10 @@
 package cloud.epfd;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import cloud.common.*;
+import cloud.gui.CloudGUI;
+import com.google.common.collect.Sets;
 import logger.Logger;
 import logger.LoggerFactory;
-
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
 import se.sics.kompics.Negative;
@@ -14,17 +13,9 @@ import se.sics.kompics.address.Address;
 import se.sics.kompics.network.Network;
 import se.sics.kompics.timer.ScheduleTimeout;
 import se.sics.kompics.timer.Timer;
-import cloud.common.Alive;
-import cloud.common.ConsiderInstance;
-import cloud.common.EPFD;
-import cloud.common.HeartbeatMessage;
-import cloud.common.HeartbeatTimeout;
-import cloud.common.InstanceKilled;
-import cloud.common.Restore;
-import cloud.common.Suspect;
-import cloud.gui.CloudGUI;
 
-import com.google.common.collect.Sets;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * 

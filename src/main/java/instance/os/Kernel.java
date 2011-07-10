@@ -1,11 +1,11 @@
 package instance.os;
 
-import java.util.Calendar;
-
 import instance.cpu.OperationDuration;
 import instance.gui.InstanceGUI;
 import logger.Logger;
 import logger.LoggerFactory;
+
+import java.util.Calendar;
 
 /**
  * 

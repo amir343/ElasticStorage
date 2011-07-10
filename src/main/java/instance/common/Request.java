@@ -1,9 +1,9 @@
 package instance.common;
 
-import java.io.Serializable;
-
 import se.sics.kompics.Event;
 import se.sics.kompics.address.Address;
+
+import java.io.Serializable;
 
 /**
  * 

@@ -1,13 +1,10 @@
 package instance.common;
 
-import instance.common.Block;
+import junit.framework.Assert;
+import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Set;
-
-import junit.framework.Assert;
-
-import org.junit.Test;
 
 /**
  * 

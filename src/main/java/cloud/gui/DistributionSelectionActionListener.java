@@ -1,19 +1,16 @@
 package cloud.gui;
 
+import logger.Logger;
+import logger.LoggerFactory;
+import org.apache.commons.io.FileUtils;
+import statistics.distribution.DistributionName;
+
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-
-import javax.swing.JFileChooser;
-
-import logger.Logger;
-import logger.LoggerFactory;
-
-import org.apache.commons.io.FileUtils;
-
-import statistics.distribution.DistributionName;
 
 /**
  * 

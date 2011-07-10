@@ -1,10 +1,19 @@
 package econtroller.gui;
 
+import cloud.gui.IntegerTextField;
+import common.AbstractGUI;
+import econtroller.controller.Controller;
+import econtroller.modeler.Modeler;
+import econtroller.modeler.ModelerSnapshot;
 import instance.gui.SnapshotTablePopupListener;
+import logger.Logger;
+import logger.LoggerFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
 
-import java.awt.Container;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -12,36 +21,6 @@ import java.awt.event.WindowEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.swing.BorderFactory;
-import javax.swing.GroupLayout;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSlider;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.table.DefaultTableModel;
-
-import logger.Logger;
-import logger.LoggerFactory;
-
-import org.eclipse.swt.custom.TextChangeListener;
-import org.eclipse.swt.custom.TextChangedEvent;
-import org.eclipse.swt.custom.TextChangingEvent;
-import org.jfree.chart.ChartPanel;
-import org.jfree.chart.JFreeChart;
-
-import cloud.gui.IntegerTextField;
-
-import common.AbstractGUI;
-
-import econtroller.controller.Controller;
-import econtroller.modeler.Modeler;
-import econtroller.modeler.ModelerSnapshot;
 
 /**
  * 
@@ -136,6 +115,7 @@ public class ControllerGUI extends AbstractGUI {
 
 	
 	public ControllerGUI() {
+        setUIManager();
 		createMenuBar();
 		createTabs();
 		addWindowListener();

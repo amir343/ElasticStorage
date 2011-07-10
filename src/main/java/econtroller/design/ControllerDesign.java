@@ -1,8 +1,8 @@
 package econtroller.design;
 
-import se.sics.kompics.address.Address;
 import cloud.elb.SenseData;
 import econtroller.controller.Controller;
+import se.sics.kompics.address.Address;
 
 /**
  * 

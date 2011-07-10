@@ -1,7 +1,7 @@
 package cloud.api;
 
-import se.sics.kompics.Event;
 import cloud.common.NodeConfiguration;
+import se.sics.kompics.Event;
 
 /**
  * 

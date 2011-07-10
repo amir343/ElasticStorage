@@ -1,15 +1,13 @@
 package cloud.elb;
 
+import cloud.gui.CloudGUI;
 import instance.Node;
 import instance.common.Block;
+import logger.Logger;
+import logger.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import cloud.gui.CloudGUI;
-
-import logger.Logger;
-import logger.LoggerFactory;
 
 
 /**

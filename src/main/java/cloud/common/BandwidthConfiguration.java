@@ -1,8 +1,8 @@
 package cloud.common;
 
-import java.io.Serializable;
-
 import instance.common.Size;
+
+import java.io.Serializable;
 
 /**
  * 

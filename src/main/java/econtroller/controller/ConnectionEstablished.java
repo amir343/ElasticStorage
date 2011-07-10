@@ -1,9 +1,9 @@
 package econtroller.controller;
 
-import java.util.List;
-
 import se.sics.kompics.address.Address;
 import se.sics.kompics.network.Message;
+
+import java.util.List;
 
 /**
  * 

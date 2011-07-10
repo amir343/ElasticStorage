@@ -2,12 +2,7 @@ package cloud.elb;
 
 import instance.Node;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 /**
@@ -65,6 +60,10 @@ public class LeastCPULoadAlgorithm implements LoadBalancerAlgorithm {
 		}
 		return stats.get(node.getAddressStringWithoutName());
 	}
+
+    public void clear() {
+        stats.clear();
+    }
 	
 	
 	public static class Comp implements Comparator<NodeStatistics> {

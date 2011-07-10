@@ -1,8 +1,7 @@
 package cloud.api;
 
-import org.jfree.chart.JFreeChart;
-
 import instance.os.Snapshot;
+import org.jfree.chart.JFreeChart;
 
 /**
  * 

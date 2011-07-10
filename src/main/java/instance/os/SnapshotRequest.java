@@ -1,7 +1,6 @@
 package instance.os;
 
 import org.jfree.chart.JFreeChart;
-
 import se.sics.kompics.Event;
 
 /**

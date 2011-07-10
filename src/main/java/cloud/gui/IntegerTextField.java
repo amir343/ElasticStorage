@@ -1,8 +1,7 @@
 package cloud.gui;
 
+import javax.swing.*;
 import java.awt.event.KeyEvent;
-
-import javax.swing.JTextField;
 
 /**
  * 

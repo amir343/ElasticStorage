@@ -1,16 +1,13 @@
 package cloud.api;
 
+import cloud.gui.CloudGUI;
 import instance.Node;
+import logger.Logger;
+import logger.LoggerFactory;
+import se.sics.kompics.address.Address;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import cloud.gui.CloudGUI;
-
-import logger.Logger;
-import logger.LoggerFactory;
-
-import se.sics.kompics.address.Address;
 
 /**
  * 

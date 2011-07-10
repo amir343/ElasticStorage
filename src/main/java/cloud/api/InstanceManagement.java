@@ -1,17 +1,16 @@
 package cloud.api;
 
+import cloud.common.NodeConfiguration;
 import instance.InstanceProcess;
 import instance.Node;
+import logger.Logger;
+import scenarios.manager.CloudConfiguration;
+import se.sics.kompics.address.Address;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import logger.Logger;
-import scenarios.manager.CloudConfiguration;
-import se.sics.kompics.address.Address;
-import cloud.common.NodeConfiguration;
 
 /**
  * 

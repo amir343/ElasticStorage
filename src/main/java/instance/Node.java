@@ -1,12 +1,11 @@
 package instance;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import se.sics.kompics.address.Address;
+
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-
-import org.apache.commons.lang.builder.HashCodeBuilder;
-
-import se.sics.kompics.address.Address;
 
 /**
  * 

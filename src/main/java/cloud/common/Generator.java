@@ -1,9 +1,9 @@
 package cloud.common;
 
-import instance.common.Request;
 import cloud.elb.BlocksActivated;
 import cloud.requestengine.DownloadStarted;
 import cloud.requestengine.RequestGeneratorInit;
+import instance.common.Request;
 import se.sics.kompics.PortType;
 
 /**

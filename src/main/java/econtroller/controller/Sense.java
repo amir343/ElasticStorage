@@ -1,7 +1,5 @@
 package econtroller.controller;
 
-import java.util.List;
-
 import se.sics.kompics.Event;
 import se.sics.kompics.address.Address;
 

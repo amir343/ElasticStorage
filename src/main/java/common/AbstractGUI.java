@@ -1,10 +1,13 @@
 package common;
 
+import cloud.gui.SnapshotActionListener;
 import instance.gui.LogTextAreaMouseListener;
+import org.apache.commons.io.FileUtils;
+import org.jfree.chart.JFreeChart;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.GridLayout;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -12,23 +15,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.imageio.ImageIO;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.KeyStroke;
-
-import org.apache.commons.io.FileUtils;
-import org.jfree.chart.JFreeChart;
-
-import cloud.gui.SnapshotActionListener;
 
 /**
  * 
@@ -128,6 +114,25 @@ public abstract class AbstractGUI extends JFrame implements GUI {
 		tabbedPane.addTab("Log", logPanel);
 		
 	}
+
+    protected void setUIManager() {
+        try {
+            for (UIManager.LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (UnsupportedLookAndFeelException e) {
+            // handle exception
+        } catch (ClassNotFoundException e) {
+            // handle exception
+        } catch (InstantiationException e) {
+            // handle exception
+        } catch (IllegalAccessException e) {
+            // handle exception
+        }
+    }
 	
 	protected void createMenuBar() {
 		menuBar = new JMenuBar();

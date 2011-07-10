@@ -1,11 +1,10 @@
 package cloud.common;
 
 import instance.common.Block;
-
-import java.util.List;
-
 import se.sics.kompics.Init;
 import se.sics.kompics.address.Address;
+
+import java.util.List;
 
 /**
  * 

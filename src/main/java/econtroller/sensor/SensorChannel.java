@@ -1,9 +1,9 @@
 package econtroller.sensor;
 
-import se.sics.kompics.PortType;
 import cloud.elb.SenseData;
 import econtroller.controller.Sense;
 import econtroller.controller.StartSense;
+import se.sics.kompics.PortType;
 
 /**
  * 

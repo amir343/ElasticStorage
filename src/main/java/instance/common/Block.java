@@ -1,9 +1,9 @@
 package instance.common;
 
+import org.apache.commons.lang.builder.HashCodeBuilder;
+
 import java.io.Serializable;
 import java.util.Comparator;
-
-import org.apache.commons.lang.builder.HashCodeBuilder;
 
 /**
  * 

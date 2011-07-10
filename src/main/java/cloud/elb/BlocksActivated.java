@@ -1,12 +1,11 @@
 package cloud.elb;
 
 import instance.common.Block;
+import se.sics.kompics.Event;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import se.sics.kompics.Event;
 
 /**
  * 

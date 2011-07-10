@@ -1,9 +1,9 @@
 package logger;
 
+import common.GUI;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import common.GUI;
 
 
 /**

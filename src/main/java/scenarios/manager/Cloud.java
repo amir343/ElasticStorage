@@ -1,5 +1,7 @@
 package scenarios.manager;
 
+import cloud.CloudProvider;
+import cloud.common.NodeConfiguration;
 import instance.Instance;
 import instance.Node;
 import instance.common.Block;
@@ -11,9 +13,6 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
-
-import cloud.CloudProvider;
-import cloud.common.NodeConfiguration;
 
 /**
  * 

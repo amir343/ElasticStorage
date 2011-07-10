@@ -1,11 +1,10 @@
 package instance.gui;
 
+import common.AbstractGUI;
+
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
-import javax.swing.JFileChooser;
-
-import common.AbstractGUI;
 
 /**
  * 

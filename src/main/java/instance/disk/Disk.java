@@ -1,24 +1,17 @@
 package instance.disk;
 
-import instance.common.Block;
-import instance.common.BlockResponse;
-import instance.common.DiskChannel;
-import instance.common.DiskInit;
-import instance.common.LoadBlock;
-import instance.common.ReadBlock;
-import instance.common.Ready;
+import instance.common.*;
 import instance.common.Ready.Device;
 import instance.gui.InstanceGUI;
 import instance.os.RestartSignal;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import logger.Logger;
 import logger.LoggerFactory;
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
 import se.sics.kompics.Negative;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 

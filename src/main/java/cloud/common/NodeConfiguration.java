@@ -2,12 +2,11 @@ package cloud.common;
 
 import instance.Node;
 import instance.common.Block;
+import se.sics.kompics.address.Address;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
-
-import se.sics.kompics.address.Address;
 
 /**
  * 

@@ -1,14 +1,12 @@
 package scenarios.executor;
 
-import instance.Instance;
-import instance.common.Size;
-
-import org.apache.log4j.PropertyConfigurator;
-
-import scenarios.manager.Cloud;
-import scenarios.manager.ControllerApplication;
 import cloud.CloudProvider;
 import econtroller.ElasticController;
+import instance.Instance;
+import instance.common.Size;
+import org.apache.log4j.PropertyConfigurator;
+import scenarios.manager.Cloud;
+import scenarios.manager.ControllerApplication;
 
 /**
  * 

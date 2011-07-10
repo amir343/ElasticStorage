@@ -1,44 +1,27 @@
 package instance.gui;
 
+import common.AbstractGUI;
+import eu.hansolo.steelseries.gauges.Radial;
+import eu.hansolo.steelseries.tools.BackgroundColor;
+import eu.hansolo.steelseries.tools.FrameDesign;
 import instance.common.Block;
 import instance.common.Size;
 import instance.os.InstanceSnapshot;
 import instance.os.OS;
-
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.GridLayout;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.imageio.ImageIO;
-import javax.swing.BorderFactory;
-import javax.swing.JLabel;
-import javax.swing.JMenuItem;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.table.DefaultTableModel;
-
 import logger.Logger;
 import logger.LoggerFactory;
-
 import org.apache.commons.lang.StringUtils;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 
-import common.AbstractGUI;
-
-import eu.hansolo.steelseries.gauges.Radial;
-import eu.hansolo.steelseries.tools.BackgroundColor;
-import eu.hansolo.steelseries.tools.FrameDesign;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 
@@ -86,6 +69,7 @@ public class InstanceGUI extends AbstractGUI {
 	private JLabel costLabel;
 	
 	public InstanceGUI() {
+        setUIManager();
 		createMenuBar();
 		createTabs();
 		addWindowListener();

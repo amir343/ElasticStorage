@@ -1,18 +1,5 @@
 package econtroller;
 
-import org.apache.log4j.PropertyConfigurator;
-
-import se.sics.kompics.Component;
-import se.sics.kompics.ComponentDefinition;
-import se.sics.kompics.Fault;
-import se.sics.kompics.Handler;
-import se.sics.kompics.Kompics;
-import se.sics.kompics.address.Address;
-import se.sics.kompics.network.Network;
-import se.sics.kompics.network.mina.MinaNetwork;
-import se.sics.kompics.network.mina.MinaNetworkInit;
-import se.sics.kompics.timer.Timer;
-import se.sics.kompics.timer.java.JavaTimer;
 import econtroller.actuator.Actuator;
 import econtroller.actuator.ActuatorChannel;
 import econtroller.actuator.ActuatorInit;
@@ -25,6 +12,14 @@ import econtroller.modeler.ModelerInit;
 import econtroller.sensor.Sensor;
 import econtroller.sensor.SensorChannel;
 import econtroller.sensor.SensorInit;
+import org.apache.log4j.PropertyConfigurator;
+import se.sics.kompics.*;
+import se.sics.kompics.address.Address;
+import se.sics.kompics.network.Network;
+import se.sics.kompics.network.mina.MinaNetwork;
+import se.sics.kompics.network.mina.MinaNetworkInit;
+import se.sics.kompics.timer.Timer;
+import se.sics.kompics.timer.java.JavaTimer;
 
 /**
  * 

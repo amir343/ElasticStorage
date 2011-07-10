@@ -1,12 +1,10 @@
 package instance.gui;
 
+import common.GUI;
+
+import javax.swing.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
-import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
-
-import common.GUI;
 
 /**
  * 

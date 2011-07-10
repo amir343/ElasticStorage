@@ -1,14 +1,11 @@
 package cloud.gui;
 
-import java.awt.GridLayout;
+import cloud.common.NodeConfiguration;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JLabel;
-
-import cloud.common.NodeConfiguration;
 
 /**
  * 

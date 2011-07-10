@@ -1,7 +1,7 @@
 package econtroller.sensor;
 
-import se.sics.kompics.Init;
 import econtroller.ControllerConfiguration;
+import se.sics.kompics.Init;
 
 /**
  * 

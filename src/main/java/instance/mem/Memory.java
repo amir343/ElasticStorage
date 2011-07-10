@@ -1,28 +1,19 @@
 package instance.mem;
 
-import instance.common.AckBlock;
-import instance.common.Block;
-import instance.common.MemChannel;
-import instance.common.MemoryInit;
-import instance.common.NAckBlock;
-import instance.common.Ready;
+import cloud.common.NodeConfiguration;
+import instance.common.*;
 import instance.common.Ready.Device;
-import instance.common.RequestBlock;
-import instance.common.Size;
-import instance.common.WriteBlockIntoMemory;
 import instance.gui.InstanceGUI;
 import instance.os.RestartSignal;
-
-import java.util.Collections;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-
 import logger.Logger;
 import logger.LoggerFactory;
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
 import se.sics.kompics.Negative;
-import cloud.common.NodeConfiguration;
+
+import java.util.Collections;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * 

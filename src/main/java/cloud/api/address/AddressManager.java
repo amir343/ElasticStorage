@@ -1,21 +1,16 @@
 package cloud.api.address;
 
+import cloud.gui.CloudGUI;
+import com.thoughtworks.xstream.XStream;
+import logger.Logger;
+import logger.LoggerFactory;
+import se.sics.kompics.address.Address;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Scanner;
-import java.util.Set;
-
-import logger.Logger;
-import logger.LoggerFactory;
-import se.sics.kompics.address.Address;
-import cloud.gui.CloudGUI;
-
-import com.thoughtworks.xstream.XStream;
+import java.util.*;
 
 /**
  * 

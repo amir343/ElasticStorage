@@ -1,17 +1,10 @@
 package instance;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.ObjectOutputStream;
-import java.io.OutputStreamWriter;
-
-import scenarios.manager.CloudConfiguration;
 import cloud.api.InstanceConfiguration;
 import cloud.common.NodeConfiguration;
+import scenarios.manager.CloudConfiguration;
+
+import java.io.*;
 
 /**
  * 
