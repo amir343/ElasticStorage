@@ -35,7 +35,7 @@ public class DataFilesGenerator {
 	
 	public void add(TrainingData td) {
 		tp.add(td.getThroughputMean());
-		cpu.add(td.getCPULoadMean());
+		cpu.add(td.getCpuLoadMean());
 		nn.add(td.getNrNodes());
 		bw.add(td.getBandwidthMean());
 		tc.add(td.getTotalCost());

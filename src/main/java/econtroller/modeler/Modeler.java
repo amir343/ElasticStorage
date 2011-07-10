@@ -78,7 +78,7 @@ public class Modeler extends ComponentDefinition {
 		subscribe(sampleTraingingDataHandler, timer);
 		subscribe(instanceCreationHandler, timer);
 		
-		subscribe(trainingDataHanler, network);
+		subscribe(trainingDataHandler, network);
 	}
 	
 	Handler<ModelerInit> initHandler = new Handler<ModelerInit>() {
@@ -147,31 +147,21 @@ public class Modeler extends ComponentDefinition {
 	/**
 	 * This handler is responsible for sorting out the response (raw data tuples) it receives from cloudProvider
 	 */
-	Handler<TrainingData> trainingDataHanler = new Handler<TrainingData>() {
+	Handler<TrainingData> trainingDataHandler = new Handler<TrainingData>() {
 		@Override
 		public void handle(TrainingData event) {
 			logger.info("Training data is received: " + event.toString());
 			generator.add(event);
-			if (event.getBandwidthMean() != null) {
-				bandwidthSeries.add(System.currentTimeMillis()-start, event.getBandwidthMean());
-				gui.updateBandwidthChart(getBandwidthChart());
-			} 
-			if (event.getCPULoadMean() != null) {
-				cpuSeries.add(System.currentTimeMillis()-start, event.getCPULoadMean());
-				gui.updateCpuLoadChart(getCPUChart());
-			}
-			if (event.getResponseTimeMean() != null) {
-				rtSeries.add(System.currentTimeMillis()-start, event.getResponseTimeMean());
-				gui.updateResponseTimeChart(getResponseTimeChart());
-			}
-			if (event.getTotalCost() != null) {
-				costSeries.add(System.currentTimeMillis()-start, event.getTotalCost());
-				gui.updateTotalCostChart(getTotalCostChart());
-			}
-			if (event.getThroughputMean() != null) {
-				tpSeries.add(System.currentTimeMillis()-start, event.getThroughputMean());
-				gui.updateThroughputChart(getAverageThroughputChart());
-			}
+			bandwidthSeries.add(System.currentTimeMillis()-start, event.getBandwidthMean());
+			gui.updateBandwidthChart(getBandwidthChart());
+			cpuSeries.add(System.currentTimeMillis()-start, event.getCpuLoadMean());
+			gui.updateCpuLoadChart(getCPUChart());
+			rtSeries.add(System.currentTimeMillis()-start, event.getResponseTimeMean());
+			gui.updateResponseTimeChart(getResponseTimeChart());
+			costSeries.add(System.currentTimeMillis()-start, event.getTotalCost());
+			gui.updateTotalCostChart(getTotalCostChart());
+			tpSeries.add(System.currentTimeMillis()-start, event.getThroughputMean());
+			gui.updateThroughputChart(getAverageThroughputChart());
 			nrInstancesSeries.add(System.currentTimeMillis()-start, event.getNrNodes());
 			gui.updateNrOfInstancesChart(getNrInstancesChart());
 		}
