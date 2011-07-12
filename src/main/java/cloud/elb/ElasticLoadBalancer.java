@@ -186,9 +186,9 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 	Handler<MyCPULoadAndBandwidth> myCPULoadHandler = new Handler<MyCPULoadAndBandwidth>() {
 		@Override
 		public void handle(MyCPULoadAndBandwidth event) {
-			loadBalancerAlgorithm.updateCPULoadFor(event.getNode(), event.getCpuLoad());
-			cpuLoads.put(event.getSource(), event.getCpuLoad());
-			bandwidths.put(event.getSource(), event.getCurrentBandwidth());
+			loadBalancerAlgorithm.updateCPULoadFor(event.node(), event.cpuLoad());
+			cpuLoads.put(event.getSource(), event.cpuLoad());
+			bandwidths.put(event.getSource(), event.currentBandwidth());
 		}
 	};
 	
@@ -237,9 +237,9 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 				trigger(data, network);
 			} else {
 				SenseData data = new SenseData(self, event.controller(), event.numberOfNodes());
-				data.setResponseTimeMean(event.getAverageResponseTime());
-				data.setThroughputMean(event.getAverageThroughput());
-				data.setCpuLoalMean(calculateCPULoadMean());
+				data.setAverageResponseTime(event.getAverageResponseTime());
+				data.setAverageThroughput(event.getAverageThroughput());
+				data.setCpuLoad(calculateCPULoadMean());
 				data.setBandwidthMean(calculateBandwidthMean());
 				data.setTotalCost(event.getTotalCost());
 				trigger(data, network);

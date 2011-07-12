@@ -96,7 +96,7 @@ public class RequestGenerator extends ComponentDefinition {
 	Handler<DownloadStarted> downloadStartedHandler = new Handler<DownloadStarted>() {
 		@Override
 		public void handle(DownloadStarted event) {
-			UUID id = UUID.fromString(event.getRequestID());
+			UUID id = UUID.fromString(event.requestID());
 			if (null != currentRequests.get(id)) {
                 currentRequests.get(id).setEnd(System.currentTimeMillis());
                 completedRequest.add(currentRequests.get(id));

@@ -57,11 +57,11 @@ public class HealthChecker extends ComponentDefinition {
 		@Override
 		public void handle(HealthCheckerInit event) {
 			logger = LoggerFactory.getLogger(HealthChecker.class, CloudGUI.getInstance());
-			PERIOD = event.getPeriod() == 0 ? PERIOD : event.getPeriod();
-			DELTA = event.getDelta() == 0 ? DELTA : event.getDelta();
+			PERIOD = event.period() == 0 ? PERIOD : event.period();
+			DELTA = event.delta() == 0 ? DELTA : event.delta();
 			logger.info("HealthChecker started with Period=" + PERIOD + " and Delta=" + DELTA);
-			self = event.getSelfAddress();
-			startPeriodicHeartbeatTimer();
+			self = event.self();
+            startPeriodicHeartbeatTimer();
 		}
 	};
 	
