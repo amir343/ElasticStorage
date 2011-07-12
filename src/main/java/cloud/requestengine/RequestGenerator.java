@@ -47,8 +47,9 @@ public class RequestGenerator extends ComponentDefinition {
 	private RequestGenerator reqGen;
 	private boolean running = false;
 	private long RT_COLLECTION_TIMEOUT = 5000;
-	
-	public RequestGenerator() {
+    private double previousTP = 0.0;
+
+    public RequestGenerator() {
 		reqGen = this;
 		
 		subscribe(initHandler, generator);
@@ -96,10 +97,12 @@ public class RequestGenerator extends ComponentDefinition {
 		@Override
 		public void handle(DownloadStarted event) {
 			UUID id = UUID.fromString(event.getRequestID());
-			currentRequests.get(id).setEnd(System.currentTimeMillis());
-			completedRequest.add(currentRequests.get(id));
-			completedRequestClone.add(currentRequests.get(id));
-			currentRequests.remove(id);			
+			if (null != currentRequests.get(id)) {
+                currentRequests.get(id).setEnd(System.currentTimeMillis());
+                completedRequest.add(currentRequests.get(id));
+                completedRequestClone.add(currentRequests.get(id));
+                currentRequests.remove(id);
+            }
 		}
 	};
 	
@@ -180,9 +183,10 @@ public class RequestGenerator extends ComponentDefinition {
 			throughputSum += tp;
 		}
 		if (throughputCollection.size() == 0)
-			mean = 0;
+			return previousTP;
 		else
 			mean = throughputSum/throughputCollection.size();
+        previousTP = mean;
 		throughputCollection.clear();
 		return mean;
 	}
