@@ -31,6 +31,7 @@ public class CustomDistribution implements Distribution {
 	@Override
 	public long getNextValue() {
 		if (currentCounter >= lines.size()-1 ) {
+            currentCounter = 0;
 			return previousValue;
 		} else {
 			previousValue = Integer.parseInt(lines.get(currentCounter).trim())*1000;
@@ -52,11 +53,6 @@ public class CustomDistribution implements Distribution {
 		double x = 1;
 		for (int i=0; i<lines.size(); i++) {
 			int y = Integer.parseInt(lines.get(i).trim());
-			x += y;
-			xySeries.add(x, y);
-		}
-		for (int i=0; i<30; i++) {
-			int y = Integer.parseInt(lines.get(lines.size()-1).trim());
 			x += y;
 			xySeries.add(x, y);
 		}

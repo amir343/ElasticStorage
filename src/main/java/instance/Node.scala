@@ -68,10 +68,10 @@ object Node {
     }
     catch {
       case e: UnknownHostException => {
-        e.printStackTrace
+        e.printStackTrace()
       }
     }
-    return self
+    self
   }
 
 

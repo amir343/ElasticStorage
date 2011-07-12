@@ -8,7 +8,9 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -28,17 +30,17 @@ public class DataFilesGenerator {
 	private List<Double> tc = new ArrayList<Double>();
 	private List<Double> rt = new ArrayList<Double>();
 
-    private File nnStateDump = new File("dumps/input_nn_state.dump");
-    private File tpStateDump = new File("dumps/input_tp_state.dump");
-    private File cpuStateDump = new File("dumps/output_cpu_state.dump");
-    private File bwStateDump = new File("dumps/output_bw_state.dump");
-    private File tcStateDump = new File("dumps/output_tc_state.dump");
-    private File rtStateDump = new File("dumps/output_rt_state.dump");
+    private File nnStateDump;
+    private File tpStateDump;
+    private File cpuStateDump;
+    private File bwStateDump;
+    private File tcStateDump;
+    private File rtStateDump;
 
-	private File cpuDump = new File("dumps/cpu.dump");
-	private File bwDump = new File("dumps/bw.dump");
-	private File tcDump = new File("dumps/tc.dump");
-	private File rtDump = new File("dumps/rt.dump");
+	private File cpuDump;
+	private File bwDump;
+	private File tcDump;
+	private File rtDump;
 	
 	public void add(TrainingData td) {
 		tp.add(td.getThroughputMean());
@@ -59,6 +61,7 @@ public class DataFilesGenerator {
 	}
 	
 	public void dump() {
+        prepareFiles();
 		generateCPUdumpFile();
 		generateBWDumpFile();
 		generateTCDumpFile();
@@ -70,6 +73,21 @@ public class DataFilesGenerator {
         generateStateDumpFile(tcStateDump, tc);
         generateStateDumpFile(rtStateDump, rt);
 	}
+
+    private void prepareFiles() {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy.MM.dd-HH:mm:ss");
+        String folder = simpleDateFormat.format(Calendar.getInstance().getTime());
+        nnStateDump = new File("dumps/ " + folder + "/input_nn_state.dump");
+        tpStateDump = new File("dumps/ " + folder + "/input_tp_state.dump");
+        cpuStateDump = new File("dumps/ " + folder + "/output_cpu_state.dump");
+        bwStateDump = new File("dumps/ " + folder + "/output_bw_state.dump");
+        tcStateDump = new File("dumps/ " + folder + "/output_tc_state.dump");
+        rtStateDump = new File("dumps/ " + folder + "/output_rt_state.dump");
+        cpuDump = new File("dumps/ " + folder + "/cpu.dump");
+        bwDump = new File("dumps/ " + folder + "/bw.dump");
+        tcDump = new File("dumps/ " + folder + "/tc.dump");
+        rtDump = new File("dumps/ " + folder + "/rt.dump");
+    }
 
     private void generateStateDumpFile(File dumpFile, List data) {
         StringBuilder sb = new StringBuilder();

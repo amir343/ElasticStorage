@@ -135,6 +135,7 @@ public class Modeler extends ComponentDefinition {
                     if (currentlyOrdered > minNrInstances ) {
                         removeNode();
                     } else {
+                        generator.dump();
                         add = true;
                         requestNewNode();
                     }
