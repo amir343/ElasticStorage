@@ -200,9 +200,9 @@ public class Controller extends ComponentDefinition {
 		trigger(cancelTimeout, timer);		
 	}
 
-	public void actuate() {
+	public void actuate(double controlInput, int numberOfNodes) {
 		if (connectedToCloudProvider)
-			trigger(new NodeRequest(cloudProviderAddress), actuatorChannel);	
+			trigger(new NodeRequest(cloudProviderAddress, controlInput, numberOfNodes), actuatorChannel);
 		else
 			logger.warn("You should first connect to cloud provider");
 	}

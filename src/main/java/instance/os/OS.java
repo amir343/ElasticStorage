@@ -542,7 +542,9 @@ public class OS extends ComponentDefinition {
 			String totalCostString = df.format(totalCost);
 			String periodicCostString = df.format(costToSend);
 			gui.updateCurrentCost(totalCostString);
+/*
 			logger.debug("This instance costed $ " + periodicCostString + " so far");
+*/
 			trigger(new InstanceCost(self, cloudProvider, node, totalCostString, periodicCostString), network);
 			scheduleCostCalculation();
 		}

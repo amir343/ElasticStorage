@@ -2,6 +2,7 @@ package cloud.common
 
 import se.sics.kompics.PortType
 import cloud.api.{RebalanceResponseMap, RebalanceDataBlocks}
+import cloud.elb.NodesToRemove
 
 /**
  * @author Amir Moulavi
@@ -17,7 +18,9 @@ class ELB extends PortType {
   negative(classOf[RemoveReplica])
   negative(classOf[RebalanceDataBlocks])
   negative(classOf[SendRawData])
+  negative(classOf[SelectNodesToRemove])
   positive(classOf[Replicas])
   positive(classOf[RebalanceResponseMap])
+  positive(classOf[NodesToRemove])
 
 }

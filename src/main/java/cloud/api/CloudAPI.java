@@ -2,14 +2,11 @@ package cloud.api;
 
 import cloud.api.address.AddressManager;
 import cloud.common.*;
+import cloud.elb.NodesToRemove;
 import cloud.epfd.HealthCheckerInit;
 import cloud.gui.CloudGUI;
 import cloud.requestengine.ResponseTimeService;
-import econtroller.controller.Connect;
-import econtroller.controller.ConnectionEstablished;
-import econtroller.controller.Disconnect;
-import econtroller.controller.NewNodeRequest;
-import econtroller.modeler.RemoveNode;
+import econtroller.controller.*;
 import instance.Node;
 import instance.common.InstanceStarted;
 import instance.common.ShutDown;
@@ -73,6 +70,7 @@ public class CloudAPI extends ComponentDefinition {
 		
 		subscribe(replicasHandler, elb);
 		subscribe(rebalanceResponseHandler, elb);
+        subscribe(nodesToRemoveHandler, elb);
 		
 		subscribe(instanceStartedHandler, network);
 		subscribe(connectControllerHandler, network);
@@ -191,10 +189,12 @@ public class CloudAPI extends ComponentDefinition {
 	Handler<NewNodeRequest> newNodeRequestHandler = new Handler<NewNodeRequest>() {
 		@Override
 		public void handle(NewNodeRequest event) {
-			NodeConfiguration nodeConfiguration = new NodeConfiguration();
-			Node node = getNewNodeInfo();
-			nodeConfiguration.setNodeInfo(node);
-			trigger(new RebalanceDataBlocks(nodeConfiguration), elb);
+            for (Integer i=0; i<event.numberOfNodes(); i++) {
+                NodeConfiguration nodeConfiguration = new NodeConfiguration();
+                Node node = getNewNodeInfo();
+                nodeConfiguration.setNodeInfo(node);
+                trigger(new RebalanceDataBlocks(nodeConfiguration), elb);
+            }
 		}
 	};
 	
@@ -251,12 +251,38 @@ public class CloudAPI extends ComponentDefinition {
 	Handler<RemoveNode> removeNodeHandler = new Handler<RemoveNode>() {
 		@Override
 		public void handle(RemoveNode event) {
-			if (currentNodes.size() != 0) {
+			if (!currentNodes.isEmpty()) {
+/*
 				gui.removeNodeFromCurrentInstances(currentNodes.get(0));
 				kill(currentNodes.get(0));
-			}
+*/
+                trigger(new SelectNodesToRemove(currentNodes, event.numberOfNodes()), elb);
+			} else {
+                logger.error("No nodes left to kill!");
+            }
 		}
 	};
+
+    /**
+     * This handler is triggered when the ELB returns the nodes to remove for CloudAPI
+     */
+    Handler<NodesToRemove> nodesToRemoveHandler = new Handler<NodesToRemove>() {
+        @Override
+        public void handle(NodesToRemove event) {
+            if (!currentNodes.isEmpty()) {
+                for (Node node : event.nodes()) {
+                    logger.warn("Killing node " + node);
+                    gui.removeNodeFromCurrentInstances(node);
+                    kill(node);
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        logger.error("Error while trying to sleep between the kills");
+                    }
+                }
+            }
+        }
+    };
 	
 	private void collectData(Address source, boolean isTrainingData) {
 		SendRawData data = new SendRawData(source, numberOfInstances, isTrainingData);
@@ -274,7 +300,7 @@ public class CloudAPI extends ComponentDefinition {
 	
 	public void kill(Node node) {
 		numberOfInstances--;
-		logger.debug("Shuting down Node " + node);
+		logger.debug("Shutting down Node " + node);
 		logger.debug("Number of instances: " + numberOfInstances);
 		trigger(new ShutDown(self, node.getAddress()), network);
 		trigger(new InstanceKilled(node), epfd);

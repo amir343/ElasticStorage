@@ -2,6 +2,7 @@ package econtroller.actuator;
 
 import econtroller.ControllerConfiguration;
 import econtroller.controller.NewNodeRequest;
+import econtroller.controller.RemoveNode;
 import econtroller.gui.ControllerGUI;
 import logger.Logger;
 import logger.LoggerFactory;
@@ -26,8 +27,9 @@ public class Actuator extends ComponentDefinition {
 	Positive<Network> network = requires(Network.class);
 	Negative<ActuatorChannel> actuatorChannel = provides(ActuatorChannel.class);
 
-	protected ControllerConfiguration controllerConfiguaration;
+	protected ControllerConfiguration controllerConfiguration;
 	protected Address self;
+
 
 	public Actuator() {
 		subscribe(initHandler, control);
@@ -38,8 +40,8 @@ public class Actuator extends ComponentDefinition {
 	Handler<ActuatorInit> initHandler = new Handler<ActuatorInit>() {
 		@Override
 		public void handle(ActuatorInit event) {
-			controllerConfiguaration = event.getControllerConfiguration();
-			self = controllerConfiguaration.getSelfAddress();
+			controllerConfiguration = event.getControllerConfiguration();
+			self = controllerConfiguration.getSelfAddress();
 			logger.info("Actuator component is stared.");
 		}
 	};
@@ -50,8 +52,20 @@ public class Actuator extends ComponentDefinition {
 	Handler<NodeRequest> nodeRequestHandler = new Handler<NodeRequest>() {
 		@Override
 		public void handle(NodeRequest event) {
-			Address cloudProviderAddress = event.getCloudProviderAddress();
-			trigger(new NewNodeRequest(self, cloudProviderAddress), network);	
+            if (event.controlInput() > 0) {
+                Address cloudProviderAddress = event.cloudProviderAddress();
+                int controlInput = (int) event.controlInput();
+                int diff = controlInput - event.numberOfNodes();
+                if (diff > 0 ) {
+                    logger.info("Request to launch " + diff + " node(s)");
+                    trigger(new NewNodeRequest(self, cloudProviderAddress, diff), network);
+                }
+                else if (diff < 0 ) {
+                    diff = Math.abs(diff);
+                    logger.info("Request to remove " + diff + " node(s)");
+                    trigger(new RemoveNode(self, cloudProviderAddress, diff), network);
+                }
+            }
 		}
 	};
 	

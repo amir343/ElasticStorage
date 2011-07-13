@@ -21,8 +21,9 @@ public class NaiveController implements ControllerDesign {
 	private Logger logger = LoggerFactory.getLogger(NaiveController.class, ControllerGUI.getInstance());
 	private Controller controller;
 	private SenseData senseData;
-	
-	public NaiveController() {
+    private int numberOfNodes;
+
+    public NaiveController() {
 		
 	}
 
@@ -30,13 +31,14 @@ public class NaiveController implements ControllerDesign {
 	public void sense(Address source, SenseData monitorPacket) {
 		logger.debug("Adding monitor " + monitorPacket.toString());
 		this.senseData = monitorPacket;
+        this.numberOfNodes = monitorPacket.numberOfNodes();
 	}
 
 	@Override
 	public void action() {
 		if (senseData.getCpuLoad() > THRESHOLD) {
 			logger.warn("Ordering a new node to cloudProvider");
-			controller.actuate();
+			controller.actuate(1.0, numberOfNodes);
 		} else {
 			logger.warn("Everything is under control!");
 		}

@@ -9,7 +9,7 @@ import reflect.BeanProperty
  * @date 2011-07-12
  *
  */
-class SenseData(source:Address, destination:Address, numberOfNodes:Int) extends Message(source, destination) {
+class SenseData(source:Address, destination:Address, val numberOfNodes:Int) extends Message(source, destination) {
 
   @BeanProperty
   var averageResponseTime: Double = _
@@ -25,7 +25,7 @@ class SenseData(source:Address, destination:Address, numberOfNodes:Int) extends 
   override def toString: String = {
       val sb: StringBuilder = new StringBuilder
       sb.append("SenseData: \n{\n")
-        sb.append("\tcpuAverage: ").append(cpuLoad).append("\n")
+        sb.append("\tcpuLoadAverage: ").append(cpuLoad).append("\n")
         sb.append("\tbandwidthAverage: ").append(bandwidthMean).append("\n")
         sb.append("\ttotalCost: ").append(totalCost).append("\n")
         sb.append("\taverageResponseTime: ").append(averageResponseTime).append("\n")

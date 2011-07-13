@@ -40,8 +40,23 @@ public class LeastCPULoadAlgorithm implements LoadBalancerAlgorithm {
 		NodeStatistics node = Collections.min(list, new LeastCPULoadAlgorithm.Comp());
 		return node.node();
 	}
-	
-	public void updateCPULoadFor(Node node, double cpuLoad) {
+
+    @Override
+    public List<Node> selectNodesToRemove(List<Node> nodes, int numberOfNodesToRemove) {
+        List<NodeStatistics> list = new ArrayList<NodeStatistics>();
+        for (Node node : nodes) {
+            NodeStatistics stat = getNodeStatisticsFor(node);
+            list.add(stat);
+        }
+        Collections.sort(list, new Comp());
+        List<Node> result = new ArrayList<Node>();
+        for (int i=0; i< numberOfNodesToRemove; i++) {
+            result.add(list.get(i).node());
+        }
+        return result;
+    }
+
+    public void updateCPULoadFor(Node node, double cpuLoad) {
 		NodeStatistics nodeStat = getNodeStatisticsFor(node);
 		nodeStat.setCpuLoad(cpuLoad);	
 	}

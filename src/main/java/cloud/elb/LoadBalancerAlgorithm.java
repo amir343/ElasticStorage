@@ -15,4 +15,6 @@ public interface LoadBalancerAlgorithm {
 
 	Node getNextNodeFrom(List<Node> replicas);
 
+    List<Node> selectNodesToRemove(List<Node> nodes, int numberOfNodesToRemove);
+
 }

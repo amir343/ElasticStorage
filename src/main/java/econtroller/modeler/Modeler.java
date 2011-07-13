@@ -3,6 +3,7 @@ package econtroller.modeler;
 import cloud.common.RequestTrainingData;
 import cloud.common.TrainingData;
 import econtroller.controller.NewNodeRequest;
+import econtroller.controller.RemoveNode;
 import econtroller.gui.ControllerGUI;
 import logger.Logger;
 import logger.LoggerFactory;
@@ -151,7 +152,9 @@ public class Modeler extends ComponentDefinition {
 	Handler<TrainingData> trainingDataHandler = new Handler<TrainingData>() {
 		@Override
 		public void handle(TrainingData event) {
+/*
 			logger.info("Training data is received: " + event.toString());
+*/
 			generator.add(event);
 			bandwidthSeries.add(System.currentTimeMillis()-start, event.getBandwidthMean());
 			gui.updateBandwidthChart(getBandwidthChart());
@@ -182,12 +185,12 @@ public class Modeler extends ComponentDefinition {
 
 	protected void removeNode() {
 		currentlyOrdered--;
-		trigger(new RemoveNode(self, cloudProvider), network);
+		trigger(new RemoveNode(self, cloudProvider, 1), network);
 	}
 
 	protected void requestNewNode() {
 		currentlyOrdered++;
-		trigger(new NewNodeRequest(self, cloudProvider), network);
+		trigger(new NewNodeRequest(self, cloudProvider, 1), network);
 	}
 
 	public void startModeler(boolean orderingEnabled, int maximumNrInstances, int minimumNrInstances, int sampleInterval, int orderInterval) {

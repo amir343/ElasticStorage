@@ -1,34 +1,12 @@
-%%  Number of nodes state %%%%%%%%%%%%%%%
-load input_nn_state.dump;
-input_nn = input_nn_state(:,1);
-
-%%  Throughput state %%%%%%%%%%%%%%%
-load input_tp_state.dump;
-input_tp = input_tp_state(:,1);
-
-%%  CPU state %%%%%%%%%%%%%%%
-load output_cpu_state.dump;
-output_cpu = output_cpu_state(:,1);
-
-%%  Bandwidth state %%%%%%%%%%%%%%%
-load output_bw_state.dump;
-output_bw = output_bw_state(:,1);
-
-%%  Total Cost state %%%%%%%%%%%%%%%
-load output_tc_state.dump;
-output_tc = output_tc_state(:,1);
-
-%%  Response Time state %%%%%%%%%%%%%%%
-load output_rt_state.dump;
-output_rt = output_rt_state(:,1);
-
-
 %% CPU training data %%%%%%%%%%%%%%%
 load cpu.dump;
 nextCpu = cpu(:,1);
 tpk = cpu(:,2);
 cpuk = cpu(:,3);
 nn = cpu(:,4);
+
+tpk = tpk-mean(tpk);
+cpuk = cpuk-mean(cpuk);
 
 X = [tpk cpuk nn];
 cpuCoef = regress(nextCpu,X);
@@ -40,6 +18,9 @@ nextBw = bw(:,1);
 tpk = bw(:,2);
 bwk = bw(:,3);
 nn = bw(:,4);
+
+tpk = tpk-mean(tpk);
+bwk = bwk-mean(bwk);
 
 X = [tpk bwk nn];
 bwCoef = regress(nextBw,X);
@@ -53,6 +34,10 @@ bwk = tc(:,3);
 tck = tc(:,4);
 nn = tc(:,5);
 
+tpk = tpk-mean(tpk);
+bwk = bwk-mean(bwk);
+tck = tck-mean(tck);
+
 X = [tpk bwk tck nn];
 tcCoef = regress(nextTc,X);
 
@@ -64,6 +49,10 @@ tpk = rt(:,2);
 cpuk = rt(:,3);
 bwk = rt(:,4);
 nn = rt(:,5);
+
+tpk = tpk-mean(tpk);
+cpuk = cpuk-mean(cpuk);
+bwk = bwk-mean(bwk);
 
 X = [tpk cpuk bwk nn];
 rtCoef = regress(nextRt,X);

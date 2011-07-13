@@ -75,18 +75,18 @@ public class DataFilesGenerator {
 	}
 
     private void prepareFiles() {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy.MM.dd-HH:mm:ss");
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy.MM.dd-HH.mm.ss");
         String folder = simpleDateFormat.format(Calendar.getInstance().getTime());
-        nnStateDump = new File("dumps/ " + folder + "/input_nn_state.dump");
-        tpStateDump = new File("dumps/ " + folder + "/input_tp_state.dump");
-        cpuStateDump = new File("dumps/ " + folder + "/output_cpu_state.dump");
-        bwStateDump = new File("dumps/ " + folder + "/output_bw_state.dump");
-        tcStateDump = new File("dumps/ " + folder + "/output_tc_state.dump");
-        rtStateDump = new File("dumps/ " + folder + "/output_rt_state.dump");
-        cpuDump = new File("dumps/ " + folder + "/cpu.dump");
-        bwDump = new File("dumps/ " + folder + "/bw.dump");
-        tcDump = new File("dumps/ " + folder + "/tc.dump");
-        rtDump = new File("dumps/ " + folder + "/rt.dump");
+        nnStateDump = new File("dumps/" + folder + "/input_nn_state.dump");
+        tpStateDump = new File("dumps/" + folder + "/input_tp_state.dump");
+        cpuStateDump = new File("dumps/" + folder + "/output_cpu_state.dump");
+        bwStateDump = new File("dumps/" + folder + "/output_bw_state.dump");
+        tcStateDump = new File("dumps/" + folder + "/output_tc_state.dump");
+        rtStateDump = new File("dumps/" + folder + "/output_rt_state.dump");
+        cpuDump = new File("dumps/" + folder + "/cpu.dump");
+        bwDump = new File("dumps/" + folder + "/bw.dump");
+        tcDump = new File("dumps/" + folder + "/tc.dump");
+        rtDump = new File("dumps/" + folder + "/rt.dump");
     }
 
     private void generateStateDumpFile(File dumpFile, List data) {

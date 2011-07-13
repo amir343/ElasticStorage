@@ -6,6 +6,7 @@ import cloud.common.*;
 import cloud.gui.CloudGUI;
 import cloud.requestengine.DownloadStarted;
 import cloud.requestengine.RequestGeneratorInit;
+import com.sun.org.apache.xpath.internal.NodeSet;
 import instance.Node;
 import instance.common.Block;
 import instance.common.BlocksAck;
@@ -47,8 +48,8 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 	private ELBTable elbTable;
 	protected Address self;
 	private static final long ELB_TREE_UPDATE_INTERVAL = 30000;
-	private Map<Address, Double> cpuLoads = new HashMap<Address, Double>();
-	private Map<Address, Long> bandwidths = new HashMap<Address, Long>();
+	private final Map<Address, Double> cpuLoads = new HashMap<Address, Double>();
+	private final Map<Address, Long> bandwidths = new HashMap<Address, Long>();
 
 	public ElasticLoadBalancer() {
 		subscribe(initHandler, elb);
@@ -58,6 +59,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 		subscribe(removeReplicaHandler, elb);
 		subscribe(rebalanceDataBlocksHandler, elb);
 		subscribe(sendRawDataHandler, elb);
+        subscribe(selectNodesToRemoveHandler, elb);
 		
 		subscribe(requestHandler, generator);
 		subscribe(responseTimeHandler, generator);
@@ -258,6 +260,18 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 		}
 	};
 
+    /**
+     * This handler is triggered when the cloudAPI ask for some nodes so he can remove. ELB selects
+     * the nodes with the least CPU load according to ELB algorithm that is running.
+     */
+    Handler<SelectNodesToRemove> selectNodesToRemoveHandler = new Handler<SelectNodesToRemove>() {
+        @Override
+        public void handle(SelectNodesToRemove event) {
+            List<Node> nodes = loadBalancerAlgorithm.selectNodesToRemove(event.nodes(), event.numberOfNodesToRemove());
+            trigger(new NodesToRemove(nodes), elb);
+        }
+    };
+
 	private double calculateBandwidthMean() {
 		if (bandwidths.size() == 0) return 0.0;
 		Long sum = 0L;
@@ -267,6 +281,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 				sum += bandwidths.get(node);
 			average = sum.doubleValue()/bandwidths.size();
 		}
+        bandwidths.clear();
 		return average;
 	}
 	
@@ -285,6 +300,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 				sum += cpuLoads.get(node);
 			average = sum/cpuLoads.size();
 		}
+        cpuLoads.clear();
 		return average;
 	}
 	
