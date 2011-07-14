@@ -21,6 +21,7 @@ public class StopControllerActionListener implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		gui.enableControllerDesignSection();
+        gui.enableModeler();
 		gui.stopController();
 	}
 

@@ -10,7 +10,6 @@ import logger.Logger;
 import logger.LoggerFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
-import sun.awt.HorizBagLayout;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -82,7 +81,7 @@ public class ControllerGUI extends AbstractGUI {
 	private JButton startModelerButton;
 	private JButton stopModelerButton;
 	private JLabel maxNrInstancesLbl;
-	private JTextField maxInstanceText;
+	private IntegerTextField maxInstanceText;
 	private JPanel cpuPanel;
 	private JPanel bandwidthPanel;
 	private JPanel responseTimePanel;
@@ -94,7 +93,7 @@ public class ControllerGUI extends AbstractGUI {
 	private ChartPanel rtChartPanel;
 	private ChartPanel costChartPanel;
 	private ChartPanel nrInstanceChartPanel;
-	private JButton estimateParametersButton;
+	private JButton dumpDataIntoFilesBtn;
 	private JButton resetModelerButton;
 	private ChartPanel throughputChartPanel;
 	private JPanel throughputPanel;
@@ -209,7 +208,7 @@ public class ControllerGUI extends AbstractGUI {
 							.addComponent(samplingOrderLbl)
 							.addComponent(maxNrInstancesLbl)
 							.addComponent(startModelerButton)
-							.addComponent(estimateParametersButton)
+							.addComponent(dumpDataIntoFilesBtn)
 							.addComponent(nrInstancePanel)
 							.addComponent(responseTimePanel)
 							.addComponent(cpuPanel))
@@ -247,7 +246,7 @@ public class ControllerGUI extends AbstractGUI {
 						 )
 				.addGroup(group.
 						createParallelGroup()
-							.addComponent(estimateParametersButton)
+							.addComponent(dumpDataIntoFilesBtn)
 							.addComponent(resetModelerButton)
 						 )
 				.addGroup(group.
@@ -324,8 +323,8 @@ public class ControllerGUI extends AbstractGUI {
 			}
 		});
 		
-		estimateParametersButton = new JButton("Dump data into files");
-		estimateParametersButton.addActionListener(new ActionListener() {
+		dumpDataIntoFilesBtn = new JButton("Dump data into files");
+		dumpDataIntoFilesBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				String result = modeler.estimateParameters();
@@ -395,7 +394,7 @@ public class ControllerGUI extends AbstractGUI {
 	private void createControllerDesignSection() {
 		controllerDesignPanel = new JPanel();
 		controllerDesignPanel.setLayout(new GridLayout(6, 0));
-		controllerDesignPanel.setBorder(BorderFactory.createTitledBorder("Controller Design"));
+		controllerDesignPanel.setBorder(BorderFactory.createTitledBorder("Controller Configurations"));
 		
 		createDesignSection();
 		createSenseActTimersSection();
@@ -412,7 +411,7 @@ public class ControllerGUI extends AbstractGUI {
 	private void createSenseSlider() {
         Box hbox = Box.createHorizontalBox();
         senseLabel = new JLabel("Sense every ", JLabel.CENTER);
-        senseValueLabel = new JLabel("5", JLabel.CENTER);
+        senseValueLabel = new JLabel(String.valueOf(SENSE_INIT), JLabel.CENTER);
         JLabel senseSecondLabel = new JLabel(" (s)", JLabel.CENTER);
 		
 		senseSlider = new JSlider(JSlider.HORIZONTAL, SENSE_MIN, SENSE_MAX, SENSE_INIT);
@@ -439,7 +438,7 @@ public class ControllerGUI extends AbstractGUI {
 	private void createActSlider() {
         Box hbox = Box.createHorizontalBox();
 		actLabel = new JLabel("Act every ", JLabel.CENTER);
-		actValueLabel = new JLabel("60", JLabel.CENTER);
+		actValueLabel = new JLabel(String.valueOf(ACT_INIT), JLabel.CENTER);
         JLabel actSecondLabel = new JLabel(" (s)", JLabel.CENTER);
 
 		actSlider = new JSlider();
@@ -756,5 +755,28 @@ public class ControllerGUI extends AbstractGUI {
 		startModelerButton.setEnabled(true);
 		stopModelerButton.setEnabled(false);
 	}
+
+    public void disableModeler() {
+        orderedEnabled.setEnabled(false);
+        samplingText.setEnabled(false);
+        orderingText.setEnabled(false);
+        minInstanceText.setEnabled(false);
+        maxInstanceText.setEnabled(false);
+        startModelerButton.setEnabled(false);
+        stopModelerButton.setEnabled(false);
+        dumpDataIntoFilesBtn.setEnabled(false);
+        resetModelerButton.setEnabled(false);
+    }
+
+    public void enableModeler() {
+        orderedEnabled.setEnabled(true);
+        samplingText.setEnabled(true);
+        orderingText.setEnabled(true);
+        minInstanceText.setEnabled(true);
+        maxInstanceText.setEnabled(true);
+        startModelerButton.setEnabled(true);
+        dumpDataIntoFilesBtn.setEnabled(true);
+        resetModelerButton.setEnabled(true);
+    }
 	
 }

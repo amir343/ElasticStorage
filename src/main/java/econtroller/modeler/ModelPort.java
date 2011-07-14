@@ -1,5 +1,6 @@
 package econtroller.modeler;
 
+import cloud.elb.SenseData;
 import se.sics.kompics.PortType;
 
 /**
@@ -12,5 +13,6 @@ import se.sics.kompics.PortType;
 public class ModelPort extends PortType {
 	{
 		negative(StartModeler.class);
+        negative(SenseData.class);
 	}
 }

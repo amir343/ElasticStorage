@@ -2,6 +2,7 @@ package econtroller.modeler;
 
 import cloud.common.RequestTrainingData;
 import cloud.common.TrainingData;
+import cloud.elb.SenseData;
 import econtroller.controller.NewNodeRequest;
 import econtroller.controller.RemoveNode;
 import econtroller.gui.ControllerGUI;
@@ -52,7 +53,7 @@ public class Modeler extends ComponentDefinition {
 	private int minNrInstances = 2;
 	private int currentlyOrdered = 0;
 	private boolean add = true;
-	private long start;
+	private Long start = null;
 	private UUID samplingTimeoutId;
 	private UUID actuationTimeoutId;
 	private int snapshotId = 0;
@@ -75,6 +76,7 @@ public class Modeler extends ComponentDefinition {
 		subscribe(initHandler, control);
 		
 		subscribe(startModelerHandler, modeler);
+        subscribe(senseDataHandler, modeler);
 		
 		subscribe(sampleTraingingDataHandler, timer);
 		subscribe(instanceCreationHandler, timer);
@@ -152,24 +154,37 @@ public class Modeler extends ComponentDefinition {
 	Handler<TrainingData> trainingDataHandler = new Handler<TrainingData>() {
 		@Override
 		public void handle(TrainingData event) {
-/*
-			logger.info("Training data is received: " + event.toString());
-*/
 			generator.add(event);
-			bandwidthSeries.add(System.currentTimeMillis()-start, event.getBandwidthMean());
-			gui.updateBandwidthChart(getBandwidthChart());
-			cpuSeries.add(System.currentTimeMillis()-start, event.getCpuLoadMean());
-			gui.updateCpuLoadChart(getCPUChart());
-			rtSeries.add(System.currentTimeMillis()-start, event.getResponseTimeMean());
-			gui.updateResponseTimeChart(getResponseTimeChart());
-			costSeries.add(System.currentTimeMillis()-start, event.getTotalCost());
-			gui.updateTotalCostChart(getTotalCostChart());
-			tpSeries.add(System.currentTimeMillis()-start, event.getThroughputMean());
-			gui.updateThroughputChart(getAverageThroughputChart());
-			nrInstancesSeries.add(System.currentTimeMillis()-start, event.getNrNodes());
-			gui.updateNrOfInstancesChart(getNrInstancesChart());
+            saveAndPlotData(event.getCpuLoadMean(), event.getBandwidthMean(), event.responseTimeMean(), event.totalCost(), event.getThroughputMean(), event.getNrNodes());
 		}
 	};
+
+    /**
+     * This handler is triggered only when the controller runs and it enables monitoring
+     */
+    Handler<SenseData> senseDataHandler = new Handler<SenseData>() {
+        @Override
+        public void handle(SenseData event) {
+            logger.info("Gereftomesh! ");
+            if (start == null) start = System.currentTimeMillis();
+            saveAndPlotData(event.cpuLoad(), event.bandwidthMean(), event.averageResponseTime(), event.totalCost(), event.averageThroughput(), event.numberOfNodes());
+        }
+    };
+
+    private void saveAndPlotData(double cpuLoad, double bandwidth, double responseTime, double totalCost, double throughtPut, int numberOfNodes) {
+        bandwidthSeries.add(System.currentTimeMillis()-start, bandwidth);
+        gui.updateBandwidthChart(getBandwidthChart());
+        cpuSeries.add(System.currentTimeMillis()-start, cpuLoad);
+        gui.updateCpuLoadChart(getCPUChart());
+        rtSeries.add(System.currentTimeMillis()-start, responseTime);
+        gui.updateResponseTimeChart(getResponseTimeChart());
+        costSeries.add(System.currentTimeMillis()-start, totalCost);
+        gui.updateTotalCostChart(getTotalCostChart());
+        tpSeries.add(System.currentTimeMillis()-start, throughtPut);
+        gui.updateThroughputChart(getAverageThroughputChart());
+        nrInstancesSeries.add(System.currentTimeMillis()-start, numberOfNodes);
+        gui.updateNrOfInstancesChart(getNrInstancesChart());
+    }
 
 	protected void scheduleSampling() {
 		ScheduleTimeout st = new ScheduleTimeout(SAMPLING_INTERVAL);

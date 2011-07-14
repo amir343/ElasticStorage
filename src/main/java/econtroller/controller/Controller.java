@@ -115,6 +115,7 @@ public class Controller extends ComponentDefinition {
 		public void handle(SenseData event) {
 			if (controller != null) {
 				controller.sense(event.getSource(), event);
+                trigger(event, modeler);
 			}
 		}
 	};
