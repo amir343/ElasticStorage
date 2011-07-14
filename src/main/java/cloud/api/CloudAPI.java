@@ -192,6 +192,7 @@ public class CloudAPI extends ComponentDefinition {
 	Handler<NewNodeRequest> newNodeRequestHandler = new Handler<NewNodeRequest>() {
 		@Override
 		public void handle(NewNodeRequest event) {
+            logger.info("Received request to launch " + event.numberOfNodes() + "new instance(s)");
             for (Integer i=0; i<event.numberOfNodes(); i++) {
                 NodeConfiguration nodeConfiguration = new NodeConfiguration();
                 Node node = getNewNodeInfo();

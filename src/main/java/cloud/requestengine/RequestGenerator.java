@@ -79,7 +79,6 @@ public class RequestGenerator extends ComponentDefinition {
 				timerIds.remove(event.getTimeoutId());
 			}
 			for (Block block : blocks) {
-				logger.debug("Preparing request for block "+ block);
 				Request request = new Request(UUID.randomUUID().toString(), block.getName());
 				RequestStatistic stat = new RequestStatistic();
 				stat.setStart(System.currentTimeMillis());
@@ -150,7 +149,6 @@ public class RequestGenerator extends ComponentDefinition {
 	protected void scheduleRequestGeneratorEngine() {
 		long timeout = distribution.getNextValue();
 		throughputCollection.add((int) (timeout/1000));
-		logger.debug("Next request will be sent in " + timeout + " (ms)");
 		if (timeout > 0 && timeout != Long.MAX_VALUE) {
 			ScheduleTimeout st = new ScheduleTimeout(timeout);
 			st.setTimeoutEvent(new RequestEngineTimeout(st));

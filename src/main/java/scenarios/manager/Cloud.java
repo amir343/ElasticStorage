@@ -85,8 +85,7 @@ public abstract class Cloud {
 	private void writeCloudTopologyObjectIntoTempFile() {
 		File file = null;
 		try {
-			file = File.createTempFile("cloudConfiguration", ".bin");
-			ObjectOutputStream oos = new ObjectOutputStream(
+			file = File.createTempFile("cloudConfiguration", ".bin"); ObjectOutputStream oos = new ObjectOutputStream(
 					new FileOutputStream(file));
 			oos.writeObject(cloudConfiguration);
 			oos.flush();

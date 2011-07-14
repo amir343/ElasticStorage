@@ -164,7 +164,6 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 			Node node = elbTable.getNextNodeToSendThisRequest(event.getBlockId());
 			if (node != null) {
 				loadBalancerAlgorithm.increaseNrOfSentRequestFor(node);
-				logger.debug("Will send to " + node);
 				trigger(new RequestMessage(self, node.getAddress(), event), network);
 			} else
 				logger.error("No node found to send the next request in elbTable");

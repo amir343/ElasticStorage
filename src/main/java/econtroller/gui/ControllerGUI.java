@@ -10,8 +10,11 @@ import logger.Logger;
 import logger.LoggerFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import sun.awt.HorizBagLayout;
 
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -32,20 +35,21 @@ import java.util.List;
 public class ControllerGUI extends AbstractGUI {
 
 	private Logger logger = LoggerFactory.getLogger(ControllerGUI.class, this);
-	
-	private static final long serialVersionUID = 8924494948307221974L;
-	private static final int SENSE_MIN = 5;
-	private static final int SENSE_MAX = 120;
-	private static final int SENSE_INIT = 5;
-	private static final int ACT_MIN = 5;
-	private static final int ACT_MAX = 120;
-	private static final int ACT_INIT = 60;
-	private static ControllerGUI instance = new ControllerGUI();
-	
-	public static ControllerGUI getInstance() {
-		return instance;
-	}
+    public static ControllerGUI getInstance() {
+        return instance;
+    }
 
+    private static final long serialVersionUID = 8924494948307221974L;
+
+    private static final int SENSE_MIN = 5;
+    private static final int SENSE_MAX = 120;
+    private static final int SENSE_INIT = 25;
+    private static final int ACT_MIN = 5;
+    private static final int ACT_MAX = 120;
+    private static final int ACT_INIT = 80;
+    private static ControllerGUI instance = new ControllerGUI();
+    private JLabel actValueLabel;
+    private JLabel senseValueLabel;
 	private JPanel controlPanel;
 	private JPanel cloudProviderSection;
 	private JTextField ipTxt;
@@ -140,7 +144,7 @@ public class ControllerGUI extends AbstractGUI {
 
 	private void createTabs() {
 		tabbedPane = new JTabbedPane();
-		creatControlPanel();
+		createControlPanel();
 		createModelerPanel();
 		createSnapshotPanel();
 		createLogPanel();
@@ -377,7 +381,7 @@ public class ControllerGUI extends AbstractGUI {
 		maxInstanceText.setEnabled(true);
 	}
 	
-	private void creatControlPanel() {
+	private void createControlPanel() {
 		controlPanel = new JPanel();
 		controlPanel.setLayout(new GridLayout(2, 1));
 		
@@ -406,31 +410,55 @@ public class ControllerGUI extends AbstractGUI {
 	}
 
 	private void createSenseSlider() {
-		senseLabel = new JLabel("Sense every (s)", JLabel.CENTER);
+        Box hbox = Box.createHorizontalBox();
+        senseLabel = new JLabel("Sense every ", JLabel.CENTER);
+        senseValueLabel = new JLabel("5", JLabel.CENTER);
+        JLabel senseSecondLabel = new JLabel(" (s)", JLabel.CENTER);
 		
 		senseSlider = new JSlider(JSlider.HORIZONTAL, SENSE_MIN, SENSE_MAX, SENSE_INIT);
 		senseSlider.setMajorTickSpacing(20);
-		senseSlider.setMinorTickSpacing(1);
+		senseSlider.setMinorTickSpacing(5);
 		senseSlider.setPaintLabels(true);
 		senseSlider.setPaintTicks(true);
 		senseSlider.setPaintTrack(true);
-		
-		controllerDesignPanel.add(senseLabel);
+
+        senseSlider.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent changeEvent) {
+                JSlider source = (JSlider) changeEvent.getSource();
+                int value = source.getValue();
+                senseValueLabel.setText(String.valueOf(value));
+            }
+        });
+
+        hbox.add(senseLabel); hbox.add(senseValueLabel); hbox.add(senseSecondLabel);
+		controllerDesignPanel.add(hbox);
 		controllerDesignPanel.add(senseSlider);
 	}
 
 	private void createActSlider() {
-		actLabel = new JLabel("Act every (s)", JLabel.CENTER);
-		
+        Box hbox = Box.createHorizontalBox();
+		actLabel = new JLabel("Act every ", JLabel.CENTER);
+		actValueLabel = new JLabel("60", JLabel.CENTER);
+        JLabel actSecondLabel = new JLabel(" (s)", JLabel.CENTER);
+
 		actSlider = new JSlider();
 		actSlider = new JSlider(JSlider.HORIZONTAL, ACT_MIN, ACT_MAX, ACT_INIT);
 		actSlider.setMajorTickSpacing(20);
-		actSlider.setMinorTickSpacing(1);
+		actSlider.setMinorTickSpacing(5);
 		actSlider.setPaintLabels(true);
 		actSlider.setPaintTicks(true);
 		actSlider.setPaintTrack(true);
-		
-		controllerDesignPanel.add(actLabel);
+        actSlider.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent changeEvent) {
+                JSlider source = (JSlider) changeEvent.getSource();
+                int value = source.getValue();
+                actValueLabel.setText(String.valueOf(value));
+            }
+        });
+        hbox.add(actLabel); hbox.add(actValueLabel); hbox.add(actSecondLabel);
+		controllerDesignPanel.add(hbox);
 		controllerDesignPanel.add(actSlider);
 		
 	}
