@@ -29,7 +29,7 @@ public class Actuator extends ComponentDefinition {
 
 	protected ControllerConfiguration controllerConfiguration;
 	protected Address self;
-
+    private int MINIMUM_NUMBER_OF_NODES = 2;
 
 	public Actuator() {
 		subscribe(initHandler, control);
@@ -45,27 +45,27 @@ public class Actuator extends ComponentDefinition {
 			logger.info("Actuator component is stared.");
 		}
 	};
-	
-	/**
+
+    /**
 	 * This handler is triggered when it receives a signal from controller in order to request a new node
 	 */
 	Handler<NodeRequest> nodeRequestHandler = new Handler<NodeRequest>() {
 		@Override
 		public void handle(NodeRequest event) {
-            if (event.controlInput() > 0) {
-                Address cloudProviderAddress = event.cloudProviderAddress();
-                int controlInput = (int) event.controlInput();
-                int diff = controlInput - event.numberOfNodes();
-                if (diff > 0 ) {
-                    logger.info("Request to launch " + diff + " node(s)");
-                    trigger(new NewNodeRequest(self, cloudProviderAddress, diff), network);
-                }
-                else if (diff < 0 ) {
-                    diff = Math.abs(diff);
-                    logger.info("Request to remove " + diff + " node(s)");
-                    trigger(new RemoveNode(self, cloudProviderAddress, diff), network);
-                }
+            Address cloudProviderAddress = event.cloudProviderAddress();
+            int controlInput = (int) event.controlInput();
+            if (controlInput <= 0) controlInput = MINIMUM_NUMBER_OF_NODES;
+            int diff = controlInput - event.numberOfNodes();
+            if (diff > 0 ) {
+                logger.info("Request to launch " + diff + " node(s)");
+                trigger(new NewNodeRequest(self, cloudProviderAddress, diff), network);
             }
+            else if (diff < 0 ) {
+                diff = Math.abs(diff);
+                logger.info("Request to remove " + diff + " node(s)");
+                trigger(new RemoveNode(self, cloudProviderAddress, diff), network);
+            }
+
 		}
 	};
 	

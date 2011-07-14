@@ -33,10 +33,10 @@ public class DynamicStateFeedbackController implements ControllerDesign {
     private final double k3 = -1.42252281334366e-06;
     private final double k4 = 3.71560770454631e-12;
 */
-    private final double k1 = 0.454648661683801;
-    private final double k2 = 9.99512150205386e-06;
-    private final double k3 = 1.51109935005030e-05;
-    private final double k4 = -5.07701932112059e-11;
+    private final double k1 = 0.986607697307996;
+    private final double k2 = 6.22158940678969e-07;
+    private final double k3 = -2.00512860657761e-06;
+    private final double k4 = -6.78988537284038e-13;
 
 	private double cpuLoadAverage;
 	private double bandwidthAverage;
@@ -69,7 +69,7 @@ public class DynamicStateFeedbackController implements ControllerDesign {
 	}
 	
 	private double getControlInput() {
-		double controlInput = k1*(cpuLoadAverage/nCpu-10) +
+		double controlInput = k1*(cpuLoadAverage/nCpu-30) +
                               k2*(bandwidthAverage/nBandwidth) +
                               k3*(totalCost/nTotalCost) +
                               k4*(responseTimeAverage/nResponseTime);
