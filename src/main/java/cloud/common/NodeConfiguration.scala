@@ -13,7 +13,8 @@ import reflect.BeanProperty
 class NodeConfiguration(cpuSpeed:Double,
                         bandwidth:Double,
                         @BeanProperty var memory:Int,
-                        @BeanProperty var simultaneousDownloads:Int) extends Serializable {
+                        @BeanProperty var simultaneousDownloads:Int)
+  extends Serializable {
 
   def this() = this(2.0, 2.0, 4, 20)
 
@@ -29,7 +30,8 @@ class NodeConfiguration(cpuSpeed:Double,
   var blocks: java.util.List[Block] = null
   @BeanProperty
   var dataBlocksMap: java.util.Map[String, Address] = null
-
+  @BeanProperty
+  var headLess: Boolean = false
 
   def setNodeInfo(node:Node) {
     this.node = node

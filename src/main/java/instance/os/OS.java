@@ -14,6 +14,9 @@ import instance.common.*;
 import instance.cpu.CPU;
 import instance.cpu.OperationDuration;
 import instance.disk.StartDiskUnit;
+import instance.gui.DummyInstanceGUI;
+import instance.gui.GenericInstanceGUI;
+import instance.gui.HeadLessGUI;
 import instance.gui.InstanceGUI;
 import instance.mem.StartMemoryUnit;
 import logger.Logger;
@@ -55,7 +58,7 @@ import java.util.concurrent.ConcurrentMap;
 
 public class OS extends ComponentDefinition {
 	
-	private Logger logger = LoggerFactory.getLogger(OS.class, InstanceGUI.getInstance());
+	private Logger logger;
 	
 	// Ports
 	Positive<CPUChannel> cpu = requires(CPUChannel.class);
@@ -67,7 +70,7 @@ public class OS extends ComponentDefinition {
 	
 	// Variables needed by OS
 	private String uname_r = "2.2-2";
-	private Kernel kernel = new Kernel();
+	private Kernel kernel;
 	protected final int numberOfDevices = 3;
 	private int numberOfDevicesLoaded = 0;
 	private long BANDWIDTH = 2 * Size.MB.getSize();
@@ -82,7 +85,7 @@ public class OS extends ComponentDefinition {
 	private ConcurrentMap<UUID, String> currentTransfers = new ConcurrentHashMap<UUID, String>();
 	private ConcurrentLinkedQueue<Request> requestQueue = new ConcurrentLinkedQueue<Request>();
 	private CostService costService = new CostService();
-	protected InstanceGUI gui;
+	protected GenericInstanceGUI gui;
 	protected Address self;
 	protected Node node;
 	protected NodeConfiguration nodeConfiguration;
@@ -97,24 +100,25 @@ public class OS extends ComponentDefinition {
 	private boolean enabled = true;	
 	private int megaBytesDownloadedSoFar = 0;
 	protected double totalCost = 0.0;
-	
-	public OS() {
-		gui = InstanceGUI.getInstance();
-		gui.setOSReference(this);
+    private boolean headless;
+    private OS selfReference;
+
+    public OS() {
+        this.selfReference = this;
 
 		subscribe(initHandler, control);
-		
+
 		subscribe(cpuReadySignalHandler, cpu);
 		subscribe(cpuLoadHandler, cpu);
 		subscribe(snapshotRequestHandler, cpu);
-		
+
 		subscribe(memoryReadySignalHandler, memory);
 		subscribe(ackBlockHandler, memory);
 		subscribe(nackBlockHandler, memory);
-		
+
 		subscribe(diskReadySignalHandler, disk);
 		subscribe(blockResponseHandler, disk);
-		
+
 		subscribe(processRequestQueueHandler, timer);
 		subscribe(propagateCPULoadHandler, timer);
 		subscribe(transferingFinishedHandler, timer);
@@ -122,7 +126,7 @@ public class OS extends ComponentDefinition {
 		subscribe(waitTimeoutHandler, timer);
 		subscribe(deathHandler, timer);
 		subscribe(calculateCostHandler, timer);
-		
+
 		subscribe(requestMessageHandler, network);
 		subscribe(heartbeatMessageHandler, network);
 		subscribe(monitorHandler, network);
@@ -132,8 +136,7 @@ public class OS extends ComponentDefinition {
 		subscribe(rebalanceResponseHandler, network);
 		subscribe(blockTransferedHandler, network);
 	}
-	
-	Handler<OSInit> initHandler = new Handler<OSInit>() {
+    Handler<OSInit> initHandler = new Handler<OSInit>() {
 		@Override
 		public void handle(OSInit event) {
 			retrieveInitParameters(event);
@@ -146,12 +149,23 @@ public class OS extends ComponentDefinition {
 		}
 
 		private void retrieveInitParameters(OSInit event) {
-			nodeConfiguration = event.getNodeConfiguration();
-			BANDWIDTH = event.getNodeConfiguration().getBandwidthConfiguration().getBandwidthMegaBytePerSecond();
-			simultaneousDownloads = event.getNodeConfiguration().getSimultaneousDownloads();
+            nodeConfiguration = event.getNodeConfiguration();
+			BANDWIDTH = nodeConfiguration.getBandwidthConfiguration().getBandwidthMegaBytePerSecond();
+			simultaneousDownloads = nodeConfiguration.getSimultaneousDownloads();
 			self = event.getSelfAddress();
 			node = event.getNodeInfo();
 			cloudProvider = event.getCloudProviderAddress();
+            headless = nodeConfiguration.getHeadLess();
+            if (headless) {
+                gui = new HeadLessGUI();
+                logger = LoggerFactory.getLogger(OS.class, new DummyInstanceGUI());
+                kernel = new Kernel(true);
+            } else {
+                gui = InstanceGUI.getInstance();
+		        gui.setOSReference(selfReference);
+                logger = LoggerFactory.getLogger(OS.class, InstanceGUI.getInstance());
+                kernel = new Kernel(false);
+            }
 		}
 	};
 	
@@ -359,7 +373,9 @@ public class OS extends ComponentDefinition {
 		public void handle(ShutDown event) {
 			if (event.getSource().equals(cloudProvider)) {
 				logger.debug("Time to die forever :(");
-				gui.dispose();
+				if (!headless) {
+                    ((InstanceGUI)gui).dispose();
+                }
 				trigger(new ShutDownAck(self, event.getSource(), node), network);
 				scheduleDeath();
 			} else {
@@ -583,7 +599,7 @@ public class OS extends ComponentDefinition {
 	}
 
 	protected void loadKernel() {
-		gui.setTitle(node.getNodeName() + "@" + node.getIP() + ":" + node.getPort());
+		gui.updateTitle(node.getNodeName() + "@" + node.getIP() + ":" + node.getPort());
 		gui.decorateWhileSystemStartUp();
 		enabled = false;
 		kernel.init(nodeConfiguration.getCpuConfiguration().getCpuSpeedInstructionPerSecond());

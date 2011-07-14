@@ -3,6 +3,7 @@ package instance.mem;
 import cloud.common.NodeConfiguration;
 import instance.common.*;
 import instance.common.Ready.Device;
+import instance.gui.DummyInstanceGUI;
 import instance.gui.InstanceGUI;
 import instance.os.RestartSignal;
 import logger.Logger;
@@ -50,9 +51,14 @@ public class Memory extends ComponentDefinition {
 		@Override
 		public void handle(MemoryInit event) {
 			enabled = true;
-			logger = LoggerFactory.getLogger(Memory.class, InstanceGUI.getInstance());
+            if (event.getNodeConfiguration().getHeadLess()) {
+                logger = LoggerFactory.getLogger(Memory.class, new DummyInstanceGUI());
+            } else {
+                logger = LoggerFactory.getLogger(Memory.class, InstanceGUI.getInstance());
+            }
 			setCapacity(event.getNodeConfiguration());
-			InstanceGUI.getInstance().updateMemoryInfoLabel(Size.getSizeString(capacity));
+			if (!event.getNodeConfiguration().getHeadLess())
+                InstanceGUI.getInstance().updateMemoryInfoLabel(Size.getSizeString(capacity));
 			printMemoryLog();
 			sendReadySignal();
 		}

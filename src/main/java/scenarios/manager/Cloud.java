@@ -56,6 +56,10 @@ public abstract class Cloud {
 		Block block = new Block(name, size*sizeInBytes.getSize());
 		blocks.add(block);
 	}
+
+    protected void headless() {
+        cloudConfiguration.setHeadLess(true);
+    }
 	
 	protected void replicationDegree(int replicationDegree) {
 		cloudConfiguration.setReplicationDegree(replicationDegree);

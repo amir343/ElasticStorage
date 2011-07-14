@@ -31,6 +31,7 @@ public class CloudConfiguration implements Serializable {
 	private List<Block> blocks;
 	private int replicationDegree = 1;
 	private String addressPollXmlFilename;
+    private boolean headLess;
 
 	public void addNodeConfiguration(NodeConfiguration nodeConfiguration) {
 		this.nodeConfigurations.add(nodeConfiguration);
@@ -68,7 +69,15 @@ public class CloudConfiguration implements Serializable {
 		return instanceClass;
 	}
 
-	public void validate() {
+    public boolean isHeadLess() {
+        return headLess;
+    }
+
+    public void setHeadLess(boolean headLess) {
+        this.headLess = headLess;
+    }
+
+    public void validate() {
 		if (StringUtils.isBlank(getCloudProviderAddress())) {
 			throw new RuntimeException("You have not specified any address for the cloud provider itself. Please do so by using address(Ip, port) function");
 		}

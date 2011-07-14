@@ -2,6 +2,7 @@ package instance.disk;
 
 import instance.common.*;
 import instance.common.Ready.Device;
+import instance.gui.DummyInstanceGUI;
 import instance.gui.InstanceGUI;
 import instance.os.RestartSignal;
 import logger.Logger;
@@ -44,7 +45,11 @@ public class Disk extends ComponentDefinition {
 		@Override
 		public void handle(DiskInit event) {
 			enabled = true;
-			logger = LoggerFactory.getLogger(Disk.class, InstanceGUI.getInstance());
+            if (event.getNodeConfiguration().getHeadLess()) {
+                logger = LoggerFactory.getLogger(Disk.class, new DummyInstanceGUI());
+            } else {
+			    logger = LoggerFactory.getLogger(Disk.class, InstanceGUI.getInstance());
+            }
 			logger.info("Disk SCSI started...");
 			sendReadySignal();
 		}

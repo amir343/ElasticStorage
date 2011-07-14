@@ -35,27 +35,21 @@ public class InstanceProcess extends Thread {
 				"-DnodeConfiguration=" + getNodeConfigurationFile(nodeConfiguration), cloudConfiguration.getInstanceClass().getCanonicalName());
 		processBuilder.redirectErrorStream(true);
 		try {
+            processBuilder.redirectErrorStream(true);
 			process = processBuilder.start();
 			BufferedReader out = new BufferedReader(new InputStreamReader(process.getInputStream()));
-			BufferedWriter input = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
 
-			String line;
-			do {
-				line = out.readLine();
-				if (line != null) {
-					if (line.equals("2DIE")) {
-						if (process != null) {
-							process.destroy();
-							process = null;
-						}
-						break;
-					}
-				}
-			} while (line != null);
+            process.waitFor();
+            String line;
+            while( (line = out.readLine() ) != null)
+                System.out.println(line);
+
 		} catch (IOException e) {
 			e.printStackTrace();
-		}
-	}
+		} catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 	
 	private String getNodeConfigurationFile(NodeConfiguration node) {
 		InstanceConfiguration instanceTopology = new InstanceConfiguration(node, cloudConfiguration.getSelfAddress());

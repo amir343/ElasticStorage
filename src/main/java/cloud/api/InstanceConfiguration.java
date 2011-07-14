@@ -46,7 +46,7 @@ public class InstanceConfiguration implements Serializable {
 		return nodeConfiguration.getBlocks();
 	}
 
-	public Address getSelfAddress() {
+    public Address getSelfAddress() {
 		Address self = null;
 		try {
 			self = new Address(InetAddress.getByName(node.getIP()), node.getPort(), 1);

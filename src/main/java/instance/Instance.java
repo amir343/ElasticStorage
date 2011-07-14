@@ -1,10 +1,12 @@
 package instance;
 
 import cloud.api.InstanceConfiguration;
-import instance.application.Application;
 import instance.common.*;
 import instance.cpu.CPU;
 import instance.disk.Disk;
+import instance.gui.DummyInstanceGUI;
+import instance.gui.GenericInstanceGUI;
+import instance.gui.HeadLessGUI;
 import instance.gui.InstanceGUI;
 import instance.mem.Memory;
 import instance.os.OS;
@@ -33,7 +35,7 @@ public class Instance extends ComponentDefinition {
 	Positive<NetworkControl> netControl = requires(NetworkControl.class);
 	
 	InstanceConfiguration nodeConfiguration = InstanceConfiguration.load(System.getProperty("nodeConfiguration"));
-	private InstanceGUI gui;
+	private GenericInstanceGUI gui;
 	
 	public static void main(String[] args) {
 		Kompics.createAndStart(Instance.class);
@@ -41,9 +43,12 @@ public class Instance extends ComponentDefinition {
 	
 	public Instance() {
 		try {
-			gui = InstanceGUI.getInstance();
-			
-			Component app = create(Application.class);
+            boolean headless = nodeConfiguration.getNodeConfiguration().getHeadLess();
+			if (!headless)
+                gui = InstanceGUI.getInstance();
+            else
+                gui = new HeadLessGUI();
+
 			Component os = create(OS.class);
 			Component cpu = create(CPU.class);
 			Component mem = create(Memory.class);
@@ -51,7 +56,6 @@ public class Instance extends ComponentDefinition {
 			Component timer = create(JavaTimer.class);
 			Component network = create(MinaNetwork.class);
 	
-			subscribe(handleFault, app.control());
 			subscribe(handleFault, os.control());
 			subscribe(handleFault, cpu.control());
 			subscribe(handleFault, mem.control());
@@ -60,7 +64,6 @@ public class Instance extends ComponentDefinition {
 			subscribe(handleFault, network.control());
 			subscribe(handleException, netControl);
 			
-			trigger(new ApplicationInit(), app.control());
 			OSInit init = new OSInit(nodeConfiguration);
 			trigger(init, os.control());
 			trigger(new CPUInit(nodeConfiguration.getNodeConfiguration()), cpu.control());
@@ -68,7 +71,6 @@ public class Instance extends ComponentDefinition {
 			trigger(new DiskInit(nodeConfiguration.getNodeConfiguration()), disk.control());
 			trigger(new MinaNetworkInit(nodeConfiguration.getSelfAddress(), 5), network.control());
 			
-			connect(app.required(OSPort.class), os.provided(OSPort.class));
 			connect(os.required(CPUChannel.class), cpu.provided(CPUChannel.class));
 			connect(os.required(MemChannel.class), mem.provided(MemChannel.class));
 			connect(os.required(DiskChannel.class), disk.provided(DiskChannel.class));
@@ -76,7 +78,7 @@ public class Instance extends ComponentDefinition {
 			connect(cpu.required(Timer.class), timer.provided(Timer.class));
 			connect(os.required(Network.class), network.provided(Network.class));
 		} catch(Exception e) {
-			gui.log(e.getMessage());
+			if (gui instanceof InstanceGUI) InstanceGUI.getInstance().log(e.getMessage());
 		}
 	}
 	
@@ -84,7 +86,8 @@ public class Instance extends ComponentDefinition {
 		@Override
 		public void handle(Fault event) {
 			String error = generateString(event.getFault().toString(), event.getFault().getStackTrace());
-			gui.log("Error while running: " + error);
+			if (gui instanceof InstanceGUI) InstanceGUI.getInstance().log("Error while running: " + error);
+            else (new DummyInstanceGUI()).log("Error while running: " + error);
 		}
 
 		private String generateString(String beginning, StackTraceElement[] stackTrace) {
@@ -101,7 +104,8 @@ public class Instance extends ComponentDefinition {
 	Handler<NetworkException> handleException = new Handler<NetworkException>() {
 		@Override
 		public void handle(NetworkException event) {
-			gui.log("Got NetworkException");
+			if (gui instanceof InstanceGUI) InstanceGUI.getInstance().log("Got NetworkException");
+            else (new DummyInstanceGUI()).log("Got NetworkException");
 		}
 	};
 	

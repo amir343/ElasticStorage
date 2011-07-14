@@ -2,6 +2,9 @@ package instance.cpu;
 
 import instance.common.*;
 import instance.common.Ready.Device;
+import instance.gui.DummyInstanceGUI;
+import instance.gui.GenericInstanceGUI;
+import instance.gui.HeadLessGUI;
 import instance.gui.InstanceGUI;
 import instance.os.*;
 import instance.os.Process;
@@ -37,8 +40,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class CPU extends ComponentDefinition {
 
-
-	private Logger logger = LoggerFactory.getLogger(CPU.class, InstanceGUI.getInstance());
+	private Logger logger;
 	
 	// Ports
 	Negative<CPUChannel> cpu = provides(CPUChannel.class);
@@ -56,7 +58,7 @@ public class CPU extends ComponentDefinition {
 	private List<Integer> loadSamples = new ArrayList<Integer>();
 	private List<Double> loads = new ArrayList<Double>();
 	protected boolean enabled = false;
-	protected InstanceGUI gui = InstanceGUI.getInstance();
+	protected GenericInstanceGUI gui;
 	
 	public CPU() {
 		tasks.set(0);
@@ -78,6 +80,13 @@ public class CPU extends ComponentDefinition {
 		@Override
 		public void handle(CPUInit event) {
 			enabled = true;
+            if (event.getNodeConfiguration().getHeadLess()) {
+                gui = new HeadLessGUI();
+                logger = LoggerFactory.getLogger(CPU.class, new DummyInstanceGUI());
+            } else {
+                gui = InstanceGUI.getInstance();
+                logger = LoggerFactory.getLogger(CPU.class, InstanceGUI.getInstance());
+            }
 			CPU_CLOCK = event.getNodeConfiguration().getCpuConfiguration().getCpuSpeedInstructionPerSecond();
 			gui.updateCPUInfoLabel(event.getNodeConfiguration().getCpuConfiguration().getCpuSpeed() + " GHz");
 			dataSet.addSeries(xySeries);

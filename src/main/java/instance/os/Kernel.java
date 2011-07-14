@@ -1,6 +1,7 @@
 package instance.os;
 
 import instance.cpu.OperationDuration;
+import instance.gui.DummyInstanceGUI;
 import instance.gui.InstanceGUI;
 import logger.Logger;
 import logger.LoggerFactory;
@@ -16,9 +17,14 @@ import java.util.Calendar;
 
 public class Kernel {
 
-	private Logger logger = LoggerFactory.getLogger(Kernel.class, InstanceGUI.getInstance());
+	private Logger logger;
 	private long cpuSpeed;
-	
+
+    public Kernel(boolean headless) {
+        if (!headless) logger = LoggerFactory.getLogger(Kernel.class, InstanceGUI.getInstance());
+        else logger = LoggerFactory.getLogger(Kernel.class, new DummyInstanceGUI());
+    }
+
 	public void init(long cpuSpeed) {
 		this.cpuSpeed = cpuSpeed;
 		loadKernelInfo();

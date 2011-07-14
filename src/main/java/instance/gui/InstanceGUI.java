@@ -30,7 +30,7 @@ import java.util.List;
  *
  */
 
-public class InstanceGUI extends AbstractGUI {
+public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
 	
 	private static InstanceGUI instance = new InstanceGUI();
 	private Logger logger = LoggerFactory.getLogger(InstanceGUI.class, this);
@@ -242,11 +242,13 @@ public class InstanceGUI extends AbstractGUI {
 		dataSec.add(pane);		
 	}
 
+    @Override
 	public void cpuLoad(double load) {
 		cpuDialMeter.setLcdValue(load);
 		cpuDialMeter.setValueAnimated(load);
 	}
-	
+
+    @Override
 	public void initializeDataBlocks(List<Block> blocks) {
 		if (blocks != null & model.getRowCount() == 0) {
 			for (Block block : blocks) {
@@ -261,6 +263,7 @@ public class InstanceGUI extends AbstractGUI {
 		}
 	}
 
+    @Override
 	public synchronized void increaseNrDownloadersFor(String blockId) {
 		if (StringUtils.isNotEmpty(blockId)) {
 			for (int i=0; i< model.getRowCount(); i++) {
@@ -279,6 +282,7 @@ public class InstanceGUI extends AbstractGUI {
 		}
 	}
 
+    @Override
 	public synchronized void decreaseNrDownloadersFor(String blockId) {
 		if (!StringUtils.isEmpty(blockId)) {
 			for (int i=0; i< model.getRowCount(); i++) {
@@ -295,6 +299,7 @@ public class InstanceGUI extends AbstractGUI {
 		}
 	}
 
+    @Override
 	public synchronized void resetNrDownloaders() {
 		for (int i=0; i< model.getRowCount(); i++) {
 			model.setValueAt(0, i, 2);
@@ -302,14 +307,16 @@ public class InstanceGUI extends AbstractGUI {
 		}
 	}
 	
-	public void createCPULoadDiagram(JFreeChart chart) {
+	@Override
+    public void createCPULoadDiagram(JFreeChart chart) {
 		if (cpuChartPanel != null)
 			cpuLoadDiagramPanel.remove(cpuChartPanel);
 		cpuChartPanel = new ChartPanel(chart);
 		cpuLoadDiagramPanel.add(cpuChartPanel);
 		cpuLoadDiagramPanel.revalidate();
 	}
-	
+
+    @Override
 	public void createBandwidthDiagram(JFreeChart chart) {
 		if (null != chart) {
 			if (bandwidthChartPanel != null) 
@@ -321,30 +328,36 @@ public class InstanceGUI extends AbstractGUI {
 			logger.error("chart can not be null");
 		}
 	}
-	
+
+    @Override
 	public void updateCPUInfoLabel(String info) {
 		cpuInfoLbl.setText("CPU: " + info);
 		cpuInfoLbl.revalidate();
 	}
-	
+
+    @Override
 	public void updateMemoryInfoLabel(String info) {
 		memoryLbl.setText("Memory: " + info);
 		memoryLbl.revalidate();
 	}
-	
+
+    @Override
 	public void updateBandwidthInfoLabel(String info) {
 		bandwidthInfoLbl.setText("Bandwidth: " + info);
 		bandwidthInfoLbl.revalidate();
 	}
-	
+
+    @Override
 	public void setOSReference(OS os) {
 		this.os = os;
 	}
 
+    @Override
 	public void takeSnapshot() {
 		os.takeSnapshot();
 	}
 
+    @Override
 	public void addSnapshot(InstanceSnapshot snapshot) {
 		if (null != snapshot) {
 			snapshotModel.insertRow(snapshotModel.getRowCount(), new Object[]{snapshot.getId(), snapshot.getDate()});
@@ -355,16 +368,19 @@ public class InstanceGUI extends AbstractGUI {
 		}
 	}
 
+    @Override
 	public JTable getSnapshotTable() {
 		return snapshotTable;
 	}
 
+    @Override
 	public void deleteAllSnapshots() {
 		snapshots.clear();
 		for (int i=snapshotModel.getRowCount()-1; i>=0; i--)
 			snapshotModel.removeRow(i);		
 	}
 
+    @Override
 	public void saveAllSnapshotsTo(File selectedDir) {
 		for (InstanceSnapshot snapshot : snapshots) {
 			saveSnapshotTo(selectedDir, snapshot);
@@ -399,24 +415,23 @@ public class InstanceGUI extends AbstractGUI {
 		return null;
 	}
 
+    @Override
 	public void systemRestart() {
 		resetNrDownloaders();		
 	}
 
+    @Override
 	public void restartOS() {
 		os.restartInstance();		
 		cpuDialMeter.setValueAnimated(0.0);
 	}
 	
-	public static void main(String[] aregs) {
-		InstanceGUI.getInstance();
-	}
-
 	@Override
 	public void createFileMenuItems() {
 		createRestartMenuItem();		
 	}
-	
+
+    @Override
 	public void decorateWhileSystemStartUp() {
 		tabbedPane.setEnabledAt(0, false);
 		tabbedPane.setEnabledAt(1, false);
@@ -425,6 +440,7 @@ public class InstanceGUI extends AbstractGUI {
 		fileMenu.setEnabled(false);
 	}
 
+    @Override
 	public void decorateSystemStarted() {
 		tabbedPane.setEnabledAt(0, true);
 		tabbedPane.setEnabledAt(1, true);
@@ -434,9 +450,15 @@ public class InstanceGUI extends AbstractGUI {
 		tabbedPane.setSelectedComponent(statTab);
 	}
 
+    @Override
 	public void updateCurrentCost(String cost) {
 		costLabel.setText("Cost: $ " + cost);
 		costLabel.revalidate();		
 	}
-	 
+
+    @Override
+    public void updateTitle(String title) {
+        this.setTitle(title);
+    }
+
 }

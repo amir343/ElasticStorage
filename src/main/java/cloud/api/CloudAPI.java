@@ -44,34 +44,36 @@ public class CloudAPI extends ComponentDefinition {
 	Positive<EPFD> epfd = requires(EPFD.class);
 	Positive<ELB> elb = requires(ELB.class);
 
-	// Services
-	private InstanceManagement instanceManagement;
-	private AddressManager addressManager;
-	protected CloudGUI gui;
-	protected Address self;
-	private CloudAPI api;
-	private int lastCreatedElasticStorageNode = 1;
-	protected CloudConfiguration cloudConfiguration;
-	private DNSService dnsService = new DNSService();
-	private int lastCreatedSnapshotId = 1;
-	protected Address controllerAddress;
-	protected boolean connectedToController = false;
-	private List<Node> currentNodes = new ArrayList<Node>();
-	private Map<Address, Double> costTable = new HashMap<Address, Double>();
-	private Map<Address, Double> periodicCostTable = new HashMap<Address, Double>();
+    // Services
+    private InstanceManagement instanceManagement;
+    private boolean headLess;
+    private AddressManager addressManager;
+    protected CloudGUI gui;
+    protected Address self;
+    private CloudAPI api;
+    private int lastCreatedElasticStorageNode = 1;
+    protected CloudConfiguration cloudConfiguration;
+    private DNSService dnsService = new DNSService();
+    private int lastCreatedSnapshotId = 1;
+    protected Address controllerAddress;
+    protected boolean connectedToController = false;
+    private List<Node> currentNodes = new ArrayList<Node>();
+    private Map<Address, Double> costTable = new HashMap<Address, Double>();
+    private Map<Address, Double> periodicCostTable = new HashMap<Address, Double>();
+
 	private int numberOfInstances = 0;
-	
+
 	public CloudAPI() {
 		api = this;
 		subscribe(initHandler, control);
-		
+
 		subscribe(suspectHandler, epfd);
 		subscribe(restoreHandler, epfd);
-		
+
 		subscribe(replicasHandler, elb);
 		subscribe(rebalanceResponseHandler, elb);
         subscribe(nodesToRemoveHandler, elb);
-		
+
 		subscribe(instanceStartedHandler, network);
 		subscribe(connectControllerHandler, network);
 		subscribe(disconnectHandler, network);
@@ -81,14 +83,14 @@ public class CloudAPI extends ComponentDefinition {
 		subscribe(requestSensingData, network);
 		subscribe(removeNodeHandler, network);
 	}
-	
-	Handler<CloudAPIInit> initHandler = new Handler<CloudAPIInit>() {
+    Handler<CloudAPIInit> initHandler = new Handler<CloudAPIInit>() {
 		@Override
 		public void handle(CloudAPIInit event) {
 			setupGui(event);
 			logger.info("CloudAPI component started...");
 			cloudConfiguration = event.getCloudConfiguration();
 			self = event.getSelf();
+            headLess = event.getCloudConfiguration().isHeadLess();
 			startElasticLoadBalancer();
 			setupServices(event);
 			setupHealthChecker(event);
@@ -154,6 +156,7 @@ public class CloudAPI extends ComponentDefinition {
 		@Override
 		public void handle(Replicas event) {
 			logger.debug("Received '" + event.nodeConfiguration().getBlocks().size() + "' Block(s) from ELB for node " + event.nodeConfiguration().getNode());
+            event.nodeConfiguration().setHeadLess(headLess);
 			instanceManagement.initializeNode(event.nodeConfiguration());
 		}
 	};
@@ -206,6 +209,7 @@ public class CloudAPI extends ComponentDefinition {
 		@Override
 		public void handle(RebalanceResponseMap event) {
 			dnsService.addDNSEntry(event.getNodeConfiguration().getNode());
+            event.getNodeConfiguration().setHeadLess(headLess);
 			instanceManagement.initializeNode(event.getNodeConfiguration());
 		}
 	};
