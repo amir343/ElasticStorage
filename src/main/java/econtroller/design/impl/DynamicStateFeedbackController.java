@@ -51,15 +51,15 @@ public class DynamicStateFeedbackController implements ControllerDesign {
 
 	@Override
 	public void sense(Address address, SenseData monitorPacket) {
-		this.cpuLoadAverage += monitorPacket.getCpuLoad();
+		this.cpuLoadAverage += monitorPacket.getCpuLoadMean();
         nCpu++;
 		this.bandwidthAverage += monitorPacket.getBandwidthMean();
         nBandwidth++;
 		this.totalCost += monitorPacket.getTotalCost();
         nTotalCost++;
-		this.responseTimeAverage += monitorPacket.getAverageResponseTime();
+		this.responseTimeAverage += monitorPacket.getResponseTimeMean();
         nResponseTime++;
-        this.numberOfNodes = monitorPacket.numberOfNodes();
+        this.numberOfNodes = monitorPacket.getNrNodes();
 	}
 
 	@Override

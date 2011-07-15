@@ -2,34 +2,15 @@ package cloud.elb
 
 import se.sics.kompics.network.Message
 import se.sics.kompics.address.Address
-import reflect.BeanProperty
+import cloud.common.StateVariables
 
 /**
  * @author Amir Moulavi
  * @date 2011-07-12
  *
  */
-class SenseData(source:Address, destination:Address, val numberOfNodes:Int) extends Message(source, destination) {
+class SenseData(source:Address, destination:Address) extends Message(source, destination) with StateVariables {
 
-  @BeanProperty
-  var averageResponseTime: Double = _
-  @BeanProperty
-  var averageThroughput: Double = _
-  @BeanProperty
-  var cpuLoad: Double = _
-  @BeanProperty
-  var bandwidthMean: Double = _
-  @BeanProperty
-  var totalCost: Double = _
+  override def toString: String = getStringPresentation
 
-  override def toString: String = {
-      val sb: StringBuilder = new StringBuilder
-      sb.append("SenseData: \n{\n")
-        sb.append("\tcpuLoadAverage: ").append(cpuLoad).append("\n")
-        sb.append("\tbandwidthAverage: ").append(bandwidthMean).append("\n")
-        sb.append("\ttotalCost: ").append(totalCost).append("\n")
-        sb.append("\taverageResponseTime: ").append(averageResponseTime).append("\n")
-      sb.append("}")
-      sb.toString
-    }
-  }
+}

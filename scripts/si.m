@@ -1,9 +1,9 @@
 %% CPU training data %%%%%%%%%%%%%%%
-load cpu.dump;
-nextCpu = cpu(:,1);
-tpk = cpu(:,2);
-cpuk = cpu(:,3);
-nn = cpu(:,4);
+load cpuLoad.dump;
+nextCpu = cpuLoad(:,1);
+tpk = cpuLoad(:,2);
+cpuk = cpuLoad(:,3);
+nn = cpuLoad(:,4);
 
 tpk = tpk-mean(tpk);
 cpuk = cpuk-mean(cpuk);
@@ -13,17 +13,17 @@ cpuCoef = regress(nextCpu,X);
 
 %% Bandwidth Training data %%%%%%%%
 
-load bw.dump;
-nextBw = bw(:,1);
-tpk = bw(:,2);
-bwk = bw(:,3);
-nn = bw(:,4);
+load cpuSTD.dump;
+nextCpuSTD = cpuSTD(:,1);
+tpk = cpuSTD(:,2);
+cpuStdk = cpuSTD(:,3);
+nn = cpuSTD(:,4);
 
 tpk = tpk-mean(tpk);
-bwk = bwk-mean(bwk);
+cpuStdk = cpuStdk-mean(cpuStdk);
 
-X = [tpk bwk nn];
-bwCoef = regress(nextBw,X);
+X = [tpk cpuStdk nn];
+cpuSTDCoef = regress(nextCpuSTD,X);
 
 %% Total Cost Training data %%%%%%%
 
@@ -60,12 +60,12 @@ rtCoef = regress(nextRt,X);
 %% Calculate Coefficients Matrices %%
 
 A = [cpuCoef(1,1) cpuCoef(2,1) 0 0 ; 
-     bwCoef(1,1) 0 bwCoef(2,1) 0 ; 
+     cpuSTDCoef(1,1) 0 cpuSTDCoef(2,1) 0 ; 
      tcCoef(1,1) 0 tcCoef(2,1) tcCoef(3,1) ; 
      rtCoef(1,1) rtCoef(2,1) rtCoef(3,1) 0];
 
 B = [cpuCoef(3,1) ; 
-     bwCoef(3,1) ; 
+     cpuSTDCoef(3,1) ; 
      tcCoef(4,1) ; 
      rtCoef(4,1)];
 
@@ -96,6 +96,6 @@ isControllable = det(controllability);
 
 %% calculate K controller gain %%%%%%%%%%%%%%%%%%%%
 
-Q = diag([1 1 1 1]);
+Q = diag([10 10 1 1]);
 R = 1;
 K = dlqr(A, B, Q, R);

@@ -63,9 +63,9 @@ public class Modeler extends ComponentDefinition {
 	private XYSeries nrInstancesSeries = new XYSeries("# of Instances");
 	private XYSeries rtSeries = new XYSeries("Average ResponseTime");
 	private XYSeries tpSeries = new XYSeries("Average Throughput");
-	private XYSeries cpuSeries = new XYSeries("Average CPU Load");
+	private XYSeries cpuLoadSeries = new XYSeries("Average CPU Load");
 	private XYSeries costSeries = new XYSeries("Total Cost");
-	private XYSeries bandwidthSeries = new XYSeries("Average Bandwidth");
+	private XYSeries cpuSTDSeries = new XYSeries("Average Bandwidth");
     private boolean orderingEnabled = true;
 
 
@@ -89,7 +89,7 @@ public class Modeler extends ComponentDefinition {
 		public void handle(ModelerInit event) {
 			self = event.getSelf();
 			logger.info("Modeler started...");
-			gui.updateBandwidthChart(getBandwidthChart());
+			gui.updateCpuSTDChart(getCpuSTDChart());
 			gui.updateCpuLoadChart(getCPUChart());
 			gui.updateResponseTimeChart(getResponseTimeChart());
 			gui.updateTotalCostChart(getTotalCostChart());
@@ -144,7 +144,7 @@ public class Modeler extends ComponentDefinition {
                     }
                 }
             }
-			scheduleAcutation();
+			scheduleActuation();
 		}
 	};
 	
@@ -154,8 +154,16 @@ public class Modeler extends ComponentDefinition {
 	Handler<TrainingData> trainingDataHandler = new Handler<TrainingData>() {
 		@Override
 		public void handle(TrainingData event) {
+            logger.info("Training data: \n" + event.toString());
 			generator.add(event);
-            saveAndPlotData(event.getCpuLoadMean(), event.getBandwidthMean(), event.responseTimeMean(), event.totalCost(), event.getThroughputMean(), event.getNrNodes());
+            saveAndPlotData(event.getCpuLoadMean(),
+                            event.getCpuLoadSTD(),
+                            event.getBandwidthMean(),
+                            event.responseTimeMean(),
+                            event.totalCost(),
+                            event.getThroughputMean(),
+                            event.getNrNodes()
+            );
 		}
 	};
 
@@ -166,20 +174,27 @@ public class Modeler extends ComponentDefinition {
         @Override
         public void handle(SenseData event) {
             if (start == null) start = System.currentTimeMillis();
-            saveAndPlotData(event.cpuLoad(), event.bandwidthMean(), event.averageResponseTime(), event.totalCost(), event.averageThroughput(), event.numberOfNodes());
+            saveAndPlotData(event.getCpuLoadMean(),
+                            event.getCpuLoadSTD(),
+                            event.getBandwidthMean(),
+                            event.getResponseTimeMean(),
+                            event.getTotalCost(),
+                            event.getThroughputMean(),
+                            event.getNrNodes()
+            );
         }
     };
 
-    private void saveAndPlotData(double cpuLoad, double bandwidth, double responseTime, double totalCost, double throughtPut, int numberOfNodes) {
-        bandwidthSeries.add(System.currentTimeMillis()-start, bandwidth);
-        gui.updateBandwidthChart(getBandwidthChart());
-        cpuSeries.add(System.currentTimeMillis()-start, cpuLoad);
+    private void saveAndPlotData(double cpuLoad, double cpuSTD, double bandwidth, double responseTime, double totalCost, double throughPut, int numberOfNodes) {
+        cpuSTDSeries.add(System.currentTimeMillis()-start, cpuSTD);
+        gui.updateCpuSTDChart(getCpuSTDChart());
+        cpuLoadSeries.add(System.currentTimeMillis()-start, cpuLoad);
         gui.updateCpuLoadChart(getCPUChart());
         rtSeries.add(System.currentTimeMillis()-start, responseTime);
         gui.updateResponseTimeChart(getResponseTimeChart());
         costSeries.add(System.currentTimeMillis()-start, totalCost);
         gui.updateTotalCostChart(getTotalCostChart());
-        tpSeries.add(System.currentTimeMillis()-start, throughtPut);
+        tpSeries.add(System.currentTimeMillis()-start, throughPut);
         gui.updateThroughputChart(getAverageThroughputChart());
         nrInstancesSeries.add(System.currentTimeMillis()-start, numberOfNodes);
         gui.updateNrOfInstancesChart(getNrInstancesChart());
@@ -217,7 +232,7 @@ public class Modeler extends ComponentDefinition {
 		SAMPLING_INTERVAL = sampleInterval * 1000;
 		ORDER_INTERVAL = orderInterval * 1000;
 		scheduleSampling();
-		scheduleAcutation();
+		scheduleActuation();
 	}
 	
 	public void stopModeler() {
@@ -226,7 +241,7 @@ public class Modeler extends ComponentDefinition {
 	}
 
 	
-	private void scheduleAcutation() {
+	private void scheduleActuation() {
 		ScheduleTimeout st = new ScheduleTimeout(ORDER_INTERVAL);
 		st.setTimeoutEvent(new InstanceCreation(st));
 		actuationTimeoutId = st.getTimeoutEvent().getTimeoutId();
@@ -234,7 +249,7 @@ public class Modeler extends ComponentDefinition {
 	}
 
 	private JFreeChart getCPUChart() {
-		JFreeChart chart = ChartFactory.createXYLineChart("Average CPU Load", "Time (ms)", "Average CPU Load", getDataset(cpuSeries), PlotOrientation.VERTICAL, true, true, false);
+		JFreeChart chart = ChartFactory.createXYLineChart("Average CPU Load", "Time (ms)", "Average CPU Load", getDataset(cpuLoadSeries), PlotOrientation.VERTICAL, true, true, false);
 		return chart;
 	}
 
@@ -243,8 +258,8 @@ public class Modeler extends ComponentDefinition {
 		return chart;
 	}
 
-	private JFreeChart getBandwidthChart() {
-		JFreeChart chart = ChartFactory.createXYLineChart("Average Bandwidth", "Time (ms)", "Average Bandwidth (B/s)", getDataset(bandwidthSeries), PlotOrientation.VERTICAL, true, true, false);
+	private JFreeChart getCpuSTDChart() {
+		JFreeChart chart = ChartFactory.createXYLineChart("CPU Standard Deviation", "Time (ms)", "CPU STD", getDataset(cpuSTDSeries), PlotOrientation.VERTICAL, true, true, false);
 		return chart;
 	}
 
@@ -274,7 +289,7 @@ public class Modeler extends ComponentDefinition {
 		ModelerSnapshot snapshot = new ModelerSnapshot(snapshotId);
 		snapshot.setCpuChart(getCPUChart());
 		snapshot.setResponseTimeChart(getResponseTimeChart());
-		snapshot.setBandwidthChart(getBandwidthChart());
+		snapshot.setBandwidthChart(getCpuSTDChart());
 		snapshot.setNrInstanceChart(getNrInstancesChart());
 		snapshot.setTotalCostChart(getTotalCostChart());
 		snapshot.setAverageThroughputChart(getAverageThroughputChart());
@@ -282,9 +297,9 @@ public class Modeler extends ComponentDefinition {
 	}
 
 	public void reset() {
-		cpuSeries.clear();
+		cpuLoadSeries.clear();
 		rtSeries.clear();
-		bandwidthSeries.clear();
+		cpuSTDSeries.clear();
 		nrInstancesSeries.clear();
 		costSeries.clear();
 		tpSeries.clear();

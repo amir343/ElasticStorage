@@ -233,15 +233,16 @@ public class ElasticLoadBalancer extends ComponentDefinition {
                 data.setNrNodes(event.numberOfNodes());
 				data.setResponseTimeMean(event.getAverageResponseTime());
 				data.setThroughputMean(event.getAverageThroughput());
-				data.setCpuLoadMean(calculateCPULoadMean());
+                setCpuLoadAndSTD(data);
 				data.setBandwidthMean(calculateBandwidthMean());
 				data.setTotalCost(event.getTotalCost());
 				trigger(data, network);
 			} else {
-				SenseData data = new SenseData(self, event.controller(), event.numberOfNodes());
-				data.setAverageResponseTime(event.getAverageResponseTime());
-				data.setAverageThroughput(event.getAverageThroughput());
-				data.setCpuLoad(calculateCPULoadMean());
+				SenseData data = new SenseData(self, event.controller());
+                data.setNrNodes(event.numberOfNodes());
+                setCpuLoadAndSTD(data);
+				data.setResponseTimeMean(event.getAverageResponseTime());
+				data.setThroughputMean(event.getAverageThroughput());
 				data.setBandwidthMean(calculateBandwidthMean());
 				data.setTotalCost(event.getTotalCost());
 				trigger(data, network);
@@ -291,18 +292,26 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 		trigger(st, timer);
 	}
 
-	private double calculateCPULoadMean() {
-		if (cpuLoads.size() == 0) return 0.0;
-		double sum = 0.0;
-		double average = 0.0;
-		synchronized (cpuLoads) {
-			for (Address node: cpuLoads.keySet())
-				sum += cpuLoads.get(node);
-			average = sum/cpuLoads.size();
-		}
+    private void setCpuLoadAndSTD(StateVariables st) {
+        if (cpuLoads.size() == 0) {
+            st.setCpuLoadMean(0.0);
+            st.setCpuLoadSTD(0.0);
+            return;
+        }
+        double sum = 0.0;
+        double average = 0.0;
+        synchronized (cpuLoads) {
+            for (Address node: cpuLoads.keySet())
+                sum += cpuLoads.get(node);
+            average = sum/cpuLoads.size();
+            st.setCpuLoadMean(average);
+            sum = 0;
+            for (Address node : cpuLoads.keySet())
+                sum += Math.pow(cpuLoads.get(node)-average, 2.0);
+            st.setCpuLoadSTD(Math.sqrt(sum/cpuLoads.size()));
+        }
         cpuLoads.clear();
-		return average;
-	}
+    }
 	
 	protected void startELBTable(ELBInit event) {
 		elbTable = new ELBTable(event.replicationDegree());

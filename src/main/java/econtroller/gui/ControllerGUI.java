@@ -82,14 +82,14 @@ public class ControllerGUI extends AbstractGUI {
 	private JButton stopModelerButton;
 	private JLabel maxNrInstancesLbl;
 	private IntegerTextField maxInstanceText;
-	private JPanel cpuPanel;
-	private JPanel bandwidthPanel;
+	private JPanel cpuLoadPanel;
+	private JPanel cpuSTDPanel;
 	private JPanel responseTimePanel;
 	private JPanel costPanel;
 	private JPanel nrInstancePanel;
 	private Modeler modeler;
 	private ChartPanel cpuChartPanel;
-	private ChartPanel bandwidthChartPanel;
+	private ChartPanel cpuSTDChartPanel;
 	private ChartPanel rtChartPanel;
 	private ChartPanel costChartPanel;
 	private ChartPanel nrInstanceChartPanel;
@@ -209,16 +209,16 @@ public class ControllerGUI extends AbstractGUI {
 							.addComponent(maxNrInstancesLbl)
 							.addComponent(startModelerButton)
 							.addComponent(dumpDataIntoFilesBtn)
-							.addComponent(nrInstancePanel)
+							.addComponent(cpuLoadPanel)
 							.addComponent(responseTimePanel)
-							.addComponent(cpuPanel))
+							.addComponent(nrInstancePanel))
 				.addGroup(group.
 						createParallelGroup()
 							.addComponent(sampleOrderLayout)
 							.addComponent(instanceLayout)
 							.addComponent(stopModelerButton)
 							.addComponent(resetModelerButton)
-							.addComponent(bandwidthPanel)
+							.addComponent(cpuSTDPanel)
 							.addComponent(costPanel)
 							.addComponent(throughputPanel))
 		);
@@ -251,8 +251,8 @@ public class ControllerGUI extends AbstractGUI {
 						 )
 				.addGroup(group.
 						createParallelGroup()
-							.addComponent(nrInstancePanel)
-							.addComponent(bandwidthPanel)
+							.addComponent(cpuLoadPanel)
+							.addComponent(cpuSTDPanel)
 						 )
 				.addGroup(group.
 						createParallelGroup()
@@ -261,7 +261,7 @@ public class ControllerGUI extends AbstractGUI {
 						 )
 				.addGroup(group.
 						createParallelGroup()
-							.addComponent(cpuPanel)
+							.addComponent(nrInstancePanel)
 							.addComponent(throughputPanel)
 						 )
 		);
@@ -270,13 +270,13 @@ public class ControllerGUI extends AbstractGUI {
 	}
 
 	private void createChartPanels() {
-		cpuPanel = new JPanel();
-		cpuPanel.setLayout(new GridLayout(1,1));
-		cpuPanel.setBorder(BorderFactory.createTitledBorder(""));
+		cpuLoadPanel = new JPanel();
+		cpuLoadPanel.setLayout(new GridLayout(1,1));
+		cpuLoadPanel.setBorder(BorderFactory.createTitledBorder(""));
 		
-		bandwidthPanel = new JPanel();
-		bandwidthPanel.setLayout(new GridLayout(1,1));
-		bandwidthPanel.setBorder(BorderFactory.createTitledBorder(""));
+		cpuSTDPanel = new JPanel();
+		cpuSTDPanel.setLayout(new GridLayout(1,1));
+		cpuSTDPanel.setBorder(BorderFactory.createTitledBorder(""));
 		
 		responseTimePanel = new JPanel();
 		responseTimePanel.setLayout(new GridLayout(1,1));
@@ -633,21 +633,21 @@ public class ControllerGUI extends AbstractGUI {
 		this.modeler = modeler;
 	}
 
-	public void updateBandwidthChart(JFreeChart bandwidthChart) {
-		if (bandwidthChartPanel != null)
-			bandwidthPanel.remove(bandwidthChartPanel);
-		bandwidthChartPanel = new ChartPanel(bandwidthChart);
-		bandwidthPanel.add(bandwidthChartPanel);
-		bandwidthPanel.revalidate();
+	public void updateCpuSTDChart(JFreeChart cpuSTDChart) {
+		if (cpuSTDChartPanel != null)
+			cpuSTDPanel.remove(cpuSTDChartPanel);
+		cpuSTDChartPanel = new ChartPanel(cpuSTDChart);
+		cpuSTDPanel.add(cpuSTDChartPanel);
+		cpuSTDPanel.revalidate();
 	}
 
-	public void updateCpuLoadChart(JFreeChart cpuChart) {
+	public void updateCpuLoadChart(JFreeChart cpuLoadChart) {
 		if (cpuChartPanel != null)
-			cpuPanel.remove(cpuChartPanel);
-		cpuChartPanel = new ChartPanel(cpuChart);
-		cpuChartPanel.setSize(cpuPanel.getWidth(), cpuPanel.getHeight());
-		cpuPanel.add(cpuChartPanel);
-		cpuPanel.revalidate();
+			cpuLoadPanel.remove(cpuChartPanel);
+		cpuChartPanel = new ChartPanel(cpuLoadChart);
+		cpuChartPanel.setSize(cpuLoadPanel.getWidth(), cpuLoadPanel.getHeight());
+		cpuLoadPanel.add(cpuChartPanel);
+		cpuLoadPanel.revalidate();
 	}
 
 	public void updateResponseTimeChart(JFreeChart responseTimeChart) {

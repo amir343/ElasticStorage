@@ -31,12 +31,12 @@ public class NaiveController implements ControllerDesign {
 	public void sense(Address source, SenseData monitorPacket) {
 		logger.debug("Adding monitor " + monitorPacket.toString());
 		this.senseData = monitorPacket;
-        this.numberOfNodes = monitorPacket.numberOfNodes();
+        this.numberOfNodes = monitorPacket.getNrNodes();
 	}
 
 	@Override
 	public void action() {
-		if (senseData.getCpuLoad() > THRESHOLD) {
+		if (senseData.getCpuLoadMean() > THRESHOLD) {
 			logger.warn("Ordering a new node to cloudProvider");
 			controller.actuate(1.0, numberOfNodes);
 		} else {
