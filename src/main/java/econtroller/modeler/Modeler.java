@@ -165,7 +165,6 @@ public class Modeler extends ComponentDefinition {
     Handler<SenseData> senseDataHandler = new Handler<SenseData>() {
         @Override
         public void handle(SenseData event) {
-            logger.info("Gereftomesh! ");
             if (start == null) start = System.currentTimeMillis();
             saveAndPlotData(event.cpuLoad(), event.bandwidthMean(), event.averageResponseTime(), event.totalCost(), event.averageThroughput(), event.numberOfNodes());
         }

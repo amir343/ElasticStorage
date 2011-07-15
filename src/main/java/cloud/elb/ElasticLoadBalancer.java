@@ -190,6 +190,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 			loadBalancerAlgorithm.updateCPULoadFor(event.node(), event.cpuLoad());
 			cpuLoads.put(event.getSource(), event.cpuLoad());
 			bandwidths.put(event.getSource(), event.currentBandwidth());
+            CloudGUI.getInstance().updateCPULoadForNode(event.node(), event.cpuLoad());
 		}
 	};
 	

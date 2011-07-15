@@ -1,5 +1,6 @@
 package cloud.gui;
 
+import android.R;
 import cloud.api.CloudAPI;
 import cloud.api.CloudSnapshot;
 import cloud.elb.ELBEntry;
@@ -39,8 +40,8 @@ public class CloudGUI extends AbstractGUI {
 
 	private static CloudGUI instance = new CloudGUI();
 	private Logger logger = LoggerFactory.getLogger(CloudGUI.class, this);
-	
-	public static CloudGUI getInstance() {
+
+    public static CloudGUI getInstance() {
 		return instance;
 	}
 	
@@ -90,7 +91,7 @@ public class CloudGUI extends AbstractGUI {
 	private String[] snapshotTableColumns = new String[]{"Snapshot ID", "Date"};
 	private SnapshotPopupListener snapshotPopupListener = new SnapshotPopupListener(this);
 	private List<CloudSnapshot> snapshots = new ArrayList<CloudSnapshot>();
-	private String[] instanceTableColumn = new String[]{"Name", "Address", "Status", "Cost ($)"};
+	private String[] instanceTableColumn = new String[]{"Name", "Address", "Status", "Cost ($)", "CPU"};
 	private JPanel elbTab;
 	private JTree elbTree;
 	
@@ -117,6 +118,10 @@ public class CloudGUI extends AbstractGUI {
 	private void addWindowListener() {
 		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
+                while(model.getRowCount() != 0) {
+                    instances.getSelectionModel().setSelectionInterval(0, 0);
+                    killSelectedInstances();
+                }
 				System.exit(0); //
 			}
 		});
@@ -276,21 +281,19 @@ public class CloudGUI extends AbstractGUI {
 	private JPanel createCurrentInstancesPanel() {
 		JPanel currentInstancesPanel = new JPanel();
 		currentInstancesPanel.setBorder(BorderFactory.createTitledBorder("Current Instances"));
-		currentInstancesPanel.setLayout(new GridLayout(2,0));
-		
-		createInstanceTable(currentInstancesPanel);
-		
-		JPanel removeButtonPanel = new JPanel();
-		removeButtonPanel.setBorder(BorderFactory.createEmptyBorder());
-		removeButtonPanel.setLayout(new FlowLayout());
+		currentInstancesPanel.setLayout(new BoxLayout(currentInstancesPanel, BoxLayout.Y_AXIS));
+        Box layout = Box.createVerticalBox();
+
+		createInstanceTable(layout);
 		
 		removeInstanceButton = new JButton("Remove instance");
-		removeButtonPanel.add(removeInstanceButton);
-		currentInstancesPanel.add(removeButtonPanel);
+
+        layout.add(removeInstanceButton);
+		currentInstancesPanel.add(layout);
 		return currentInstancesPanel;
 	}
 
-	private void createInstanceTable(JPanel currentInstancesPanel) {
+	private void createInstanceTable(Box currentInstancesPanel) {
 	    model = new DefaultTableModel(new String[][]{}, instanceTableColumn);
 		instances = new JTable(model){
 			private static final long serialVersionUID = 8374219580041789497L;
@@ -306,7 +309,7 @@ public class CloudGUI extends AbstractGUI {
 	private JPanel createAddInstancePanel() {
 		JPanel addInstancePanel = new JPanel();
 		addInstancePanel.setBorder(BorderFactory.createTitledBorder("Launch Instance"));
-		addInstancePanel.setLayout(new GridLayout(3, 1));
+		addInstancePanel.setLayout(new BoxLayout(addInstancePanel, BoxLayout.Y_AXIS));
 //--------------------------//		
 		JPanel labelPanel = new JPanel();
 		labelPanel.setBorder(BorderFactory.createEmptyBorder());
@@ -343,7 +346,7 @@ public class CloudGUI extends AbstractGUI {
 		JLabel simultaneousDownloadsLbl = new JLabel("Simulatenous Downloads:");
 		nodeConfigurationsPanel.add(simultaneousDownloadsLbl);
 
-		sDownloads = new JTextArea("200");
+		sDownloads = new JTextArea("70");
 		nodeConfigurationsPanel.add(sDownloads);
 
 		addInstancePanel.add(nodeConfigurationsPanel);
@@ -438,7 +441,21 @@ public class CloudGUI extends AbstractGUI {
 			logger.error("node can not be null");
 		}
 	}
-	
+
+	public void updateCPULoadForNode(Node node, double load) {
+		if ( null != node ) {
+			for (int i=0; i<model.getRowCount(); i++) {
+				if ( ((String)(model.getValueAt(i, 0))).equals(node.getNodeName()) &&
+						((String)(model.getValueAt(i, 1))).equals(node.getIP()+":"+node.getPort())) {
+					model.setValueAt(String.valueOf(load), i, 4);
+					return;
+				}
+			}
+		} else {
+			logger.error("node can not be null");
+		}
+	}
+
 	public void decorateExponentialDistribution() {
 		parametersPanel.removeAll();
 		parameter1Lbl.setText("Minimum Interval (s): ");
@@ -475,7 +492,6 @@ public class CloudGUI extends AbstractGUI {
 		currentDistribution = distributionRepository.getConstantDistribution();
 		createDiagramPanel(currentDistribution.getChart());
 	}
-
 
 	public void decorateForCustomDistribution(List<String> lines) {
 		parametersPanel.removeAll();

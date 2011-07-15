@@ -198,6 +198,11 @@ public class CloudAPI extends ComponentDefinition {
                 Node node = getNewNodeInfo();
                 nodeConfiguration.setNodeInfo(node);
                 trigger(new RebalanceDataBlocks(nodeConfiguration), elb);
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    logger.error(e.getMessage());
+                }
             }
 		}
 	};
