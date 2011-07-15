@@ -103,10 +103,9 @@ public class CloudAPI extends ComponentDefinition {
 	Handler<InstanceStarted> instanceStartedHandler = new Handler<InstanceStarted>() {
 		@Override
 		public void handle(InstanceStarted event) {
-			gui.addNewInstance(event.getNode());		
+			gui.instanceStarted(event.getNode());
 			gui.instanceAdded();
 			currentNodes.add(event.getNode());
-			numberOfInstances++;
 			logger.info("Node " + event.getNode() + " initialized   [ok]");
 			trigger(new ConsiderInstance(event.getNode()), epfd);
 			if (connectedToController) trigger(new NewNodeToMonitor(self, controllerAddress, event.getNode().getAddress()), network);
@@ -197,6 +196,8 @@ public class CloudAPI extends ComponentDefinition {
                 NodeConfiguration nodeConfiguration = new NodeConfiguration();
                 Node node = getNewNodeInfo();
                 nodeConfiguration.setNodeInfo(node);
+                gui.addNewInstance(node);
+                numberOfInstances++;
                 trigger(new RebalanceDataBlocks(nodeConfiguration), elb);
                 try {
                     Thread.sleep(500);
@@ -254,7 +255,6 @@ public class CloudAPI extends ComponentDefinition {
 		}
 	};
 	
-	
 	/**
 	 * This handler is triggered when the modeler from controller request to remove a node
 	 */
@@ -262,10 +262,6 @@ public class CloudAPI extends ComponentDefinition {
 		@Override
 		public void handle(RemoveNode event) {
 			if (!currentNodes.isEmpty()) {
-/*
-				gui.removeNodeFromCurrentInstances(currentNodes.get(0));
-				kill(currentNodes.get(0));
-*/
                 trigger(new SelectNodesToRemove(currentNodes, event.numberOfNodes()), elb);
 			} else {
                 logger.error("No nodes left to kill!");
@@ -327,6 +323,8 @@ public class CloudAPI extends ComponentDefinition {
 	public void initialize(NodeConfiguration nodeConfiguration, boolean alreadyDefined) {
 		if (!alreadyDefined) {
 			Node node = getNewNodeInfo();
+            gui.addNewInstance(node);
+            numberOfInstances++;
 			nodeConfiguration.setNodeInfo(node);
 		}
 		if (currentNodes.size() != 0) {

@@ -43,8 +43,8 @@ public class ControllerGUI extends AbstractGUI {
     private static final int SENSE_MIN = 5;
     private static final int SENSE_MAX = 120;
     private static final int SENSE_INIT = 25;
-    private static final int ACT_MIN = 5;
-    private static final int ACT_MAX = 120;
+    private static final int ACT_MIN = 10;
+    private static final int ACT_MAX = 180;
     private static final int ACT_INIT = 80;
     private static ControllerGUI instance = new ControllerGUI();
     private JLabel actValueLabel;
@@ -393,7 +393,7 @@ public class ControllerGUI extends AbstractGUI {
 
 	private void createControllerDesignSection() {
 		controllerDesignPanel = new JPanel();
-		controllerDesignPanel.setLayout(new GridLayout(6, 0));
+		controllerDesignPanel.setLayout(new BoxLayout(controllerDesignPanel, BoxLayout.Y_AXIS));
 		controllerDesignPanel.setBorder(BorderFactory.createTitledBorder("Controller Configurations"));
 		
 		createDesignSection();

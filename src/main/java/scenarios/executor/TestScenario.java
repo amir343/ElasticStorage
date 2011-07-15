@@ -34,8 +34,13 @@ public class TestScenario {
     			data("block1", 2, Size.MB);
     			data("block2", 4, Size.MB);
     			data("block3", 3, Size.MB);
-    			data("block4", 5, Size.MB);
-    			data("block5", 12, Size.MB);
+    			data("block4", 1, Size.MB);
+    			data("block5", 4, Size.MB);
+    			data("block6", 5, Size.MB);
+    			data("block7", 4, Size.MB);
+    			data("block8", 3, Size.MB);
+    			data("block9", 2, Size.MB);
+    			data("block10", 1, Size.MB);
     			replicationDegree(2);
     			addressPoll("addresses.xml");
     		}

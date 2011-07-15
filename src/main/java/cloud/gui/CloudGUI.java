@@ -1,6 +1,5 @@
 package cloud.gui;
 
-import android.R;
 import cloud.api.CloudAPI;
 import cloud.api.CloudSnapshot;
 import cloud.elb.ELBEntry;
@@ -40,44 +39,47 @@ public class CloudGUI extends AbstractGUI {
 
 	private static CloudGUI instance = new CloudGUI();
 	private Logger logger = LoggerFactory.getLogger(CloudGUI.class, this);
-
     public static CloudGUI getInstance() {
 		return instance;
 	}
-	
+
 	private static final long serialVersionUID = -5915547650186857743L;
-	private DistributionRepository distributionRepository = DistributionRepository.getInstance();
-	private ResponseTimeService responseTimeService = ResponseTimeService.getInstance();
-	private Distribution currentDistribution;
-	public static final String INSTANCES_ITEM_DEFAULT = "Please select an instance";
-	private String[] CPU_SPEEDS = new String[]{"1.2", "1.8", "2.0", "2.4", "2.8", "3.2", "3.8", "4.2"};
-	private String[] BANDWIDTHES = new String[]{"1", "2", "3", "4", "5"};
-	private String[] MEMORIES = new String[]{"1", "2", "4", "8", "16", "32"};
-	private JPanel instanceControlPanel;
-	private JTable instances;
-	private JButton addInstanceButton;
-	private JButton removeInstanceButton;
-	private CloudAPI api;
-	private RequestGenerator reqGen;
-	private AddInstanceActionListener addInstanceActionListener = new AddInstanceActionListener(this);
-	private RemoveInstanceActionListener removeInstanceActionListener = new RemoveInstanceActionListener(this);
-	private DistributionSelectionActionListener distributionSelectionActionListener = new DistributionSelectionActionListener(this);
-	private StartDistributionRequestActionListener startDistributionRequestActionListener = new StartDistributionRequestActionListener(this);
-	private StopDistributionRequestActionListener stopDistributionRequestActionListener = new StopDistributionRequestActionListener(this);
-	private InstanceTablePopupMenuListener instanceTablePopupMenuListener = new InstanceTablePopupMenuListener(this); 
-	private JComboBox bandwidthes;
-	private JTextArea sDownloads;
-	private JComboBox cpuSpeed;
-	private JComboBox memories;
-	private JPanel requestEnginePanel;
-	private JComboBox distributions;
-	private JTextField parameter1;
-	private JTextField parameter2;
-	private JTextField parameter3;
-	private JLabel parameter1Lbl;
-	private JLabel parameter2Lbl;
-	private JLabel parameter3Lbl;
-	private JPanel parametersPanel;
+
+    private DistributionRepository distributionRepository = DistributionRepository.getInstance();
+
+    private int nn = 0;
+    private ResponseTimeService responseTimeService = ResponseTimeService.getInstance();
+    private Distribution currentDistribution;
+    public static final String INSTANCES_ITEM_DEFAULT = "Please select an instance";
+    private String[] CPU_SPEEDS = new String[]{"1.2", "1.8", "2.0", "2.4", "2.8", "3.2", "3.8", "4.2"};
+    private String[] BANDWIDTHES = new String[]{"1", "2", "3", "4", "5"};
+    private String[] MEMORIES = new String[]{"1", "2", "4", "8", "16", "32"};
+    private JPanel instanceControlPanel;
+    private JTable instances;
+    private JButton addInstanceButton;
+    private JButton removeInstanceButton;
+    private CloudAPI api;
+    private RequestGenerator reqGen;
+    private AddInstanceActionListener addInstanceActionListener = new AddInstanceActionListener(this);
+    private RemoveInstanceActionListener removeInstanceActionListener = new RemoveInstanceActionListener(this);
+    private DistributionSelectionActionListener distributionSelectionActionListener = new DistributionSelectionActionListener(this);
+    private StartDistributionRequestActionListener startDistributionRequestActionListener = new StartDistributionRequestActionListener(this);
+    private StopDistributionRequestActionListener stopDistributionRequestActionListener = new StopDistributionRequestActionListener(this);
+    private InstanceTablePopupMenuListener instanceTablePopupMenuListener = new InstanceTablePopupMenuListener(this);
+    private JComboBox bandwidthes;
+    private JTextArea sDownloads;
+    private JComboBox cpuSpeed;
+    private JComboBox memories;
+    private JPanel requestEnginePanel;
+    private JComboBox distributions;
+    private JTextField parameter1;
+    private JTextField parameter2;
+    private JTextField parameter3;
+    private JLabel numberOfNodesLbl;
+    private JLabel parameter1Lbl;
+    private JLabel parameter2Lbl;
+    private JLabel parameter3Lbl;
+    private JPanel parametersPanel;
 	private ChartPanel diagramPanel;
 	private ChartPanel responseTimeDiagramPanel;
 	private JPanel distributionPanelSelector;
@@ -284,6 +286,7 @@ public class CloudGUI extends AbstractGUI {
 		currentInstancesPanel.setLayout(new BoxLayout(currentInstancesPanel, BoxLayout.Y_AXIS));
         Box layout = Box.createVerticalBox();
 
+        createNumberOfInstancesStatus(layout);
 		createInstanceTable(layout);
 		
 		removeInstanceButton = new JButton("Remove instance");
@@ -293,7 +296,18 @@ public class CloudGUI extends AbstractGUI {
 		return currentInstancesPanel;
 	}
 
-	private void createInstanceTable(Box currentInstancesPanel) {
+    private void createNumberOfInstancesStatus(Box layout) {
+        JLabel nn = new JLabel("Number of current instances: ", JLabel.CENTER);
+        Box horizonLayout = Box.createHorizontalBox();
+
+        numberOfNodesLbl = new JLabel("0", JLabel.CENTER);
+        horizonLayout.add(nn);
+        horizonLayout.add(numberOfNodesLbl);
+
+        layout.add(horizonLayout);
+    }
+
+    private void createInstanceTable(Box currentInstancesPanel) {
 	    model = new DefaultTableModel(new String[][]{}, instanceTableColumn);
 		instances = new JTable(model){
 			private static final long serialVersionUID = 8374219580041789497L;
@@ -363,12 +377,28 @@ public class CloudGUI extends AbstractGUI {
 	}
 	
 	public synchronized void addNewInstance(Node instance) {
+        nn++;
+        numberOfNodesLbl.setText(String.valueOf(nn));
 		if (null != instance) {
-			model.insertRow(instances.getRowCount(), new String[]{instance.getNodeName(), instance.getIP()+":"+instance.getPort(), "Healthy", "0.0"});
+			model.insertRow(instances.getRowCount(), new String[]{instance.getNodeName(), instance.getIP()+":"+instance.getPort(), "Launching...", "0.0", "0.0"});
 		} else {
 			logger.error("instance can not be null");
 		}
 	}
+
+    public synchronized void instanceStarted(Node node) {
+ 		if ( null != node) {
+			for (int i=0; i<model.getRowCount(); i++) {
+				if ( ((String)(model.getValueAt(i, 0))).equals(node.getNodeName()) &&
+						((String)(model.getValueAt(i, 1))).equals(node.getIP()+":"+node.getPort())) {
+					model.setValueAt("Healthy", i, 2);
+					return;
+				}
+			}
+		} else {
+			logger.error("node can not be null");
+		}
+    }
 	
 	public void killSelectedInstances() {
 		if (api != null) {
@@ -379,6 +409,8 @@ public class CloudGUI extends AbstractGUI {
 				String address = (String) model.getValueAt(rows[i], 1);
 				model.removeRow(rows[i]);
 				api.kill(Node.fromString(nodeName + "@" + address));
+                nn--;
+                numberOfNodesLbl.setText(String.valueOf(nn));
 			}
 		} else {
 			log("ERROR: CloudAPI component is not started or is dead");
@@ -386,6 +418,8 @@ public class CloudGUI extends AbstractGUI {
 	}
 	
 	public void removeNodeFromCurrentInstances(Node node) {
+        nn--;
+        numberOfNodesLbl.setText(String.valueOf(nn));
 		if ( null != node) {
 			for (int i=0; i<model.getRowCount(); i++) {
 				if ( ((String)(model.getValueAt(i, 0))).equals(node.getNodeName()) && 
