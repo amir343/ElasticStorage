@@ -19,8 +19,10 @@ import java.util.*;
 public class ControlRepository {
 
 	private static ControlRepository instance = new ControlRepository();
-	
-	public static ControlRepository getInstance() {
+    private int scalaClass = 0;
+    private int javaClass = 0;
+
+    public static ControlRepository getInstance() {
 		return instance;
 	}
 	
@@ -32,14 +34,6 @@ public class ControlRepository {
 		searchPackages();
 	}
 	
-	private boolean hasImplementedControllerDesignInterface(Class<?>[] interfaces) {
-		for (Class<?> klass : interfaces) {
-			if (klass.equals(ControllerDesign.class))
-				return true;
-		}
-		return false;
-	}
-
 	public List<String> getControllerNames() {
 		List<String> controllers = new ArrayList<String>();
 		for (String name : klasses.keySet()) {
@@ -47,7 +41,7 @@ public class ControlRepository {
 		}
 		return controllers;
 	}
-	
+
 	public void searchPackages() {
 		ClassLoader loader = Thread.currentThread().getContextClassLoader();
 		if (loader != null) {
@@ -58,6 +52,7 @@ public class ControlRepository {
 				File dirs = new File(url.getPath());
 				investigate(dirs);
 				logger.info("[" + nrOfSearchedClasses + "] classes searched and found [" + klasses.size() + "] controller(s)");
+				logger.info("[" + scalaClass + "] \"Scala\" classes and [" + javaClass + "] \"Java\" classes found");
 			} catch (IOException e) {
 				logger.error(e.getMessage());
 			} catch (ClassNotFoundException e) {
@@ -69,7 +64,7 @@ public class ControlRepository {
 			}
 		}
 	}
-	
+
 	private void investigate(File file) throws ClassNotFoundException, InstantiationException, IllegalAccessException {
 		if (file.isDirectory()) {
 			for (String str : file.list()) {
@@ -79,20 +74,42 @@ public class ControlRepository {
 			String fileName = file.getName();
 			String packagePrefix = file.getPath().substring(file.getPath().indexOf("classes") + 8, file.getPath().length()).replace("/", ".");
 			if (fileName.endsWith(".class")) {
-				if (!fileName.toLowerCase().contains("gui")) {
-					Class<?> klass = Class.forName(packagePrefix.substring(0, packagePrefix.length() - 6));
-					if (hasImplementedControllerDesignInterface(klass.getInterfaces())) {
-						klasses.put(klass.getSimpleName(), (ControllerDesign)klass.newInstance());
-						System.out.println(klass.getSimpleName());
-					}
-				}
+                if (!fileName.toLowerCase().contains("gui")) {
+                    Class<?> klass = Class.forName(packagePrefix.substring(0, packagePrefix.length() - 6));
+                    if (hasImplementedControllerDesignInterface(klass.getInterfaces())) {
+						klasses.put(klass.getSimpleName(), (ControllerDesign) klass.newInstance());
+                    }
+                    countScalaOrJava(klass.getInterfaces());
+                } else {
+                    javaClass++;
+                }
 				nrOfSearchedClasses++;
-			}			
+			}
 		}
-		
+
 	}
 
-	public ControllerDesign getControllerWithName(String selectedController) {
+    private boolean hasImplementedControllerDesignInterface(Class<?>[] interfaces) {
+        for (Class<?> klass : interfaces) {
+            if (klass.equals(ControllerDesign.class))
+                return true;
+        }
+        return false;
+    }
+
+    private void countScalaOrJava(Class<?>[] interfaces) {
+        boolean found = false;
+        for(Class<?> klass : interfaces) {
+            if (klass.toString().contains("scala")) {
+                scalaClass++;
+                found = true;
+                break;
+            }
+        }
+        if (!found) javaClass++;
+    }
+
+    public ControllerDesign getControllerWithName(String selectedController) {
 		return klasses.get(selectedController).clone();
 	}
 	
