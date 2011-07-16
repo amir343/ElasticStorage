@@ -284,9 +284,9 @@ public class OS extends ComponentDefinition {
 	/**
 	 * Updates transfer table and compute bandwidth for remaining transfers
 	 */
-	Handler<TransferingFinished> transferingFinishedHandler = new Handler<TransferingFinished>() {
+	Handler<TransferringFinished> transferingFinishedHandler = new Handler<TransferringFinished>() {
 		@Override
-		public void handle(TransferingFinished event) {
+		public void handle(TransferringFinished event) {
 			if (instanceRunning()) {
 				Process process = pt.get(event.getPid());
 				if (process != null) {
@@ -310,10 +310,10 @@ public class OS extends ComponentDefinition {
 			megaBytesDownloadedSoFar += (process.getBlockSize()/(1024*1024));			
 		}
 
-		private void informDownloader(TransferingFinished event, Process process, Request request) {
+		private void informDownloader(TransferringFinished event, Process process, Request request) {
 			if (request.getDestinationNode() != null) {
 				logger.info("Rebalancing finished for " + event.getPid());
-				trigger(new BlockTransfered(self, request.getDestinationNode(), process.getBlockSize(), process.getRequest().getBlockId()), network);
+				trigger(new BlockTransferred(self, request.getDestinationNode(), process.getBlockSize(), process.getRequest().getBlockId()), network);
 			} else {
 				logger.debug("Transfering finished for " + event.getPid() );
 			}
@@ -442,7 +442,7 @@ public class OS extends ComponentDefinition {
 		public void handle(SnapshotRequest event) {
 			if (instanceRunning()) {
 				InstanceSnapshot snapshot = new InstanceSnapshot(lastSnapshotID++);
-				snapshot.addCPULoadChart(event.getCPULoadChart());
+				snapshot.addCPULoadChart(event.getCpuLoadChart());
 				snapshot.addBandwidthChart(getBandwidthChart());
 				gui.addSnapshot(snapshot);
 			}
@@ -452,13 +452,12 @@ public class OS extends ComponentDefinition {
 	/**
 	 * This handler is triggered by Sensor component
 	 */
+    @Deprecated
 	Handler<Monitor> monitorHandler = new Handler<Monitor>() {
 		@Override
 		public void handle(Monitor event) {
 			if (instanceRunning()) {
 				logger.info("Recieved Monitor from Sensor");
-				MonitorPacket monitorPacket = new MonitorPacket(currentCpuLoad, currentBandwidth);
-				trigger(new MonitorResponse(self, event.getSource(), monitorPacket), network);
 			}
 		}
 	};
@@ -517,9 +516,9 @@ public class OS extends ComponentDefinition {
 	/**
 	 * This handler is triggered when the transfer from another instance node is finished
 	 */
-	Handler<BlockTransfered> blockTransferedHandler = new Handler<BlockTransfered>() {
+	Handler<BlockTransferred> blockTransferedHandler = new Handler<BlockTransferred>() {
 		@Override
-		public void handle(BlockTransfered event) {
+		public void handle(BlockTransferred event) {
 			String process = pt.keySet().iterator().next();
 			pt.remove(process);
 			Block block = new Block (event.getBlockName(), event.getBlockSize());
@@ -558,9 +557,6 @@ public class OS extends ComponentDefinition {
 			String totalCostString = df.format(totalCost);
 			String periodicCostString = df.format(costToSend);
 			gui.updateCurrentCost(totalCostString);
-/*
-			logger.debug("This instance costed $ " + periodicCostString + " so far");
-*/
 			trigger(new InstanceCost(self, cloudProvider, node, totalCostString, periodicCostString), network);
 			scheduleCostCalculation();
 		}
@@ -664,7 +660,7 @@ public class OS extends ComponentDefinition {
 			p.setSnapshot(now);
 			pt.put(p.getPid(), p);
 			ScheduleTimeout st = new ScheduleTimeout(1000 * p.getRemainingBlockSize() / p.getCurrentBandwidth());
-			TransferingFinished tt = new TransferingFinished(st);
+			TransferringFinished tt = new TransferringFinished(st);
 			tt.setPid(p.getPid());
 			st.setTimeoutEvent(tt);
 			ct.put(st.getTimeoutEvent().getTimeoutId(), p.getPid());
@@ -679,7 +675,7 @@ public class OS extends ComponentDefinition {
 		trigger(new MemoryCheckOperation(), cpu);
 		long transferDelay = 1000 * process.getBlockSize() / bandwidth ;
 		ScheduleTimeout st = new ScheduleTimeout(1000 * process.getBlockSize() / bandwidth );
-		TransferingFinished tt = new TransferingFinished(st);
+		TransferringFinished tt = new TransferringFinished(st);
 		tt.setPid(process.getPid());
 		st.setTimeoutEvent(tt);
 		UUID timeoutId = st.getTimeoutEvent().getTimeoutId();

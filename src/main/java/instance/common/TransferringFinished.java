@@ -10,11 +10,11 @@ import se.sics.kompics.timer.Timeout;
  *
  */
 
-public class TransferingFinished extends Timeout {
+public class TransferringFinished extends Timeout {
 
 	private String pid;
 
-	public TransferingFinished(ScheduleTimeout request) {
+	public TransferringFinished(ScheduleTimeout request) {
 		super(request);
 	}
 

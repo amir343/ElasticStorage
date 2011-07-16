@@ -236,7 +236,7 @@ public class CPU extends ComponentDefinition {
 		@Override
 		public void handle(SnapshotRequest event) {
 			if (enabled) {
-				event.setChart(getChart());
+				event.setCpuLoadChart(getChart());
 				trigger(event, cpu);
 			}
 		}
