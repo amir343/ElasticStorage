@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>thesis</groupId>
   <artifactId>thesis-simulation</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.1</version>
   <name>thesis-simulation</name>
   <description>Simulation project for benchmarking different controllers with Kompics</description>
   
