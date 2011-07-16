@@ -88,6 +88,7 @@ public class Controller extends ComponentDefinition {
 		public void handle(ConnectionEstablished event) {
 			logger.info("Connecterd to cloud provider.");
 			connectedToCloudProvider = true;
+            gui.connectedToCloudProvider();
 			trigger(new StartModeler(cloudProviderAddress), modeler);
 			trigger(new Sense(cloudProviderAddress), sensor);
 		}
@@ -102,6 +103,7 @@ public class Controller extends ComponentDefinition {
 			if (!connectedToCloudProvider) {
 				gui.enableConnectionSection();
 				gui.disableSystemIdentificationPanel();
+                gui.notConnectedToCloudProvider();
 				logger.warn("Cloud provider seems to be down");
 			}
 		}
@@ -165,6 +167,8 @@ public class Controller extends ComponentDefinition {
 			trigger(new Disconnect(self, cloudProviderAddress), network);
 			logger.info("Disconnected from Cloud Provider");
 			gui.disableSystemIdentificationPanel();
+            gui.notConnectedToCloudProvider();
+            stopController();
 		}
 		else
 			logger.warn("No Cloud Provider is available to disconnect from.");

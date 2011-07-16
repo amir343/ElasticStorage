@@ -2,6 +2,7 @@ package econtroller.gui;
 
 import cloud.gui.IntegerTextField;
 import common.AbstractGUI;
+import common.GUI;
 import econtroller.controller.Controller;
 import econtroller.modeler.Modeler;
 import econtroller.modeler.ModelerSnapshot;
@@ -150,11 +151,16 @@ public class ControllerGUI extends AbstractGUI {
 		createModelerPanel();
 		createSnapshotPanel();
 		createLogPanel();
+        performAfterInitializationTasks();
 		setLayout(new GridLayout(1, 1));
 		add(tabbedPane);
 	}
 
-	private void createSnapshotPanel() {
+    private void performAfterInitializationTasks() {
+        this.notConnectedToCloudProvider();
+    }
+
+    private void createSnapshotPanel() {
 		snapshotPanel = new JPanel();
 		snapshotPanel.setLayout(new GridLayout(1,1));
 		
@@ -586,6 +592,15 @@ public class ControllerGUI extends AbstractGUI {
 		startControllerBtn.setEnabled(true);
 		stopControllerBtn.setEnabled(false);
 	}
+
+    public void notConnectedToCloudProvider() {
+        disableControllerDesignSection();
+        stopControllerBtn.setEnabled(false);
+    }
+
+    public void connectedToCloudProvider() {
+        enableControllerDesignSection();
+    }
 
 	public void setController(Controller controller) {
 		this.controller = controller;
