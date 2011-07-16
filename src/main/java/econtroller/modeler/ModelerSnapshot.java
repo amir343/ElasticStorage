@@ -18,7 +18,7 @@ public class ModelerSnapshot {
 	private Date date = Calendar.getInstance().getTime();
 	private JFreeChart cpuChart;
 	private JFreeChart responseTimeChart;
-	private JFreeChart bandwidthChart;
+	private JFreeChart CpuSTDChart;
 	private JFreeChart nrInstancesChart;
 	private JFreeChart totalCostChart;
 	private JFreeChart averageThroughputChart;
@@ -36,8 +36,8 @@ public class ModelerSnapshot {
 		this.responseTimeChart = responseTimeChart;
 	}
 
-	public void setBandwidthChart(JFreeChart bandwidthChart) {
-		this.bandwidthChart = bandwidthChart;
+	public void setCpuSTDChart(JFreeChart cpuSTDChart) {
+		this.CpuSTDChart = cpuSTDChart;
 	}
 
 	public void setNrInstanceChart(JFreeChart nrInstancesChart) {
@@ -68,8 +68,8 @@ public class ModelerSnapshot {
 		return responseTimeChart;
 	}
 
-	public JFreeChart getBandwidthChart() {
-		return bandwidthChart;
+	public JFreeChart getCpuSTDChart() {
+		return CpuSTDChart;
 	}
 
 	public JFreeChart getNrInstancesChart() {

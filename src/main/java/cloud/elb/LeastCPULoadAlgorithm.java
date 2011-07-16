@@ -31,7 +31,7 @@ public class LeastCPULoadAlgorithm implements LoadBalancerAlgorithm {
 	}
 
 	@Override
-	public Node getNextNodeFrom(List<Node> replicas) {
+	public synchronized Node getNextNodeFrom(List<Node> replicas) {
 		List<NodeStatistics> list = new ArrayList<NodeStatistics>();
 		for (Node node : replicas) {
 			NodeStatistics stat = getNodeStatisticsFor(node);
@@ -62,7 +62,7 @@ public class LeastCPULoadAlgorithm implements LoadBalancerAlgorithm {
 	}
 
 	
-	public void increaseNrOfSentRequestFor(Node node) {
+	public synchronized void increaseNrOfSentRequestFor(Node node) {
 		NodeStatistics nodeStat = getNodeStatisticsFor(node);
 		nodeStat.increaseNrOfSentRequest();
 	}

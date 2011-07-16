@@ -26,14 +26,14 @@ trait StateVariables {
 
   def getStringPresentation: String = {
     val sb: StringBuilder = new StringBuilder
-    sb.append("{")
-      sb.append("# nodes: ").append(nrNodes).append(", ")
-      sb.append("throughput: ").append(throughputMean).append(", ")
-      sb.append("cpuMean: ").append(cpuLoadMean).append(", ")
-      sb.append("cpuSTD: ").append(cpuLoadSTD).append(", ")
-      sb.append("bandwidth: ").append(bandwidthMean).append(", ")
-      sb.append("cost: ").append(totalCost).append(", ")
-      sb.append("responseTime: ").append(responseTimeMean)
+    sb.append("\n{\n")
+      sb.append("\t# nodes: ").append(nrNodes).append("\n")
+      sb.append("\tthroughput: ").append(throughputMean).append("\n")
+      sb.append("\tcpuMean: ").append(cpuLoadMean).append("\n")
+      sb.append("\tcpuSTD: ").append(cpuLoadSTD).append("\n")
+      sb.append("\tbandwidth: ").append(bandwidthMean).append("\n")
+      sb.append("\tcost: ").append(totalCost).append("\n")
+      sb.append("\tresponseTime: ").append(responseTimeMean).append("\n")
     sb.append("}")
     sb.toString
   }

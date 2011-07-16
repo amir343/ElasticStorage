@@ -139,6 +139,7 @@ public class Modeler extends ComponentDefinition {
                         removeNode();
                     } else {
                         generator.dump();
+                        takeSnapshot();
                         add = true;
                         requestNewNode();
                     }
@@ -289,7 +290,7 @@ public class Modeler extends ComponentDefinition {
 		ModelerSnapshot snapshot = new ModelerSnapshot(snapshotId);
 		snapshot.setCpuChart(getCPUChart());
 		snapshot.setResponseTimeChart(getResponseTimeChart());
-		snapshot.setBandwidthChart(getCpuSTDChart());
+		snapshot.setCpuSTDChart(getCpuSTDChart());
 		snapshot.setNrInstanceChart(getNrInstancesChart());
 		snapshot.setTotalCostChart(getTotalCostChart());
 		snapshot.setAverageThroughputChart(getAverageThroughputChart());

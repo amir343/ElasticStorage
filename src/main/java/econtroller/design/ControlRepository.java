@@ -39,6 +39,7 @@ public class ControlRepository {
 		for (String name : klasses.keySet()) {
 			controllers.add(name);
 		}
+        Collections.sort(controllers);
 		return controllers;
 	}
 

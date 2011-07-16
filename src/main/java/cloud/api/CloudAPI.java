@@ -112,13 +112,6 @@ public class CloudAPI extends ComponentDefinition {
 		}
 	};
 	
-	Handler<ShutDownAck> shutDownAckHandler = new Handler<ShutDownAck>() {
-		@Override
-		public void handle(ShutDownAck event) {
-			gui.instanceRemoved();
-		}
-	};
-	
 	/**
 	 * This handler informs ELB for a suspected node
 	 */

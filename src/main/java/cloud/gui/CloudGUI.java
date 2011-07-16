@@ -387,17 +387,19 @@ public class CloudGUI extends AbstractGUI {
 	}
 
     public synchronized void instanceStarted(Node node) {
- 		if ( null != node) {
-			for (int i=0; i<model.getRowCount(); i++) {
-				if ( ((String)(model.getValueAt(i, 0))).equals(node.getNodeName()) &&
-						((String)(model.getValueAt(i, 1))).equals(node.getIP()+":"+node.getPort())) {
-					model.setValueAt("Healthy", i, 2);
-					return;
-				}
-			}
-		} else {
-			logger.error("node can not be null");
-		}
+        synchronized (model) {
+            if ( null != node) {
+                for (int i=0; i<model.getRowCount(); i++) {
+                    if ( ((String)(model.getValueAt(i, 0))).equals(node.getNodeName()) &&
+                            ((String)(model.getValueAt(i, 1))).equals(node.getIP()+":"+node.getPort())) {
+                        model.setValueAt("Healthy", i, 2);
+                        return;
+                    }
+                }
+            } else {
+                logger.error("node can not be null");
+            }
+        }
     }
 	
 	public void killSelectedInstances() {
@@ -417,20 +419,27 @@ public class CloudGUI extends AbstractGUI {
 		}
 	}
 	
-	public void removeNodeFromCurrentInstances(Node node) {
+	public synchronized void removeNodeFromCurrentInstances(Node node) {
         nn--;
         numberOfNodesLbl.setText(String.valueOf(nn));
-		if ( null != node) {
-			for (int i=0; i<model.getRowCount(); i++) {
-				if ( ((String)(model.getValueAt(i, 0))).equals(node.getNodeName()) && 
-						((String)(model.getValueAt(i, 1))).equals(node.getIP()+":"+node.getPort())) {
-					model.removeRow(i);
-					return;
-				}
-			}
-		} else {
-			logger.error("node can not be null");
-		}
+        synchronized (model) {
+            if ( null != node) {
+                logger.debug("Removing " + node +  " from GUI");
+                for (int i=0; i<model.getRowCount(); i++) {
+                    if ( ((String)(model.getValueAt(i, 0))).equals(node.getNodeName())
+/*
+                            && ((String)(model.getValueAt(i, 1))).equals(node.getIP()+":"+node.getPort())
+*/
+                            ) {
+                        model.removeRow(i);
+                        logger.debug(node + " removed!");
+                        return;
+                    }
+                }
+            } else {
+                logger.error("node can not be null");
+            }
+        }
 	}
 	
 	
@@ -462,7 +471,7 @@ public class CloudGUI extends AbstractGUI {
 		}
 	}
 	
-	public void updateCostForNode(Node node, String cost) {
+	public synchronized void updateCostForNode(Node node, String cost) {
 		if ( null != node ) {
 			for (int i=0; i<model.getRowCount(); i++) {
 				if ( ((String)(model.getValueAt(i, 0))).equals(node.getNodeName()) && 
@@ -476,7 +485,7 @@ public class CloudGUI extends AbstractGUI {
 		}
 	}
 
-	public void updateCPULoadForNode(Node node, double load) {
+	public synchronized void updateCPULoadForNode(Node node, double load) {
 		if ( null != node ) {
 			for (int i=0; i<model.getRowCount(); i++) {
 				if ( ((String)(model.getValueAt(i, 0))).equals(node.getNodeName()) &&
