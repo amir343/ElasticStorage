@@ -46,7 +46,7 @@ public class AddressManager {
 			logger.error("There is something wrong with 'addresses.xml' file. Please check that out");
 			throw new RuntimeException("There is something wrong with 'addresses' file. Please check that out");
 		}
-		for (AddressRange range : addressPoll.getList()) {
+		for (AddressRange range : addressPoll.getAddresses()) {
 			if (range.getStartPort() > range.getEndPort() )
 				throw new RuntimeException("Incorrect port range for address " + range.getIp() + " -> [" + range.getStartPort() + "," +  range.getEndPort() + "]");
 			for (int i=range.getStartPort(); i <=range.getEndPort(); i++) {
