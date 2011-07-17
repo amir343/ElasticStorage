@@ -14,6 +14,8 @@ import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -38,11 +40,16 @@ public abstract class AbstractGUI extends JFrame implements GUI {
 	protected JMenu toolMenu;
 	protected JMenuItem takeSnapshotMenuItem;
 	protected SnapshotActionListener snapshotActionListener = new SnapshotActionListener(this);
+    protected FilterActionListener filterActionListner = new FilterActionListener(this);
 	private AtomicBoolean logTextLocked = new AtomicBoolean(false);
 	private int lockedPosition;
-	
-	
-	@Override
+    private JTextField filterTxt;
+    private JButton filterBtn;
+    private List<String> logLines = new ArrayList<String>();
+    private boolean filterMode = false;
+    private String filterKeyword = "";
+
+    @Override
 	public AbstractGUI getGUIComponent() {
 		return this;
 	}
@@ -54,7 +61,13 @@ public abstract class AbstractGUI extends JFrame implements GUI {
 	
 	@Override
 	public void log(String text) {
-		logTextArea.append(text + "\n");
+        logLines.add(text + "\n");
+        if (filterMode) {
+            if (text.toLowerCase().contains(filterKeyword))
+                logTextArea.append(text + "\n");
+        } else {
+            logTextArea.append(text + "\n");
+        }
 		if (!logTextLocked.get()) logTextArea.setCaretPosition(logTextArea.getText().length());
 		else logTextArea.setCaretPosition(lockedPosition);
 	}
@@ -98,9 +111,9 @@ public abstract class AbstractGUI extends JFrame implements GUI {
 	
 	protected void createLogPanel() {
 		logPanel = new JPanel();
-		logPanel.setLayout(new GridLayout(1, 1));
+		logPanel.setLayout(new BoxLayout(logPanel, BoxLayout.Y_AXIS));
 
-		logTextArea = new JTextArea(5, 30);
+		logTextArea = new JTextArea(33, 30);
 		logTextArea.setEditable(false);
 		logTextArea.setAutoscrolls(true);
 		logTextArea.setFont(new Font("Courier New", Font.PLAIN, 11));
@@ -109,11 +122,43 @@ public abstract class AbstractGUI extends JFrame implements GUI {
 		logTextArea.addMouseListener(logTextAreaMouseListener);
 		
 		scrollPane = new JScrollPane(logTextArea);
-		
+
+        Box horizontalLayout = Box.createHorizontalBox();
+        filterTxt = new JTextField();
+        filterBtn = new JButton("Filter");
+        filterBtn.addActionListener(filterActionListner);
+        filterTxt.setMaximumSize(new Dimension(250, 30));
+        horizontalLayout.add(filterTxt);
+        horizontalLayout.add(filterBtn);
+        logPanel.add(horizontalLayout);
 		logPanel.add(scrollPane);
 		tabbedPane.addTab("Log", logPanel);
-		
 	}
+
+    public void filter() {
+        String keyword = filterTxt.getText();
+        if (keyword != null && !keyword.trim().equals("")) {
+            filterMode = true;
+            filterKeyword = keyword.toLowerCase();
+            synchronized (logTextArea) {
+                logTextArea.setText("");
+                for (String line : logLines) {
+                    if (line.toLowerCase().contains(filterKeyword))
+                        logTextArea.append(line);
+                }
+            }
+        } else {
+            if (filterMode) {
+                filterMode = false;
+                synchronized (logTextArea) {
+                    logTextArea.setText("");
+                    for (String line : logLines) {
+                        logTextArea.append(line);
+                    }
+                }
+            }
+        }
+    }
 
     protected void setUIManager() {
         try {

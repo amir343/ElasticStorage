@@ -37,13 +37,13 @@ public class RequestGenerator extends ComponentDefinition {
 	Negative<Generator> generator = provides(Generator.class);
 	Positive<Timer> timer = requires(Timer.class);
 	
-	private Map<UUID, RequestStatistic> currentRequests = new HashMap<UUID, RequestStatistic>();
+	private Map<String, RequestStatistic> currentRequests = new HashMap<String, RequestStatistic>();
 	private List<RequestStatistic> completedRequest = new ArrayList<RequestStatistic>();
 	private List<RequestStatistic> completedRequestClone = new ArrayList<RequestStatistic>();
 	private ResponseTimeService responseTimeService = ResponseTimeService.getInstance();
 	private List<Integer> throughputCollection = new ArrayList<Integer>();
 	private Set<Block> blocks = new HashSet<Block>();
-	private List<UUID> timerIds = new ArrayList<UUID>();
+	private final List<String> timerIds = new ArrayList<String>();
 	private RequestGenerator reqGen;
 	private boolean running = false;
 	private long RT_COLLECTION_TIMEOUT = 5000;
@@ -82,7 +82,7 @@ public class RequestGenerator extends ComponentDefinition {
 				Request request = new Request(UUID.randomUUID().toString(), block.getName());
 				RequestStatistic stat = new RequestStatistic();
 				stat.setStart(System.currentTimeMillis());
-				currentRequests.put(UUID.fromString(request.getId()), stat);
+				currentRequests.put(request.getId(), stat);
 				trigger(request, generator);
 			}
 			if (running) scheduleRequestGeneratorEngine();			
@@ -95,12 +95,14 @@ public class RequestGenerator extends ComponentDefinition {
 	Handler<DownloadStarted> downloadStartedHandler = new Handler<DownloadStarted>() {
 		@Override
 		public void handle(DownloadStarted event) {
-			UUID id = UUID.fromString(event.requestID());
+			String id = event.requestID();
 			if (null != currentRequests.get(id)) {
                 currentRequests.get(id).setEnd(System.currentTimeMillis());
                 completedRequest.add(currentRequests.get(id));
                 completedRequestClone.add(currentRequests.get(id));
                 currentRequests.remove(id);
+            } else {
+                logger.error("Download started for a request that does not exist: " + id);
             }
 		}
 	};
@@ -154,7 +156,7 @@ public class RequestGenerator extends ComponentDefinition {
 			st.setTimeoutEvent(new RequestEngineTimeout(st));
 			UUID id = st.getTimeoutEvent().getTimeoutId();
 			synchronized (timerIds) {
-				timerIds.add(id);
+				timerIds.add(id.toString());
 			}
 			trigger(st, timer);
 		}
@@ -212,8 +214,8 @@ public class RequestGenerator extends ComponentDefinition {
 	}
 
 	private void cancelPreviousTimers() {
-		for (UUID id : timerIds) {
-			CancelTimeout cancel = new CancelTimeout(id);
+		for (String id : timerIds) {
+			CancelTimeout cancel = new CancelTimeout(UUID.fromString(id));
 			trigger(cancel, timer);
 		}
 		synchronized (timerIds) {
