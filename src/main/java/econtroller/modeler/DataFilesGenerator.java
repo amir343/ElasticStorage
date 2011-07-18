@@ -43,11 +43,11 @@ public class DataFilesGenerator {
 	private File rtDump;
 	
 	public void add(TrainingData td) {
-		tp.add(td.getThroughputMean());
-		cpuLoad.add(td.getCpuLoadMean());
-		nn.add(td.getNrNodes());
-		cpuSTD.add(td.getBandwidthMean());
-		tc.add(td.getTotalCost());
+        nn.add(td.getNrNodes());
+        cpuLoad.add(td.getCpuLoadMean());
+        cpuSTD.add(td.getCpuLoadSTD());
+        tp.add(td.getThroughputMean());
+        tc.add(td.getTotalCost());
 		rt.add(td.getResponseTimeMean());
 	}
 

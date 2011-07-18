@@ -5,3 +5,4 @@ target/*
 *~
 thesis-simulation.iml
 .idea
+dumps/*

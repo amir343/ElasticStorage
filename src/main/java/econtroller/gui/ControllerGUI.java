@@ -752,7 +752,7 @@ public class ControllerGUI extends AbstractGUI {
 			snapshotDir.mkdir();
 		
 			writePNG(snapshot.getAverageThroughputChart(), snapshotDir, "AverageThroughput.png");
-			writePNG(snapshot.getCpuSTDChart(), snapshotDir, "AverageBandwidth.png");
+			writePNG(snapshot.getCpuSTDChart(), snapshotDir, "CpuSTD.png");
 			writePNG(snapshot.getCpuChart(), snapshotDir, "AverageCPULoad.png");
 			writePNG(snapshot.getNrInstancesChart(), snapshotDir, "NumberOfInstances.png");
 			writePNG(snapshot.getResponseTimeChart(), snapshotDir, "AverageResponseTime.png");
