@@ -21,33 +21,31 @@ public class DynamicStateFeedbackController implements ControllerDesign {
 	private Controller controller;
 	
 /*
-    w/o std
-	private final double k1 = 0.160360857683857;
-	private final double k2 = -3.09586414167910e-06;
-	private final double k3 = 2.29971358515257e-06;
-	private final double k4 = -1.13957731029648e-12;
-*/
-
-/*
-    w/o std
-    private final double k1 = 0.153373490048025;
-    private final double k2 = -1.22831042646208e-06;
-    private final double k3 = -1.42252281334366e-06;
-    private final double k4 = 3.71560770454631e-12;
-*/
-
-/*
-    w/o std
-    private final double k1 = 0.986607697307996;
-    private final double k2 = 6.22158940678969e-07;
-    private final double k3 = -2.00512860657761e-06;
-    private final double k4 = -6.78988537284038e-13;
-*/
-
+    One of the best results so far
     private final double k1 = 0.161096566166813;
     private final double k2 = -2.34614217089670e-06;
     private final double k3 = 1.08954419535251e-06;
     private final double k4 = -2.01946724014184e-11;
+*/
+/*
+    sin load
+    private final double k1 = -0.677918577035241;
+    private final double k2 = 2.16009505663342;
+    private final double k3 = -2.23943711236517;
+    private final double k4 = -0.00387779118339479;
+*/
+
+/*
+    private final double k1 = -0.636507125701686;
+    private final double k2 = 0.110600631506731;
+    private final double k3 = 0.0891767846540721;
+    private final double k4 = 0.000391448763414515;
+*/
+
+    private final double k1 = 0.052542;
+    private final double k2 = 0.23338;
+    private final double k3 = -0.0097212;
+    private final double k4 = 0.0025146;
 
 	private double cpuLoadAverage;
 	private double cpuSTD;

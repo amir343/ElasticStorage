@@ -54,7 +54,7 @@ public class Actuator extends ComponentDefinition {
 		public void handle(NodeRequest event) {
             Address cloudProviderAddress = event.cloudProviderAddress();
             int controlInput = (int) event.controlInput();
-            if (controlInput <= 0) controlInput = MINIMUM_NUMBER_OF_NODES;
+            if (controlInput <= MINIMUM_NUMBER_OF_NODES) controlInput = MINIMUM_NUMBER_OF_NODES;
             int diff = controlInput - event.numberOfNodes();
             if (diff > 0 ) {
                 logger.info("Request to launch " + diff + " node(s)");
