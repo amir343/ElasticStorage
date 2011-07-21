@@ -26,26 +26,26 @@ public class DataFilesGenerator {
 	private List<Integer> nn = new ArrayList<Integer>();
 	private List<Double> tp = new ArrayList<Double>();
 	private List<Double> cpuLoad = new ArrayList<Double>();
-	private List<Double> cpuSTD = new ArrayList<Double>();
+	private List<Double> bandwidth = new ArrayList<Double>();
 	private List<Double> tc = new ArrayList<Double>();
 	private List<Double> rt = new ArrayList<Double>();
 
     private File nnStateDump;
     private File tpStateDump;
     private File cpuLoadStateDump;
-    private File cpuSTDStateDump;
+    private File bandwidthStateDump;
     private File tcStateDump;
     private File rtStateDump;
 
 	private File cpuLoadDump;
-	private File cpuSTDDump;
+	private File bandwidthDump;
 	private File tcDump;
 	private File rtDump;
 	
 	public void add(TrainingData td) {
         nn.add(td.getNrNodes());
         cpuLoad.add(td.getCpuLoadMean());
-        cpuSTD.add(td.getCpuLoadSTD());
+        bandwidth.add(td.getBandwidthMean());
         tp.add(td.getThroughputMean());
         tc.add(td.getTotalCost());
 		rt.add(td.getResponseTimeMean());
@@ -55,7 +55,7 @@ public class DataFilesGenerator {
 		tp.clear();
 		cpuLoad.clear();
 		nn.clear();
-		cpuSTD.clear();
+		bandwidth.clear();
 		tc.clear();
 		rt.clear();		
 	}
@@ -63,13 +63,13 @@ public class DataFilesGenerator {
 	public void dump() {
         prepareFiles();
 		generateCpuLoadDumpFile();
-		generateCpuStdDumpFile();
+		generateBandwidthDumpFile();
 		generateTCDumpFile();
 		generateRTDumpFile();
         generateStateDumpFile(nnStateDump, nn);
         generateStateDumpFile(tpStateDump, tp);
         generateStateDumpFile(cpuLoadStateDump, cpuLoad);
-        generateStateDumpFile(cpuSTDStateDump, cpuSTD);
+        generateStateDumpFile(bandwidthStateDump, bandwidth);
         generateStateDumpFile(tcStateDump, tc);
         generateStateDumpFile(rtStateDump, rt);
 	}
@@ -80,11 +80,11 @@ public class DataFilesGenerator {
         nnStateDump = new File("dumps/" + folder + "/input_nn_state.dump");
         tpStateDump = new File("dumps/" + folder + "/input_tp_state.dump");
         cpuLoadStateDump = new File("dumps/" + folder + "/output_cpu_load_state.dump");
-        cpuSTDStateDump = new File("dumps/" + folder + "/output_cpu_std_state.dump");
+        bandwidthStateDump = new File("dumps/" + folder + "/output_bw_state.dump");
         tcStateDump = new File("dumps/" + folder + "/output_tc_state.dump");
         rtStateDump = new File("dumps/" + folder + "/output_rt_state.dump");
         cpuLoadDump = new File("dumps/" + folder + "/cpuLoad.dump");
-        cpuSTDDump = new File("dumps/" + folder + "/cpuSTD.dump");
+        bandwidthDump = new File("dumps/" + folder + "/bw.dump");
         tcDump = new File("dumps/" + folder + "/tc.dump");
         rtDump = new File("dumps/" + folder + "/rt.dump");
     }
@@ -101,7 +101,7 @@ public class DataFilesGenerator {
     private void generateRTDumpFile() {
 		StringBuilder sb = new StringBuilder();
 		for (int i=1; i<nn.size(); i++) {
-			sb.append(rt.get(i)).append(" ").append(tp.get(i-1)).append(" ").append(cpuLoad.get(i-1)).append(" ").append(cpuSTD.get(i-1)).append(" ").append(nn.get(i-1));
+			sb.append(rt.get(i)).append(" ").append(tp.get(i-1)).append(" ").append(cpuLoad.get(i-1)).append(" ").append(bandwidth.get(i-1)).append(" ").append(nn.get(i-1));
 			if (i != nn.size() - 1) sb.append("\n");
 		}
         writeToFile(rtDump, sb.toString());
@@ -110,19 +110,19 @@ public class DataFilesGenerator {
 	private void generateTCDumpFile() {
 		StringBuilder sb = new StringBuilder();
 		for (int i=1; i<nn.size(); i++) {
-			sb.append(tc.get(i)).append(" ").append(tp.get(i-1)).append(" ").append(cpuSTD.get(i-1)).append(" ").append(tc.get(i-1)).append(" ").append(nn.get(i-1));
+			sb.append(tc.get(i)).append(" ").append(tp.get(i-1)).append(" ").append(bandwidth.get(i-1)).append(" ").append(tc.get(i-1)).append(" ").append(nn.get(i-1));
 			if (i != nn.size() - 1) sb.append("\n");
 		}
 		writeToFile(tcDump, sb.toString());
 	}
 
-	private void generateCpuStdDumpFile() {
+	private void generateBandwidthDumpFile() {
 		StringBuilder sb = new StringBuilder();
 		for (int i=1; i<nn.size(); i++) {
-			sb.append(cpuSTD.get(i)).append(" ").append(tp.get(i-1)).append(" ").append(cpuSTD.get(i-1)).append(" ").append(nn.get(i-1));
+			sb.append(bandwidth.get(i)).append(" ").append(tp.get(i-1)).append(" ").append(bandwidth.get(i-1)).append(" ").append(nn.get(i-1));
 			if (i != nn.size() - 1) sb.append("\n");
 		}
-		writeToFile(cpuSTDDump, sb.toString());
+		writeToFile(bandwidthDump, sb.toString());
 	}
 
 	private void generateCpuLoadDumpFile() {

@@ -2,7 +2,6 @@ package econtroller.gui;
 
 import cloud.gui.IntegerTextField;
 import common.AbstractGUI;
-import common.GUI;
 import econtroller.controller.Controller;
 import econtroller.modeler.Modeler;
 import econtroller.modeler.ModelerSnapshot;
@@ -87,13 +86,13 @@ public class ControllerGUI extends AbstractGUI {
     private JLabel maxNrInstancesLbl;
 	private IntegerTextField maxInstanceText;
 	private JPanel cpuLoadPanel;
-	private JPanel cpuSTDPanel;
+	private JPanel bandwidthPanel;
 	private JPanel responseTimePanel;
 	private JPanel costPanel;
 	private JPanel nrInstancePanel;
 	private Modeler modeler;
 	private ChartPanel cpuChartPanel;
-	private ChartPanel cpuSTDChartPanel;
+	private ChartPanel bandwidthChartPanel;
 	private ChartPanel rtChartPanel;
 	private ChartPanel costChartPanel;
 	private ChartPanel nrInstanceChartPanel;
@@ -227,7 +226,7 @@ public class ControllerGUI extends AbstractGUI {
 							.addComponent(instanceLayout)
 							.addComponent(stopModelerButton)
 							.addComponent(resetModelerButton)
-							.addComponent(cpuSTDPanel)
+							.addComponent(bandwidthPanel)
 							.addComponent(costPanel)
 							.addComponent(throughputPanel))
 		);
@@ -261,7 +260,7 @@ public class ControllerGUI extends AbstractGUI {
 				.addGroup(group.
 						createParallelGroup()
 							.addComponent(cpuLoadPanel)
-							.addComponent(cpuSTDPanel)
+							.addComponent(bandwidthPanel)
 						 )
 				.addGroup(group.
 						createParallelGroup()
@@ -283,9 +282,9 @@ public class ControllerGUI extends AbstractGUI {
 		cpuLoadPanel.setLayout(new GridLayout(1,1));
 		cpuLoadPanel.setBorder(BorderFactory.createTitledBorder(""));
 		
-		cpuSTDPanel = new JPanel();
-		cpuSTDPanel.setLayout(new GridLayout(1,1));
-		cpuSTDPanel.setBorder(BorderFactory.createTitledBorder(""));
+		bandwidthPanel = new JPanel();
+		bandwidthPanel.setLayout(new GridLayout(1,1));
+		bandwidthPanel.setBorder(BorderFactory.createTitledBorder(""));
 		
 		responseTimePanel = new JPanel();
 		responseTimePanel.setLayout(new GridLayout(1,1));
@@ -659,12 +658,12 @@ public class ControllerGUI extends AbstractGUI {
 		this.modeler = modeler;
 	}
 
-	public void updateCpuSTDChart(JFreeChart cpuSTDChart) {
-		if (cpuSTDChartPanel != null)
-			cpuSTDPanel.remove(cpuSTDChartPanel);
-		cpuSTDChartPanel = new ChartPanel(cpuSTDChart);
-		cpuSTDPanel.add(cpuSTDChartPanel);
-		cpuSTDPanel.revalidate();
+	public void updateBandwidthChart(JFreeChart bandwidthChart) {
+		if (bandwidthChartPanel != null)
+			bandwidthPanel.remove(bandwidthChartPanel);
+		bandwidthChartPanel = new ChartPanel(bandwidthChart);
+		bandwidthPanel.add(bandwidthChartPanel);
+		bandwidthPanel.revalidate();
 	}
 
 	public void updateCpuLoadChart(JFreeChart cpuLoadChart) {
