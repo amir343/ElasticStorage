@@ -3,6 +3,7 @@ package econtroller.design.impl;
 import cloud.elb.SenseData;
 import econtroller.controller.Controller;
 import econtroller.design.ControllerDesign;
+import econtroller.fuzzy.FuzzyInferenceEngine;
 import econtroller.gui.ControllerGUI;
 import logger.Logger;
 import logger.LoggerFactory;
@@ -19,6 +20,7 @@ public class DynamicStateFeedbackController implements ControllerDesign {
 
 	private Logger logger = LoggerFactory.getLogger(DynamicStateFeedbackController.class, ControllerGUI.getInstance());
 	private Controller controller;
+    private FuzzyInferenceEngine fuzzyEngine = new FuzzyInferenceEngine();
 	
 /*
     One of the best results so far
@@ -27,31 +29,19 @@ public class DynamicStateFeedbackController implements ControllerDesign {
     private final double k3 = 1.08954419535251e-06;
     private final double k4 = -2.01946724014184e-11;
 */
-/*
-    sin load
-    private final double k1 = -0.677918577035241;
-    private final double k2 = 2.16009505663342;
-    private final double k3 = -2.23943711236517;
-    private final double k4 = -0.00387779118339479;
-*/
 
-/*
-    private final double k1 = -0.636507125701686;
-    private final double k2 = 0.110600631506731;
-    private final double k3 = 0.0891767846540721;
-    private final double k4 = 0.000391448763414515;
-*/
-
-    private final double k1 = -0.0366928043431703;
-    private final double k2 = 0.171424330777637;
-    private final double k3 = 0.132815866468313;
-    private final double k4 = -0.000263327246742331;
+    private final double k1 = 0.36003;
+    private final double k2 = -1.1485e-05;
+    private final double k3 = 1.9555e-06;
+    private final double k4 = -8.0729e-12;
 
 	private double cpuLoadAverage;
 	private double cpuSTD;
 	private double totalCost;
 	private double responseTimeAverage;
     private int numberOfNodes = 0;
+
+    private double lastAverageCpuSTD;
 
     private int nCpuLoad = 0;
     private int nCpuSTD = 0;
@@ -74,12 +64,17 @@ public class DynamicStateFeedbackController implements ControllerDesign {
 	@Override
 	public void action() {
 		double controlInput = getControlInput();
-        controller.actuate(controlInput, numberOfNodes);
+        boolean scaleUp = controlInput > numberOfNodes;
+        if ( fuzzyEngine.act(scaleUp, lastAverageCpuSTD) )
+            controller.actuate(controlInput, numberOfNodes);
+        else
+            logger.info("Not acting this time");
 	}
 	
 	private double getControlInput() {
+        lastAverageCpuSTD = cpuSTD / nCpuSTD;
 		double controlInput = k1*(cpuLoadAverage/ nCpuLoad -30) +
-                              k2*(cpuSTD / nCpuSTD) +
+                              k2*(lastAverageCpuSTD) +
                               k3*(totalCost/nTotalCost) +
                               k4*(responseTimeAverage/nResponseTime);
 		logger.info("Control input: " + controlInput);

@@ -13,17 +13,17 @@ cpuCoef = regress(nextCpu,X);
 
 %% Bandwidth Training data %%%%%%%%
 
-load cpuSTD.dump;
-nextCpuSTD = cpuSTD(:,1);
-tpk = cpuSTD(:,2);
-cpuStdk = cpuSTD(:,3);
-nn = cpuSTD(:,4);
+load bw.dump;
+nextBw = bw(:,1);
+tpk = bw(:,2);
+bwk = bw(:,3);
+nn = bw(:,4);
 
 tpk = tpk-mean(tpk);
-cpuStdk = cpuStdk-mean(cpuStdk);
+bwk = bwk-mean(bwk);
 
-X = [tpk cpuStdk nn];
-cpuSTDCoef = regress(nextCpuSTD,X);
+X = [tpk bwk nn];
+bwCoef = regress(nextBw,X);
 
 %% Total Cost Training data %%%%%%%
 
@@ -60,12 +60,12 @@ rtCoef = regress(nextRt,X);
 %% Calculate Coefficients Matrices %%
 
 A = [cpuCoef(1,1) cpuCoef(2,1) 0 0 ; 
-     cpuSTDCoef(1,1) 0 cpuSTDCoef(2,1) 0 ; 
+     bwCoef(1,1) 0 bwCoef(2,1) 0 ; 
      tcCoef(1,1) 0 tcCoef(2,1) tcCoef(3,1) ; 
      rtCoef(1,1) rtCoef(2,1) rtCoef(3,1) 0];
 
 B = [cpuCoef(3,1) ; 
-     cpuSTDCoef(3,1) ; 
+     bwCoef(3,1) ; 
      tcCoef(4,1) ; 
      rtCoef(4,1)];
 

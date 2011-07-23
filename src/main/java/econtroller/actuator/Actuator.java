@@ -27,7 +27,7 @@ public class Actuator extends ComponentDefinition {
 	Positive<Network> network = requires(Network.class);
 	Negative<ActuatorChannel> actuatorChannel = provides(ActuatorChannel.class);
 
-	protected ControllerConfiguration controllerConfiguration;
+    protected ControllerConfiguration controllerConfiguration;
 	protected Address self;
     private int MINIMUM_NUMBER_OF_NODES = 2;
 
