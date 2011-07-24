@@ -121,7 +121,7 @@ public class OS extends ComponentDefinition {
 
 		subscribe(processRequestQueueHandler, timer);
 		subscribe(propagateCPULoadHandler, timer);
-		subscribe(transferingFinishedHandler, timer);
+		subscribe(transferringFinishedHandler, timer);
 		subscribe(readDiskFinishedHandler, timer);
 		subscribe(waitTimeoutHandler, timer);
 		subscribe(deathHandler, timer);
@@ -134,7 +134,7 @@ public class OS extends ComponentDefinition {
 		subscribe(restartInstanceHandler, network);
 		subscribe(rebalanceRequestHandler, network);
 		subscribe(rebalanceResponseHandler, network);
-		subscribe(blockTransferedHandler, network);
+		subscribe(blockTransferredHandler, network);
 	}
     Handler<OSInit> initHandler = new Handler<OSInit>() {
 		@Override
@@ -178,7 +178,13 @@ public class OS extends ComponentDefinition {
 			if (instanceRunning()) {
 				Request req = event.request();
 				logger.debug("Received request for block " + req);
-				requestQueue.add(req);
+                if (simultaneousDownloads - currentTransfers.size() > 0)
+				    requestQueue.add(req);
+                else {
+                    logger.warn("Request for download block " + req.getBlockId() + " is rejected. No free slot");
+                    Rejected rejected = new Rejected(self, cloudProvider, event.request());
+                    trigger(rejected, network);
+                }
 			}
 		}
 	};
@@ -200,6 +206,10 @@ public class OS extends ComponentDefinition {
 						startProcessForRequest(req);
 					} else break;
 				}
+                for (int i=0; i < requestQueue.size(); i++) {
+                    Request req = requestQueue.remove();
+                    if (req != null) trigger(new Rejected(self, cloudProvider, req), network);
+                }
 			}
 			scheduleProcessingRequestQueue();
 		}
@@ -284,14 +294,14 @@ public class OS extends ComponentDefinition {
 	/**
 	 * Updates transfer table and compute bandwidth for remaining transfers
 	 */
-	Handler<TransferringFinished> transferingFinishedHandler = new Handler<TransferringFinished>() {
+	Handler<TransferringFinished> transferringFinishedHandler = new Handler<TransferringFinished>() {
 		@Override
 		public void handle(TransferringFinished event) {
 			if (instanceRunning()) {
 				Process process = pt.get(event.getPid());
 				if (process != null) {
 					Request request = process.getRequest();
-					updateTransferedBandwidth(process);
+					updateTransferredBandwidth(process);
 					gui.decreaseNrDownloadersFor(request.getBlockId());
 					currentTransfers.remove(event.getTimeoutId());
 					informDownloader(event, process, request);
@@ -306,7 +316,7 @@ public class OS extends ComponentDefinition {
 			}
 		}
 
-		private synchronized void updateTransferedBandwidth(Process process) {
+		private synchronized void updateTransferredBandwidth(Process process) {
 			megaBytesDownloadedSoFar += (process.getBlockSize()/(1024*1024));			
 		}
 
@@ -315,7 +325,7 @@ public class OS extends ComponentDefinition {
 				logger.info("Rebalancing finished for " + event.getPid());
 				trigger(new BlockTransferred(self, request.getDestinationNode(), process.getBlockSize(), process.getRequest().getBlockId()), network);
 			} else {
-				logger.debug("Transfering finished for " + event.getPid() );
+				logger.debug("Transferring finished for " + event.getPid() );
 			}
 		}
 
@@ -328,7 +338,7 @@ public class OS extends ComponentDefinition {
 						break;
 					}
 				}
-				if (found == false)
+				if (!found)
 					acceptRequest = true;
 			}
 			trigger(new MemoryCheckOperation(), cpu);
@@ -516,7 +526,7 @@ public class OS extends ComponentDefinition {
 	/**
 	 * This handler is triggered when the transfer from another instance node is finished
 	 */
-	Handler<BlockTransferred> blockTransferedHandler = new Handler<BlockTransferred>() {
+	Handler<BlockTransferred> blockTransferredHandler = new Handler<BlockTransferred>() {
 		@Override
 		public void handle(BlockTransferred event) {
 			String process = pt.keySet().iterator().next();
@@ -528,7 +538,7 @@ public class OS extends ComponentDefinition {
 			trigger(new DiskWriteOperation(event.getBlockSize()), cpu);
 			calculateNewBandwidth();
 			addToBandwidthDiagram(currentBandwidth);
-			if (acceptRequest == true) {
+			if (acceptRequest) {
 				logger.info("Starting with " + blocks.size() + " block(s) in hand");
 				LoadBlock load = new LoadBlock(blocks);
 				trigger(load, disk);

@@ -8,4 +8,7 @@ import se.sics.kompics.address.Address
  * @date 2011-07-12
  *
  */
-class DownloadStarted(source:Address, destination:Address, val requestID:String) extends Message(source, destination)
+class DownloadStarted(val source:Address,
+                      val destination:Address,
+                      val requestID:String)
+  extends Message(source, destination)

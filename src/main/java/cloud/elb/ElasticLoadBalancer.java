@@ -10,6 +10,7 @@ import com.sun.org.apache.xpath.internal.NodeSet;
 import instance.Node;
 import instance.common.Block;
 import instance.common.BlocksAck;
+import instance.common.Rejected;
 import instance.common.Request;
 import logger.Logger;
 import logger.LoggerFactory;
@@ -68,6 +69,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 		subscribe(downloadStartedHandler, network);
 		subscribe(myCPULoadHandler, network);
 		subscribe(activateBlockHandler, network);
+        subscribe(rejectedResponseHandler, network);
 		
 		subscribe(elbTreeUpdateHandler, timer);
 	}
@@ -171,7 +173,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 	};
 	
 	/**
-	 * This handler is triggered when a transfer finishes
+	 * This handler is triggered when a transfer starts
 	 */
 	Handler<DownloadStarted> downloadStartedHandler = new Handler<DownloadStarted>() {
 		@Override
@@ -179,6 +181,16 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 			trigger(event, generator);
 		}
 	};
+
+    /**
+     * This handler is triggered when a transfer is rejected since there is no free slot in the node
+     */
+    Handler<Rejected> rejectedResponseHandler = new Handler<Rejected>() {
+        @Override
+        public void handle(Rejected event) {
+            trigger(new DownloadRejected(event.getRequest()), generator);
+        }
+    };
 	
 	/**
 	 * This handler receives the cpu load from an instance and updates the 

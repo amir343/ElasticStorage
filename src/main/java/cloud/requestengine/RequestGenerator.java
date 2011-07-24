@@ -1,5 +1,6 @@
 package cloud.requestengine;
 
+import cloud.common.DownloadRejected;
 import cloud.common.Generator;
 import cloud.common.RequestEngineTimeout;
 import cloud.common.SendRawData;
@@ -56,6 +57,7 @@ public class RequestGenerator extends ComponentDefinition {
 		subscribe(downloadStartedHandler, generator);
 		subscribe(sendRawDataHandler, generator);
 		subscribe(blocksActivatedHandler, generator);
+        subscribe(downloadRejectedHandler, generator);
 		
 		subscribe(requestEngineTimeout, timer);
 		subscribe(RTCollectionTimeoutHandler, timer);
@@ -96,17 +98,21 @@ public class RequestGenerator extends ComponentDefinition {
 		@Override
 		public void handle(DownloadStarted event) {
 			String id = event.requestID();
-			if (null != currentRequests.get(id)) {
-                currentRequests.get(id).setEnd(System.currentTimeMillis());
-                completedRequest.add(currentRequests.get(id));
-                completedRequestClone.add(currentRequests.get(id));
-                currentRequests.remove(id);
-            } else {
-                logger.error("Download started for a request that does not exist: " + id);
-            }
+            updateDownloadStatus(id);
 		}
 	};
-	
+
+    /**
+     * This handler is triggered when a transfer rejected by the instance
+     */
+    Handler<DownloadRejected> downloadRejectedHandler = new Handler<DownloadRejected>() {
+        @Override
+        public void handle(DownloadRejected event) {
+            String id = event.getRequest().getId();
+            updateDownloadStatus(id);
+        }
+    };
+
 	/**
 	 * This handler is triggered periodically to draw response time scatter plot in the GUI
 	 */
@@ -121,7 +127,7 @@ public class RequestGenerator extends ComponentDefinition {
 			scheduleResponseTimeCollector();
 		}
 	};
-	
+
 	/**
 	 * This handler is triggered when cloudAPI request the average response time
 	 */
@@ -130,14 +136,14 @@ public class RequestGenerator extends ComponentDefinition {
 		public void handle(SendRawData event) {
 			double averageResponseTime = calculateAverageResponseTime();
 			double averageThroughput = calculateAverageThroughput();
-			
+
 			event.setAverageResponseTime(averageResponseTime);
 			event.setAverageThroughput(averageThroughput);
-			
-			trigger(event, generator);			
+
+			trigger(event, generator);
 		}
 	};
-	
+
 	/**
 	 * This handler is triggered when the engine receives blocks that are activated from ELB
 	 */
@@ -147,6 +153,17 @@ public class RequestGenerator extends ComponentDefinition {
 			blocks.addAll(event.blocks());
 		}
 	};
+
+    private void updateDownloadStatus(String id) {
+        if (null != currentRequests.get(id)) {
+            currentRequests.get(id).setEnd(System.currentTimeMillis());
+            completedRequest.add(currentRequests.get(id));
+            completedRequestClone.add(currentRequests.get(id));
+            currentRequests.remove(id);
+        } else {
+            logger.error("Download started for a request that does not exist: " + id);
+        }
+    }
 
 	protected void scheduleRequestGeneratorEngine() {
 		long timeout = distribution.getNextValue();

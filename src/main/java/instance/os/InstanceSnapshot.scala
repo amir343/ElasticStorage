@@ -13,11 +13,11 @@ class InstanceSnapshot(id:Int) extends Snapshot(id) {
   private var bandwidthChart:JFreeChart = _
   private var log:String = _
 
-  def addCPULoadChart(chart: JFreeChart) = this.cpuChart = chart
+  def addCPULoadChart(chart: JFreeChart) { this.cpuChart = chart }
 
-  def addBandwidthChart(chart: JFreeChart) = this.bandwidthChart = chart
+  def addBandwidthChart(chart: JFreeChart) { this.bandwidthChart = chart }
 
-  def addLogText(log: String) = this.log = log
+  def addLogText(log: String) { this.log = log }
 
   def getCpuChart: JFreeChart = cpuChart
 
@@ -25,6 +25,6 @@ class InstanceSnapshot(id:Int) extends Snapshot(id) {
 
   def getLog: String = log
 
-  def getId = id
+  override def getId = id
 
 }

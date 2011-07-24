@@ -14,6 +14,7 @@ class Generator extends PortType {
 
   negative(classOf[RequestGeneratorInit])
   negative(classOf[DownloadStarted])
+  negative(classOf[DownloadRejected])
   negative(classOf[SendRawData])
   negative(classOf[BlocksActivated])
   positive(classOf[SendRawData])

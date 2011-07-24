@@ -83,6 +83,7 @@ public class CloudAPI extends ComponentDefinition {
 		subscribe(requestSensingData, network);
 		subscribe(removeNodeHandler, network);
 	}
+
     Handler<CloudAPIInit> initHandler = new Handler<CloudAPIInit>() {
 		@Override
 		public void handle(CloudAPIInit event) {
