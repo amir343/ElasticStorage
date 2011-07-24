@@ -34,14 +34,18 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
 	
 	private static InstanceGUI instance = new InstanceGUI();
 	private Logger logger = LoggerFactory.getLogger(InstanceGUI.class, this);
-	
-	public static InstanceGUI getInstance() {
+    public static InstanceGUI getInstance() {
 		return instance;
 	}
-	
+
 	private static final long serialVersionUID = -444747445088218621L;
-	private Radial cpuDialMeter;
-	private DefaultTableModel model;
+
+    private int totalNumberOfRequests = 0;
+
+    private String nrRequestString;
+    private JLabel nrRequests;
+    private Radial cpuDialMeter;
+    private DefaultTableModel model;
 	private DefaultTableModel snapshotModel;
 	private JTable dataTable;
 	private JTable snapshotTable;
@@ -205,12 +209,21 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
 	private void createDataSection() {
 		dataSection = new JPanel();
 		dataSection.setBorder(BorderFactory.createTitledBorder("Data block(s)"));
-		dataSection.setLayout(new GridLayout());
+		dataSection.setLayout(new BoxLayout(dataSection, BoxLayout.Y_AXIS));
+
+        createNumberOfRequestsLabel(dataSection);
 		createDataBlockTable(dataSection);
+
 		infoTab.add(dataSection);
 	}
 
-	private void createCPUPanel() {
+    private void createNumberOfRequestsLabel(JPanel dataSection) {
+        nrRequestString = "Total number of Requests: ";
+        nrRequests = new JLabel(nrRequestString + totalNumberOfRequests, JLabel.CENTER);
+        dataSection.add(nrRequests);
+    }
+
+    private void createCPUPanel() {
 		cpuLoadPanel = new JPanel();
 		cpuLoadPanel.setBorder(BorderFactory.createTitledBorder("Current CPU Load"));
 		
@@ -266,6 +279,9 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
     @Override
 	public synchronized void increaseNrDownloadersFor(String blockId) {
 		if (StringUtils.isNotEmpty(blockId)) {
+            totalNumberOfRequests++;
+            nrRequests.setText(nrRequestString + totalNumberOfRequests);
+            nrRequests.revalidate();
 			for (int i=0; i< model.getRowCount(); i++) {
 				if ( ((String)model.getValueAt(i, 0)).equals(blockId)) {
 					int currentValue = (Integer) model.getValueAt(i, 2);

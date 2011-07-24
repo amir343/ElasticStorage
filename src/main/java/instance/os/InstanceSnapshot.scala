@@ -25,4 +25,6 @@ class InstanceSnapshot(id:Int) extends Snapshot(id) {
 
   def getLog: String = log
 
+  def getId = id
+
 }
