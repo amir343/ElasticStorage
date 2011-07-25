@@ -79,9 +79,9 @@ public class Disk extends ComponentDefinition {
 		@Override
 		public void handle(LoadBlock event) {
 			if (enabled) {
-				if (blocks.size() == 0) { 
-					logger.debug(blocks.size() + " Block(s) are ready for use");
-					blocks = event.getBlocks();
+				if (blocks.size() == 0) {
+                    blocks = event.getBlocks();
+                    logger.debug(blocks.size() + " Block(s) are ready for use");
 				}
 				diskReady = true;
 			}

@@ -272,7 +272,7 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
 				}
 			}
 		} else {
-			logger.error("blocks can not be null");
+			if (blocks == null) logger.error("blocks can not be null");
 		}
 	}
 

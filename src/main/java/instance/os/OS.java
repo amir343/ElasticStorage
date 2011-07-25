@@ -48,6 +48,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 
@@ -89,17 +90,17 @@ public class OS extends ComponentDefinition {
 	protected Address self;
 	protected Node node;
 	protected NodeConfiguration nodeConfiguration;
-	protected double currentCpuLoad;
-	private XYSeriesCollection dataSet = new XYSeriesCollection();
-	private XYSeries xySeries = new XYSeries("Load");
-	private long startTime = System.currentTimeMillis();
-	private int lastSnapshotID = 1;
-	private long currentBandwidth = BANDWIDTH;
-	private List<Block> blocks = new ArrayList<Block>();
-	protected boolean acceptRequest = true;
-	private boolean enabled = true;	
-	private int megaBytesDownloadedSoFar = 0;
-	protected double totalCost = 0.0;
+    protected double currentCpuLoad;
+    private XYSeriesCollection dataSet = new XYSeriesCollection();
+    private XYSeries xySeries = new XYSeries("Load");
+    private long startTime = System.currentTimeMillis();
+    private int lastSnapshotID = 1;
+    private long currentBandwidth = BANDWIDTH;
+    private List<Block> blocks = new ArrayList<Block>();
+    protected boolean acceptRequest = true;
+    private boolean enabled = true;
+    private int megaBytesDownloadedSoFar = 0;
+    protected double totalCost = 0.0;
     private boolean headless;
     private OS selfReference;
 
@@ -136,6 +137,7 @@ public class OS extends ComponentDefinition {
 		subscribe(rebalanceResponseHandler, network);
 		subscribe(blockTransferredHandler, network);
 	}
+
     Handler<OSInit> initHandler = new Handler<OSInit>() {
 		@Override
 		public void handle(OSInit event) {
@@ -168,7 +170,7 @@ public class OS extends ComponentDefinition {
             }
 		}
 	};
-	
+
 	/**
 	 * This handler is in charge of handling the request that are sent by Elastic Load Balancer
 	 */
@@ -188,7 +190,7 @@ public class OS extends ComponentDefinition {
 			}
 		}
 	};
-	
+
 	/**
 	 * This event handler is triggered periodically to process request queue
 	 */
@@ -214,7 +216,7 @@ public class OS extends ComponentDefinition {
 			scheduleProcessingRequestQueue();
 		}
 	};
-	
+
 	Handler<Ready> cpuReadySignalHandler = new Handler<Ready>() {
 		@Override
 		public void handle(Ready event) {
@@ -243,7 +245,7 @@ public class OS extends ComponentDefinition {
 			if (instanceRunning()) osStarted();
 		}
 	};
-	
+
 	/**
 	 * Memory hit: this means the next operation is to transfer the block
 	 * from memory into the network according to the bandwidth we have
@@ -258,7 +260,7 @@ public class OS extends ComponentDefinition {
 			}
 		}
 	};
-	
+
 	/**
 	 * Memory miss: this means that the next operation is an I/O from the disk
 	 * that may take much more time than a memory read
@@ -274,7 +276,7 @@ public class OS extends ComponentDefinition {
 			}
 		}
 	};
-	
+
 	/**
 	 * This is the response from Disk containing the block requested earlier
 	 */
@@ -290,7 +292,7 @@ public class OS extends ComponentDefinition {
 			}
 		}
 	};
-	
+
 	/**
 	 * Updates transfer table and compute bandwidth for remaining transfers
 	 */
@@ -299,25 +301,25 @@ public class OS extends ComponentDefinition {
 		public void handle(TransferringFinished event) {
 			if (instanceRunning()) {
 				Process process = pt.get(event.getPid());
-				if (process != null) {
-					Request request = process.getRequest();
-					updateTransferredBandwidth(process);
-					gui.decreaseNrDownloadersFor(request.getBlockId());
-					currentTransfers.remove(event.getTimeoutId());
-					informDownloader(event, process, request);
-					removeFromProcessTable(event.getPid());
-					endProcessOnCPU(event.getPid());
-					if (currentTransfers.size() != 0) {
-						cancelAllPreviousTimers();
-						rescheduleAllTimers(BANDWIDTH/currentTransfers.size(), System.currentTimeMillis());
-					}
-				}
-				checkIfCanAcceptRequest();
+                checkIfCanAcceptRequest();
+                if (process != null) {
+                    Request request = process.getRequest();
+                    updateTransferredBandwidth(process);
+                    gui.decreaseNrDownloadersFor(request.getBlockId());
+                    currentTransfers.remove(event.getTimeoutId());
+                    informDownloader(event, process, request);
+                    removeFromProcessTable(event.getPid());
+                    endProcessOnCPU(event.getPid());
+                    if (currentTransfers.size() != 0) {
+                        cancelAllPreviousTimers();
+                        rescheduleAllTimers(BANDWIDTH/currentTransfers.size(), System.currentTimeMillis());
+                    }
+                }
 			}
 		}
 
 		private synchronized void updateTransferredBandwidth(Process process) {
-			megaBytesDownloadedSoFar += (process.getBlockSize()/(1024*1024));			
+			megaBytesDownloadedSoFar += (process.getBlockSize()/(1024*1024));
 		}
 
 		private void informDownloader(TransferringFinished event, Process process, Request request) {
@@ -329,7 +331,7 @@ public class OS extends ComponentDefinition {
 			}
 		}
 
-		private void checkIfCanAcceptRequest() {
+		private synchronized void checkIfCanAcceptRequest() {
 			if (!acceptRequest) {
 				boolean found = false;
 				for (String pid : pt.keySet()) {
@@ -344,7 +346,7 @@ public class OS extends ComponentDefinition {
 			trigger(new MemoryCheckOperation(), cpu);
 		}
 	};
-	
+
 	/**
 	 * This means that the block is read from the disk into memory. Now we can transfer
 	 * it into the network
@@ -358,7 +360,7 @@ public class OS extends ComponentDefinition {
 			}
 		}
 	};
-	
+
 	/**
 	 * This handler is executed if the system has not yet started until it starts successfully with all the hardware components
 	 */
@@ -393,7 +395,7 @@ public class OS extends ComponentDefinition {
 			}
 		}
 	};
-	
+
 	/**
 	 * This is for scheduling a complete shut down if the CloudProvider
 	 * was not able to shut down this instance completely (because of port binding)
@@ -428,7 +430,7 @@ public class OS extends ComponentDefinition {
 			}
 		}
 	};
-	
+
 	/**
 	 * Upon every tick of CPU_LOAD_PROPAGATION_INTERVAL, this handler sends
 	 * the current cpu load to cloud provider
@@ -458,7 +460,7 @@ public class OS extends ComponentDefinition {
 			}
 		}
 	};
-	
+
 	/**
 	 * This handler is triggered by Sensor component
 	 */
@@ -471,9 +473,9 @@ public class OS extends ComponentDefinition {
 			}
 		}
 	};
-	
+
 	/**
-	 * This handler is triggered by Cloud Provider 
+	 * This handler is triggered by Cloud Provider
 	 */
 	Handler<RestartInstance> restartInstanceHandler = new Handler<RestartInstance>() {
 		@Override
@@ -484,7 +486,7 @@ public class OS extends ComponentDefinition {
 		}
 	};
 
-	/**
+    /**
 	 * This handler sends a request to another instance asking for the recommended blocks that it received 
 	 * from cloud provider.
 	 */
@@ -538,13 +540,13 @@ public class OS extends ComponentDefinition {
 			trigger(new DiskWriteOperation(event.getBlockSize()), cpu);
 			calculateNewBandwidth();
 			addToBandwidthDiagram(currentBandwidth);
-			if (acceptRequest) {
-				logger.info("Starting with " + blocks.size() + " block(s) in hand");
-				LoadBlock load = new LoadBlock(blocks);
-				trigger(load, disk);
-				gui.initializeDataBlocks(blocks);
-			}
-		}
+            if (acceptRequest) {
+                logger.info("Starting with " + blocks.size() + " block(s) in hand");
+                LoadBlock load = new LoadBlock(blocks);
+                trigger(load, disk);
+                gui.initializeDataBlocks(blocks);
+            }
+        }
 
 		private void calculateNewBandwidth() {
 			if (pt.size() == 0 ) {
