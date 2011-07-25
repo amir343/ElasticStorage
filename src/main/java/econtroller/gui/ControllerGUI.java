@@ -378,6 +378,7 @@ public class ControllerGUI extends AbstractGUI {
 		orderingText.setEnabled(false);
 		minInstanceText.setEnabled(false);
 		maxInstanceText.setEnabled(false);
+        stopModelerButton.setEnabled(true);
 	}
 
 	private void enableSIConfigs() {

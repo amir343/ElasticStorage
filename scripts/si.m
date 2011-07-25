@@ -96,7 +96,7 @@ isControllable = det(controllability);
 
 %% calculate K controller gain %%%%%%%%%%%%%%%%%%%%
 
-Q = diag([10 10 1 1]);
+Q = diag([100 1 1 1]);
 R = 1;
 K = dlqr(A, B, Q, R);
 dlmwrite('Kgains.txt', K, 'delimiter', '\n');

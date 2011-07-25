@@ -50,13 +50,13 @@ public class LeastCPULoadAlgorithm implements LoadBalancerAlgorithm {
         }
         Collections.sort(list, new Comp());
         List<Node> result = new ArrayList<Node>();
-        for (int i=0; i< numberOfNodesToRemove; i++) {
+        for (int i=0; i< numberOfNodesToRemove && i < list.size(); i++) {
             result.add(list.get(i).node());
         }
         return result;
     }
 
-    public void updateCPULoadFor(Node node, double cpuLoad) {
+    public synchronized void updateCPULoadFor(Node node, double cpuLoad) {
 		NodeStatistics nodeStat = getNodeStatisticsFor(node);
 		nodeStat.setCpuLoad(cpuLoad);	
 	}
