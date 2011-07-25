@@ -426,16 +426,16 @@ public class CloudGUI extends AbstractGUI {
             if ( null != node) {
                 logger.debug("Removing " + node +  " from GUI");
                 for (int i=0; i<model.getRowCount(); i++) {
-                    if ( ((String)(model.getValueAt(i, 0))).equals(node.getNodeName())
-/*
-                            && ((String)(model.getValueAt(i, 1))).equals(node.getIP()+":"+node.getPort())
-*/
+                    if (
+/*                           ((String)(model.getValueAt(i, 0))).equals(node.getNodeName())*/
+                             ((String)(model.getValueAt(i, 1))).equals(node.getIP()+":"+node.getPort())
                             ) {
                         model.removeRow(i);
                         logger.debug(node + " removed!");
                         return;
                     }
                 }
+                logger.error("Did not find the node among the current nodes in the GUI: " + node);
             } else {
                 logger.error("node can not be null");
             }
