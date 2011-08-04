@@ -23,7 +23,7 @@ public class AddressManager {
 	
 	private Logger logger = LoggerFactory.getLogger(AddressManager.class, CloudGUI.getInstance());
 	private AddressPoll addressPoll;
-	private Set<Address> availableAddressSpace = new HashSet<Address>();
+	private final Set<Address> availableAddressSpace = new HashSet<Address>();
 	private List<Address> busyAddresses = new ArrayList<Address>();
 	private XStream xstream;
 	private String addressPollXmlFilename;
@@ -73,11 +73,13 @@ public class AddressManager {
 				e.printStackTrace();
 			}
 		    try {
-		    	while (scanner.hasNextLine()){
+                assert scanner != null;
+                while (scanner.hasNextLine()){
 		    		xml.append(scanner.nextLine());
 		      	}
 		    } finally {
-		    	scanner.close();
+                assert scanner != null;
+                scanner.close();
 		    }
 		    addressPoll = (AddressPoll) xstream.fromXML(xml.toString());
 		} else {
@@ -86,17 +88,19 @@ public class AddressManager {
 		}
 	}
 
-	public Address getAFreeAddress() {
-		if (availableAddressSpace.size() != 0) {
-			Address address = availableAddressSpace.iterator().next();
-			availableAddressSpace.remove(address);
-			busyAddresses.add(address);
-			return address;
-		} else 
-			return null;
+	public synchronized Address getAFreeAddress() {
+        synchronized (availableAddressSpace) {
+            if (availableAddressSpace.size() != 0) {
+                Address address = availableAddressSpace.iterator().next();
+                availableAddressSpace.remove(address);
+                busyAddresses.add(address);
+                return address;
+            } else
+                return null;
+        }
 	}
 	
-	public void releaseAddress(Address address) {
+	public synchronized void releaseAddress(Address address) {
 		availableAddressSpace.add(address);
 		removeFromBusyAddresses(address);		
 	}
