@@ -97,12 +97,15 @@ public class OS extends ComponentDefinition {
     private int lastSnapshotID = 1;
     private long currentBandwidth = BANDWIDTH;
     private List<Block> blocks = new ArrayList<Block>();
+/*
     protected boolean acceptRequest = true;
+*/
     private boolean enabled = true;
     private int megaBytesDownloadedSoFar = 0;
     protected double totalCost = 0.0;
     private boolean headless;
     private OS selfReference;
+    private Map<String, Address> dataBlocks;
 
     public OS() {
         this.selfReference = this;
@@ -136,6 +139,7 @@ public class OS extends ComponentDefinition {
 		subscribe(rebalanceRequestHandler, network);
 		subscribe(rebalanceResponseHandler, network);
 		subscribe(blockTransferredHandler, network);
+        subscribe(closeMyStreamHandler, network);
 	}
 
     Handler<OSInit> initHandler = new Handler<OSInit>() {
@@ -197,7 +201,7 @@ public class OS extends ComponentDefinition {
 	Handler<ProcessRequestQueue> processRequestQueueHandler = new Handler<ProcessRequestQueue>() {
 		@Override
 		public void handle(ProcessRequestQueue event) {
-			if (instanceRunning() && acceptRequest) {
+			if (instanceRunning()) {
 				int freeSlot = simultaneousDownloads - currentTransfers.size();
 				trigger(new MemoryCheckOperation(), cpu);
 				for (int i=0; i<freeSlot; i++) {
@@ -301,7 +305,9 @@ public class OS extends ComponentDefinition {
 		public void handle(TransferringFinished event) {
 			if (instanceRunning()) {
 				Process process = pt.get(event.getPid());
+/*
                 checkIfCanAcceptRequest();
+*/
                 if (process != null) {
                     Request request = process.getRequest();
                     updateTransferredBandwidth(process);
@@ -331,21 +337,7 @@ public class OS extends ComponentDefinition {
 			}
 		}
 
-		private synchronized void checkIfCanAcceptRequest() {
-			if (!acceptRequest) {
-				boolean found = false;
-				for (String pid : pt.keySet()) {
-					if (pt.get(pid).getRequest().getDestinationNode() != null) {
-						found = true;
-						break;
-					}
-				}
-				if (!found)
-					acceptRequest = true;
-			}
-			trigger(new MemoryCheckOperation(), cpu);
-		}
-	};
+    };
 
 	/**
 	 * This means that the block is read from the disk into memory. Now we can transfer
@@ -388,6 +380,9 @@ public class OS extends ComponentDefinition {
 				if (!headless) {
                     ((InstanceGUI)gui).dispose();
                 }
+                for (Map.Entry<String, Address> entry : dataBlocks.entrySet()) {
+                    trigger(new CloseMyStream(self, entry.getValue()), network);
+                }
 				trigger(new ShutDownAck(self, event.getSource(), node), network);
 				scheduleDeath();
 			} else {
@@ -396,7 +391,28 @@ public class OS extends ComponentDefinition {
 		}
 	};
 
-	/**
+    /**
+     * This handler is triggered by dying instance to clean up open streams that can block accepting further requests
+     */
+    Handler<CloseMyStream> closeMyStreamHandler = new Handler<CloseMyStream>(){
+        @Override
+        public void handle(CloseMyStream event) {
+            removeProcessesBelongTo(event);
+/*
+            checkIfCanAcceptRequest();
+*/
+        }
+    };
+
+    private synchronized void removeProcessesBelongTo(CloseMyStream event) {
+        for (String processId : pt.keySet()) {
+            if (pt.get(processId).getRequest().getDestinationNode() != null &&
+                    pt.get(processId).getRequest().getDestinationNode().equals(event.getSource()))
+                pt.remove(processId);
+        }
+    }
+
+    /**
 	 * This is for scheduling a complete shut down if the CloudProvider
 	 * was not able to shut down this instance completely (because of port binding)
 	 */
@@ -495,7 +511,9 @@ public class OS extends ComponentDefinition {
 		public void handle(RebalanceRequest event) {
 			Block block = findRequestedBlock(event.getBlockId());
 			trigger(new RebalanceResponse(self, event.getSource(), block), network);
+/*
 			acceptRequest = false;
+*/
 			Request req = new Request(UUID.randomUUID().toString(), block.getName(), event.getSource());
 			startProcessForRequest(req);
 		}
@@ -540,7 +558,7 @@ public class OS extends ComponentDefinition {
 			trigger(new DiskWriteOperation(event.getBlockSize()), cpu);
 			calculateNewBandwidth();
 			addToBandwidthDiagram(currentBandwidth);
-            if (acceptRequest) {
+            if (blocks.size() == dataBlocks.size()) {
                 logger.info("Starting with " + blocks.size() + " block(s) in hand");
                 LoadBlock load = new LoadBlock(blocks);
                 trigger(load, disk);
@@ -748,7 +766,7 @@ public class OS extends ComponentDefinition {
 			gui.initializeDataBlocks(blocks);
 		} else {
 			logger.warn("I should get blocks from " + event.getNodeConfiguration().getDataBlocksMap().size() + " other instance(s)");
-			Map<String, Address> dataBlocks = event.getNodeConfiguration().getDataBlocksMap();
+			dataBlocks = event.getNodeConfiguration().getDataBlocksMap();
 			for (String blockId : dataBlocks.keySet()) {
 				trigger(new RebalanceRequest(self, dataBlocks.get(blockId), blockId), network);
 			}
@@ -778,32 +796,49 @@ public class OS extends ComponentDefinition {
 			return false;
 		return enabled;
 	}
-	
-	public void restartInstance() {
-		trigger(new RestartSignal(), cpu);
-		trigger(new RestartSignal(), memory);
-		trigger(new RestartSignal(), disk);
-		gui.systemRestart();
-		
-		logger.warn("System restarting...");
-		numberOfDevicesLoaded = 0;
-		pt.clear();
-		cancelAllPreviousTimers();
-		currentTransfers.clear();
-		requestQueue.clear();
-		xySeries.clear();
-		scheduleCPULoadPropagationToCloudProvider();
-		
-		kernel.shutdown();
-		gui.decorateWhileSystemStartUp();
-		
-		trigger(new StartMemoryUnit(), memory);
-		trigger(new StartDiskUnit(), disk);
-		loadKernel();
-		scheduleCPULoadPropagationToCloudProvider();
-		scheduleProcessingRequestQueue();
 
-		gui.decorateSystemStarted();
-	}
-	
+    public void restartInstance() {
+        trigger(new RestartSignal(), cpu);
+        trigger(new RestartSignal(), memory);
+        trigger(new RestartSignal(), disk);
+        gui.systemRestart();
+
+        logger.warn("System restarting...");
+        numberOfDevicesLoaded = 0;
+        pt.clear();
+        cancelAllPreviousTimers();
+        currentTransfers.clear();
+        requestQueue.clear();
+        xySeries.clear();
+        scheduleCPULoadPropagationToCloudProvider();
+
+        kernel.shutdown();
+        gui.decorateWhileSystemStartUp();
+
+        trigger(new StartMemoryUnit(), memory);
+        trigger(new StartDiskUnit(), disk);
+        loadKernel();
+        scheduleCPULoadPropagationToCloudProvider();
+        scheduleProcessingRequestQueue();
+
+        gui.decorateSystemStarted();
+    }
+
+/*
+    private synchronized void checkIfCanAcceptRequest() {
+        if (!acceptRequest) {
+            boolean found = false;
+            for (String pid : pt.keySet()) {
+                if (pt.get(pid).getRequest().getDestinationNode() != null) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+                acceptRequest = true;
+        }
+        trigger(new MemoryCheckOperation(), cpu);
+    }
+*/
+
 }
