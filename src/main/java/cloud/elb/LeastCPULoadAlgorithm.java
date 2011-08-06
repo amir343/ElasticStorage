@@ -20,7 +20,7 @@ import java.util.*;
 public class LeastCPULoadAlgorithm implements LoadBalancerAlgorithm {
 
 	private static LeastCPULoadAlgorithm instance = new LeastCPULoadAlgorithm();
-	private Map<String, NodeStatistics> stats = new HashMap<String, NodeStatistics>();
+	private final Map<String, NodeStatistics> stats = new HashMap<String, NodeStatistics>();
 	
 	public static LeastCPULoadAlgorithm getInstance() {
 		return instance;
@@ -79,9 +79,15 @@ public class LeastCPULoadAlgorithm implements LoadBalancerAlgorithm {
     public void clear() {
         stats.clear();
     }
-	
-	
-	public static class Comp implements Comparator<NodeStatistics> {
+
+    public void nodeRemoved(Node node) {
+        synchronized (stats) {
+            stats.remove(node.getAddressStringWithoutName());
+        }
+    }
+
+
+    public static class Comp implements Comparator<NodeStatistics> {
 		@Override
 		public int compare(NodeStatistics ns1, NodeStatistics ns2) {
 			if (ns1.getCpuLoad() < ns2.getCpuLoad()) return -1;

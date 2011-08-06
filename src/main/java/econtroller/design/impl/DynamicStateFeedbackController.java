@@ -54,10 +54,10 @@ public class DynamicStateFeedbackController implements ControllerDesign {
     private final double k4 = -1.13121936619414e-11;
 */
 
-    private final double k1 = 0.45848;
-    private final double k2 = -1.4916e-05;
-    private final double k3 = 1.4446e-06;
-    private final double k4 = -2.1101e-11;
+    private final double k1 = 0.4206;
+    private final double k2 = -8.7796e-06;
+    private final double k3 = 9.7144e-07;
+    private final double k4 = -6.2524e-11;
 
 	private double cpuLoadAverage;
 	private double cpuSTD;
