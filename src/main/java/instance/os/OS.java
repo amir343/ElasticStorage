@@ -311,8 +311,9 @@ public class OS extends ComponentDefinition {
                 if (process != null) {
                     Request request = process.getRequest();
                     updateTransferredBandwidth(process);
-                    gui.decreaseNrDownloadersFor(request.getBlockId());
                     currentTransfers.remove(event.getTimeoutId());
+                    gui.decreaseNrDownloadersFor(request.getBlockId());
+                    gui.updateCurrentTransfers(currentTransfers.size());
                     informDownloader(event, process, request);
                     removeFromProcessTable(event.getPid());
                     endProcessOnCPU(event.getPid());
@@ -730,6 +731,7 @@ public class OS extends ComponentDefinition {
 		addToProcessTable(p);
 		checkMemory(p);		
 		gui.increaseNrDownloadersFor(event.getBlockId());
+        gui.updateCurrentTransfers(currentTransfers.size());
 	}
 
 	private void checkMemory(Process p) {

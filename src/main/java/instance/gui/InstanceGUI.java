@@ -43,6 +43,10 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
     private int totalNumberOfRequests = 0;
 
     private String nrRequestString;
+
+    private JLabel currentTransfersLbl;
+
+    private String currentTransfersString;
     private JLabel nrRequests;
     private Radial cpuDialMeter;
     private DefaultTableModel model;
@@ -212,10 +216,17 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
 		dataSection.setLayout(new BoxLayout(dataSection, BoxLayout.Y_AXIS));
 
         createNumberOfRequestsLabel(dataSection);
+        createCurrentTransfers(dataSection);
 		createDataBlockTable(dataSection);
 
 		infoTab.add(dataSection);
 	}
+
+    private void createCurrentTransfers(JPanel dataSection) {
+        currentTransfersString = "Current Transfers: ";
+        currentTransfersLbl = new JLabel(currentTransfersString + 0, JLabel.CENTER);
+        dataSection.add(currentTransfersLbl);
+    }
 
     private void createNumberOfRequestsLabel(JPanel dataSection) {
         nrRequestString = "Total number of Requests: ";
@@ -264,7 +275,7 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
     @Override
 	public void initializeDataBlocks(List<Block> blocks) {
 		if (blocks != null & model.getRowCount() == 0) {
-			for (Block block : blocks) {
+            for (Block block : blocks) {
 				if (StringUtils.isNotEmpty(block.getName())) {
 					model.insertRow(model.getRowCount(), new Object[]{block.getName(), Size.getSizeString(block.getSize()), 0, 0});
 				} else {
@@ -475,6 +486,11 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
     @Override
     public void updateTitle(String title) {
         this.setTitle(title);
+    }
+
+    @Override
+    public synchronized void updateCurrentTransfers(int size) {
+        currentTransfersLbl.setText(currentTransfersString + size);
     }
 
 }

@@ -57,4 +57,6 @@ class HeadLessGUI extends GenericInstanceGUI {
   def updateCurrentCost(cost: String) {}
 
   def updateTitle(title: String) {}
+
+  def updateCurrentTransfers(n:Int) {}
 }

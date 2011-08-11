@@ -37,4 +37,5 @@ public interface GenericInstanceGUI {
     void decorateSystemStarted();
     void updateCurrentCost(String cost);
     void updateTitle(String title);
+    void updateCurrentTransfers(int size);
 }
