@@ -38,4 +38,5 @@ public interface GenericInstanceGUI {
     void updateCurrentCost(String cost);
     void updateTitle(String title);
     void updateCurrentTransfers(int size);
+    void updateRequestQueue(int n);
 }

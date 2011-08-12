@@ -84,7 +84,7 @@ public class OS extends ComponentDefinition {
 	protected Address cloudProvider;
 	private ConcurrentMap<String, Process> pt = new ConcurrentHashMap<String, Process>();
 	private ConcurrentMap<UUID, String> currentTransfers = new ConcurrentHashMap<UUID, String>();
-	private ConcurrentLinkedQueue<Request> requestQueue = new ConcurrentLinkedQueue<Request>();
+	private final ConcurrentLinkedQueue<Request> requestQueue = new ConcurrentLinkedQueue<Request>();
 	private CostService costService = new CostService();
 	protected GenericInstanceGUI gui;
 	protected Address self;
@@ -187,7 +187,7 @@ public class OS extends ComponentDefinition {
                 if (simultaneousDownloads - currentTransfers.size() > 0)
 				    requestQueue.add(req);
                 else {
-                    logger.warn("Request for download block " + req.getBlockId() + " is rejected. No free slot");
+                    logger.warn("Rejected Request for download block " + req.getBlockId() + ". No free slot");
                     Rejected rejected = new Rejected(self, cloudProvider, event.request());
                     trigger(rejected, network);
                 }
@@ -212,9 +212,12 @@ public class OS extends ComponentDefinition {
 						startProcessForRequest(req);
 					} else break;
 				}
-                for (int i=0; i < requestQueue.size(); i++) {
-                    Request req = requestQueue.remove();
-                    if (req != null) trigger(new Rejected(self, cloudProvider, req), network);
+                gui.updateRequestQueue(requestQueue.size());
+                synchronized (requestQueue) {
+                    for (int i=0; i < requestQueue.size(); i++) {
+                        Request req = requestQueue.remove();
+                        if (req != null) trigger(new Rejected(self, cloudProvider, req), network);
+                    }
                 }
 			}
 			scheduleProcessingRequestQueue();

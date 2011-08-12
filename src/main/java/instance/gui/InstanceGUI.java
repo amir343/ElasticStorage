@@ -47,6 +47,10 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
     private JLabel currentTransfersLbl;
 
     private String currentTransfersString;
+
+    private String requestQueueString;
+
+    private JLabel requestQueueLbl;
     private JLabel nrRequests;
     private Radial cpuDialMeter;
     private DefaultTableModel model;
@@ -217,10 +221,17 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
 
         createNumberOfRequestsLabel(dataSection);
         createCurrentTransfers(dataSection);
+        createRequestQueue(dataSection);
 		createDataBlockTable(dataSection);
 
 		infoTab.add(dataSection);
 	}
+
+    private void createRequestQueue(JPanel dataSection) {
+        requestQueueString = "Request Queue: ";
+        requestQueueLbl = new JLabel(requestQueueString + "0", JLabel.CENTER);
+        dataSection.add(requestQueueLbl);
+    }
 
     private void createCurrentTransfers(JPanel dataSection) {
         currentTransfersString = "Current Transfers: ";
@@ -491,6 +502,11 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
     @Override
     public synchronized void updateCurrentTransfers(int size) {
         currentTransfersLbl.setText(currentTransfersString + size);
+    }
+
+    @Override
+    public synchronized void updateRequestQueue(int n) {
+        requestQueueLbl.setText(requestQueueString + n);
     }
 
 }
