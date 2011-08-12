@@ -1,5 +1,7 @@
 package scenarios.manager
 
+import scala.Double
+
 /**
  * @author Amir Moulavi
  * @date 2011-08-12
@@ -21,8 +23,18 @@ class SLA extends Serializable {
     this
   }
 
+  def cpuLoad(load:Int):SLA = {
+    cpuLoad = load.asInstanceOf[Double]
+    this
+  }
+
   def responseTime(rt:Double):SLA = {
     responseTime = rt
+    this
+  }
+
+  def responseTime(rt:Int):SLA = {
+    responseTime = rt.asInstanceOf[Double]
     this
   }
 
@@ -34,9 +46,9 @@ class SLA extends Serializable {
     rtList = rtList ::: List(rt)
   }
 
-  def getCpuLoadViolation():Double = cpuLoadList.filter(_ >= cpuLoad).size.asInstanceOf[Double] / cpuLoadList.size.asInstanceOf[Double]
+  def getCpuLoadViolation():Double = 100.0 * cpuLoadList.filter(_ >= cpuLoad).size.asInstanceOf[Double] / cpuLoadList.size.asInstanceOf[Double]
 
-  def getResponseTimeViolation():Double = rtList.filter(_ >= responseTime).size.asInstanceOf[Double] / rtList.size.asInstanceOf[Double]
+  def getResponseTimeViolation():Double = 100.0 * rtList.filter(_ >= responseTime).size.asInstanceOf[Double] / rtList.size.asInstanceOf[Double]
 
   override def toString():String = {
     val sb:StringBuilder = new StringBuilder

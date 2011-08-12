@@ -40,8 +40,8 @@ public class TestScenario {
     			replicationDegree(2);
     			addressPoll("addresses.xml");
                 sla()
-                    .cpuLoad(30.0)
-                    .responseTime(1000.0);
+                    .cpuLoad(30)
+                    .responseTime(1000);
     		}
     	};
     	
