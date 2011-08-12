@@ -14,6 +14,7 @@ import instance.common.Rejected;
 import instance.common.Request;
 import logger.Logger;
 import logger.LoggerFactory;
+import scenarios.manager.SLA;
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
 import se.sics.kompics.Negative;
@@ -23,6 +24,7 @@ import se.sics.kompics.network.Network;
 import se.sics.kompics.timer.ScheduleTimeout;
 import se.sics.kompics.timer.Timer;
 
+import javax.swing.plaf.synth.SynthLookAndFeel;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +53,8 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 	private static final long ELB_TREE_UPDATE_INTERVAL = 30000;
 	private final Map<Address, Double> cpuLoads = new HashMap<Address, Double>();
 	private final Map<Address, Long> bandwidths = new HashMap<Address, Long>();
+    private boolean slaEnabled = false;
+    private SLA sla;
 
 	public ElasticLoadBalancer() {
 		subscribe(initHandler, elb);
@@ -81,10 +85,11 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 			self = event.self();
 			trigger(new RequestGeneratorInit(), generator);
 			logger.info("Elastic Load Balancer is started...");
+            getSLA(event);
 			scheduleUpdateELBTree();
 		}
 	};
-	
+
 	/**
 	 * This handler is triggered by CloudAPI upon launching a new instance
 	 */
@@ -99,9 +104,9 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 			logger.debug(nodeConfiguration.getBlocks().size() + " Replicas created! ");
 		}
 	};
-	
+
 	/**
-	 * This handler is triggered when receives a suspect signal from EPFD so it marks the corresponding data blocks' replica as suspected 
+	 * This handler is triggered when receives a suspect signal from EPFD so it marks the corresponding data blocks' replica as suspected
 	 */
 	Handler<SuspectNode> suspectNodeHandler = new Handler<SuspectNode>() {
 		@Override
@@ -109,7 +114,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 			elbTable.suspectEntriesForNode(event.node());
 		}
 	};
-	
+
 	/**
 	 * This handler is triggered when receives a restore signal from EPFD so it marks the corresponding data blocks' replica as restored
 	 */
@@ -119,7 +124,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 			elbTable.restoreEntriesForNode(event.node());
 		}
 	};
-	
+
 	/**
 	 * This handler is triggered when a node shuts down so its replicas become unavailable
 	 */
@@ -130,7 +135,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
             loadBalancerAlgorithm.nodeRemoved(event.node());
 		}
 	};
-	
+
 	/**
 	 * This handler is triggered when the newly requested instance starts up completely and acknowledges back its start up so its data blocks' replica
 	 * become available
@@ -142,7 +147,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 			trigger(new BlocksActivated(elbTable.getblocks()), generator);
 		}
 	};
-	
+
 	/**
 	 * This handler is triggered when the newly joined instance informs about a block that is available and can be served from that instance
 	 */
@@ -154,9 +159,9 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 			blocksActivated.addBlock(event.block());
 			trigger(blocksActivated, generator);
 		}
-		
+
 	};
-	
+
 	/**
 	 * This handler is triggered by Request Generator and it is responsible for sending
 	 * request to the chosen node with respect to LoadBalancerAlgorithm
@@ -173,7 +178,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 				logger.error("No node found to send the next request in elbTable");
 		}
 	};
-	
+
 	/**
 	 * This handler is triggered when a transfer starts
 	 */
@@ -184,60 +189,60 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 		}
 	};
 
-    /**
+     /**
      * This handler is triggered when a transfer is rejected since there is no free slot in the node
      */
-    Handler<Rejected> rejectedResponseHandler = new Handler<Rejected>() {
-        @Override
-        public void handle(Rejected event) {
-            trigger(new DownloadRejected(event.getRequest()), generator);
-        }
-    };
-	
-	/**
-	 * This handler receives the cpu load from an instance and updates the 
-	 * nodeStatistics in LoadBalancerAlgorithm 
-	 */
-	Handler<MyCPULoadAndBandwidth> myCPULoadHandler = new Handler<MyCPULoadAndBandwidth>() {
-		@Override
-		public void handle(MyCPULoadAndBandwidth event) {
-			loadBalancerAlgorithm.updateCPULoadFor(event.node(), event.cpuLoad());
-			cpuLoads.put(event.getSource(), event.cpuLoad());
-			bandwidths.put(event.getSource(), event.currentBandwidth());
-            CloudGUI.getInstance().updateCPULoadForNode(event.node(), event.cpuLoad());
-		}
-	};
-	
-	/**
-	 * This handler is triggered when API requests data blocks map according to least CPU load so the 
-	 * new instance can retrieve each data block from an existing instance
-	 */
-	Handler<RebalanceDataBlocks> rebalanceDataBlocksHandler = new Handler<RebalanceDataBlocks>() {
-		@Override
-		public void handle(RebalanceDataBlocks event) {
-			Map<String, Address> dataBlocksMap = new HashMap<String, Address>();
-			for (ELBEntry entry : elbTable.getEntries()) {
-				Node node = loadBalancerAlgorithm.getNextNodeFrom(entry.getReplicas());
-				dataBlocksMap.put(entry.getBlock().getName(), node.getAddress());
-			}
-			NodeConfiguration nodeConfig = event.getNodeConfiguration();
-			nodeConfig.setDataBlocksMap(dataBlocksMap);
-			trigger(new RebalanceResponseMap(nodeConfig), elb);
-		}
-	};
-	
-	/**
-	 * This handler is triggered when ELB receives a request from cloudProvider to send the training data to controller
-	 */
-	Handler<SendRawData> sendRawDataHandler = new Handler<SendRawData>() {
-		@Override
-		public void handle(SendRawData event) {
-			trigger(event, generator);
-		}
-	};
-	
-	/**
-	 * This handler is triggered when RequestGenerator provides the average response time
+     Handler<Rejected> rejectedResponseHandler = new Handler<Rejected>() {
+          @Override
+          public void handle(Rejected event) {
+               trigger(new DownloadRejected(event.getRequest()), generator);
+          }
+          };
+
+     /**
+      * This handler receives the cpu load from an instance and updates the
+      * nodeStatistics in LoadBalancerAlgorithm
+      */
+     Handler<MyCPULoadAndBandwidth> myCPULoadHandler = new Handler<MyCPULoadAndBandwidth>() {
+          @Override
+          public void handle(MyCPULoadAndBandwidth event) {
+               loadBalancerAlgorithm.updateCPULoadFor(event.node(), event.cpuLoad());
+          cpuLoads.put(event.getSource(), event.cpuLoad());
+          bandwidths.put(event.getSource(), event.currentBandwidth());
+          CloudGUI.getInstance().updateCPULoadForNode(event.node(), event.cpuLoad());
+          }
+          };
+
+     /**
+      * This handler is triggered when API requests data blocks map according to least CPU load so the
+      * new instance can retrieve each data block from an existing instance
+      */
+     Handler<RebalanceDataBlocks> rebalanceDataBlocksHandler = new Handler<RebalanceDataBlocks>() {
+          @Override
+          public void handle(RebalanceDataBlocks event) {
+               Map<String, Address> dataBlocksMap = new HashMap<String, Address>();
+          for (ELBEntry entry : elbTable.getEntries()) {
+               Node node = loadBalancerAlgorithm.getNextNodeFrom(entry.getReplicas());
+               dataBlocksMap.put(entry.getBlock().getName(), node.getAddress());
+               }
+          NodeConfiguration nodeConfig = event.getNodeConfiguration();
+          nodeConfig.setDataBlocksMap(dataBlocksMap);
+          trigger(new RebalanceResponseMap(nodeConfig), elb);
+          }
+          };
+
+     /**
+      * This handler is triggered when ELB receives a request from cloudProvider to send the training data to controller
+      */
+     Handler<SendRawData> sendRawDataHandler = new Handler<SendRawData>() {
+          @Override
+          public void handle(SendRawData event) {
+               trigger(event, generator);
+          }
+          };
+
+    /**
+      * This handler is triggered when RequestGenerator provides the average response time
 	 */
 	Handler<SendRawData> responseTimeHandler = new Handler<SendRawData>() {
 		@Override
@@ -247,14 +252,18 @@ public class ElasticLoadBalancer extends ComponentDefinition {
                 data.setNrNodes(event.numberOfNodes());
 				data.setResponseTimeMean(event.getAverageResponseTime());
 				data.setThroughputMean(event.getAverageThroughput());
+                sla.addResponseTime(event.getAverageResponseTime());
                 setCpuLoadAndSTD(data);
+                setSLAViolations(data, sla);
 				data.setBandwidthMean(calculateBandwidthMean());
 				data.setTotalCost(event.getTotalCost());
 				trigger(data, network);
 			} else {
 				SenseData data = new SenseData(self, event.controller());
                 data.setNrNodes(event.numberOfNodes());
+                sla.addResponseTime(event.getAverageResponseTime());
                 setCpuLoadAndSTD(data);
+                setSLAViolations(data, sla);
 				data.setResponseTimeMean(event.getAverageResponseTime());
 				data.setThroughputMean(event.getAverageThroughput());
 				data.setBandwidthMean(calculateBandwidthMean());
@@ -263,7 +272,12 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 			}
 		}
 	};
-	
+
+    private void setSLAViolations(SLAViolation obj, SLA sla) {
+        obj.setCpuLoadViolation(sla.getCpuLoadViolation());
+        obj.setResponseTimeViolation(sla.getResponseTimeViolation());
+    }
+
 	/**
 	 * This handler is triggered when timer times out and it should update the ELB tree
 	 */
@@ -299,7 +313,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
         bandwidths.clear();
 		return average;
 	}
-	
+
 	protected void scheduleUpdateELBTree() {
 		ScheduleTimeout st = new ScheduleTimeout(ELB_TREE_UPDATE_INTERVAL);
 		st.setTimeoutEvent(new UpdateELBTree(st));
@@ -319,6 +333,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
                 sum += cpuLoads.get(node);
             average = sum/cpuLoads.size();
             st.setCpuLoadMean(average);
+            sla.addCpuLoad(average);
             sum = 0;
             for (Address node : cpuLoads.keySet())
                 sum += Math.pow(cpuLoads.get(node)-average, 2.0);
@@ -326,7 +341,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
         }
         cpuLoads.clear();
     }
-	
+
 	protected void startELBTable(ELBInit event) {
 		elbTable = new ELBTable(event.replicationDegree());
 		for (Block block : event.blocks()) {
@@ -334,5 +349,15 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 			elbTable.addEntry(entry);
 		}
 	}
-	
+
+    private void getSLA(ELBInit event) {
+        if (event.sla() != null) {
+            slaEnabled = true;
+            sla = event.sla();
+            logger.info("SLA requirements: " + sla);
+        }
+    }
+
+
+
 }

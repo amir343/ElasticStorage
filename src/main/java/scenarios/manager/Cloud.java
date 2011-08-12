@@ -30,6 +30,7 @@ public abstract class Cloud {
 	private final List<String> blockNames = new ArrayList<String>();
 	private final List<Block> blocks = new ArrayList<Block>();
 	private File cloudConfigurationFile;
+    private SLA sla = new SLA();
 
 	public Cloud(Class<? extends CloudProvider> cloudClass, Class<? extends Instance> instanceClass) {
 		this.cloudClass = cloudClass;
@@ -68,6 +69,11 @@ public abstract class Cloud {
 	protected void addressPoll(String addressPollXmlFileName) {
 		cloudConfiguration.setAddressPollXmlFilename(addressPollXmlFileName);
 	}
+
+    protected SLA sla() {
+        cloudConfiguration.setSla(sla);
+        return sla;
+    }
 
 	public void start() {
 		cloudConfiguration.addNodeConfiguration(nodeConfigurations);

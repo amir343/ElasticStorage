@@ -8,7 +8,10 @@ import se.sics.kompics.address.Address
  * @date 2011-07-09
  *
  */
-class TrainingData(source:Address, destination:Address) extends Message(source, destination) with StateVariables {
+class TrainingData(source:Address, destination:Address)
+  extends Message(source, destination)
+  with StateVariables
+  with SLAViolation {
 
   override def toString:String = getStringPresentation
 

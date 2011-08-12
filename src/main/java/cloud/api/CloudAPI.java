@@ -311,7 +311,7 @@ public class CloudAPI extends ComponentDefinition {
 	}
 
 	protected void startElasticLoadBalancer() {
-		trigger(new ELBInit(cloudConfiguration.getBlocks(), cloudConfiguration.getReplicationDegree(), self), elb);
+		trigger(new ELBInit(cloudConfiguration.getBlocks(), cloudConfiguration.getReplicationDegree(), self, cloudConfiguration.getSla()), elb);
 	}
 
 	public void initialize(NodeConfiguration nodeConfiguration, boolean alreadyDefined) {

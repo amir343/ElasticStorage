@@ -7,6 +7,7 @@ import instance.common.Block;
 import org.apache.commons.lang.StringUtils;
 import se.sics.kompics.address.Address;
 
+import javax.swing.plaf.synth.SynthLookAndFeel;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -33,6 +34,8 @@ public class CloudConfiguration implements Serializable {
 	private String addressPollXmlFilename;
     private boolean headLess;
 
+    private SLA sla;
+
 	public void addNodeConfiguration(NodeConfiguration nodeConfiguration) {
 		this.nodeConfigurations.add(nodeConfiguration);
 		this.nodes.add(nodeConfiguration.getNode());
@@ -41,7 +44,7 @@ public class CloudConfiguration implements Serializable {
 	public void addNodeConfiguration(List<NodeConfiguration> nodeConfigurations) {
 		for (NodeConfiguration nc : nodeConfigurations) {
 			addNodeConfiguration(nc);
-		}		
+		}
 	}
 
 	public void setCloudProviderAddress(String cloudProviderAddress, int cloudProviderPort) {
@@ -52,7 +55,7 @@ public class CloudConfiguration implements Serializable {
 	public List<NodeConfiguration> getNodeConfigurations() {
 		return nodeConfigurations;
 	}
-	
+
 	public String getCloudProviderAddress() {
 		return cloudProviderAddress;
 	}
@@ -62,7 +65,7 @@ public class CloudConfiguration implements Serializable {
 	}
 
 	public void setInstanceClass(Class<? extends Instance> instanceClass) {
-		this.instanceClass = instanceClass;		
+		this.instanceClass = instanceClass;
 	}
 
 	public Class<? extends Instance> getInstanceClass() {
@@ -88,7 +91,7 @@ public class CloudConfiguration implements Serializable {
 			throw new RuntimeException("You have to specify the addressPoll xml file name");
 		}
 	}
-	
+
 	public static CloudConfiguration load(String topologyFile) {
 		CloudConfiguration topology = null;
 		try {
@@ -119,7 +122,7 @@ public class CloudConfiguration implements Serializable {
 	}
 
 	public void addBlockData(List<Block> blocks) {
-		this.blocks = blocks;		
+		this.blocks = blocks;
 	}
 
 	public List<Block> getBlocks() {
@@ -141,5 +144,13 @@ public class CloudConfiguration implements Serializable {
 	public String getAddressPollXmlFilename() {
 		return addressPollXmlFilename;
 	}
-	
+
+    public SLA getSla() {
+        return sla;
+    }
+
+    public void setSla(SLA sla) {
+        this.sla = sla;
+    }
+
 }

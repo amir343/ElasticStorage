@@ -165,6 +165,7 @@ public class Modeler extends ComponentDefinition {
                             event.getThroughputMean(),
                             event.getNrNodes()
             );
+            logger.warn("CPULoadViolation: %" + event.getCpuLoadViolation() + ", ResponseTimeViolation: %" + event.getResponseTimeViolation());
 		}
 	};
 
