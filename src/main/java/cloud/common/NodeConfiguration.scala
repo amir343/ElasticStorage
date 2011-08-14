@@ -16,7 +16,7 @@ class NodeConfiguration(cpuSpeed:Double,
                         @BeanProperty var simultaneousDownloads:Int)
   extends Serializable {
 
-  def this() = this(2.0, 2.0, 4, 20)
+  def this() = this(2.0, 2.0, 4, 70)
 
   @BeanProperty
   var cpuConfiguration: CpuConfiguration = new CpuConfiguration (cpuSpeed)
@@ -56,9 +56,9 @@ class NodeConfiguration(cpuSpeed:Double,
   override def toString: String = {
     val sb: StringBuilder = new StringBuilder
     sb.append("{")
-    sb.append(cpuConfiguration).append(",")
+    sb.append("cpuConfig").append(cpuConfiguration).append(",")
     sb.append("memory: ").append(memory).append(",")
-    sb.append(bandwidthConfiguration).append(",")
+    sb.append("bandwidth").append(bandwidthConfiguration).append(",")
     sb.append("simDownloads: ").append(simultaneousDownloads)
     sb.append("}")
     sb.toString

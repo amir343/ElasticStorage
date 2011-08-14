@@ -25,6 +25,7 @@ public interface GenericInstanceGUI {
     void updateCPUInfoLabel(String info);
     void updateMemoryInfoLabel(String info);
     void updateBandwidthInfoLabel(String info);
+    void updateSimultaneousDownloads(String info);
     void setOSReference(OS os);
     void takeSnapshot();
     void addSnapshot(InstanceSnapshot snapshot);

@@ -51,6 +51,8 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
     private String requestQueueString;
 
     private JLabel requestQueueLbl;
+
+    private JLabel simultaneousLabel;
     private JLabel nrRequests;
     private Radial cpuDialMeter;
     private DefaultTableModel model;
@@ -167,9 +169,9 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
 
 	private void createSystemInfoPanel() {
 		systemInfoPanel = new JPanel();
-		systemInfoPanel.setLayout(new FlowLayout());
 		systemInfoPanel.setBorder(BorderFactory.createTitledBorder("System Info"));
-		
+        systemInfoPanel.setLayout(new BoxLayout(systemInfoPanel, BoxLayout.Y_AXIS));
+
 		cpuInfoLbl = new JLabel("CPU: ");
 		cpuInfoLbl.setBorder(BorderFactory.createEtchedBorder());
 		memoryLbl = new JLabel("Memory: ");
@@ -178,12 +180,15 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
 		bandwidthInfoLbl.setBorder(BorderFactory.createEtchedBorder());
 		costLabel = new JLabel("Cost: $ 0.0");
 		costLabel.setBorder(BorderFactory.createEtchedBorder());
+        simultaneousLabel = new JLabel("Simultaneous Downloads: ");
+        simultaneousLabel.setBorder(BorderFactory.createEtchedBorder());
 		
 		systemInfoPanel.add(cpuInfoLbl);
 		systemInfoPanel.add(memoryLbl);
 		systemInfoPanel.add(bandwidthInfoLbl);
 		systemInfoPanel.add(costLabel);
-		
+		systemInfoPanel.add(simultaneousLabel);
+
 		infoTab.add(systemInfoPanel);
 
 	}
@@ -383,6 +388,12 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
 	public void updateBandwidthInfoLabel(String info) {
 		bandwidthInfoLbl.setText("Bandwidth: " + info);
 		bandwidthInfoLbl.revalidate();
+	}
+
+    @Override
+	public void updateSimultaneousDownloads(String info) {
+		simultaneousLabel.setText("Simultaneous Downloads: " + info);
+		simultaneousLabel.revalidate();
 	}
 
     @Override

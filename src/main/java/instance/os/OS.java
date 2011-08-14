@@ -80,7 +80,7 @@ public class OS extends ComponentDefinition {
 	private static final long CPU_LOAD_PROPAGATION_INTERVAL = 5000;
 	public static final long RESTART_PERIOD = 60000;
 	private static final long COST_CALCULATION_INTERVAL = 10000;
-	private int simultaneousDownloads = 20;
+	private static int simultaneousDownloads = 70;
 	protected Address cloudProvider;
 	private ConcurrentMap<String, Process> pt = new ConcurrentHashMap<String, Process>();
 	private ConcurrentMap<UUID, String> currentTransfers = new ConcurrentHashMap<UUID, String>();
@@ -172,6 +172,9 @@ public class OS extends ComponentDefinition {
                 logger = LoggerFactory.getLogger(OS.class, InstanceGUI.getInstance());
                 kernel = new Kernel(false);
             }
+            logger.info("NodeConfigurations:\n" + nodeConfiguration.toString());
+            gui.updateSimultaneousDownloads(String.valueOf(simultaneousDownloads));
+
 		}
 	};
 
@@ -183,11 +186,13 @@ public class OS extends ComponentDefinition {
 		public void handle(RequestMessage event) {
 			if (instanceRunning()) {
 				Request req = event.request();
-				logger.debug("Received request for block " + req);
-                if (simultaneousDownloads - currentTransfers.size() > 0)
-				    requestQueue.add(req);
+                logger.debug("Received request for block " + req);
+                if (simultaneousDownloads > currentTransfers.size()) {
+                    logger.debug("Admitted Request for block '" + req.getBlockId() + "'");
+                    requestQueue.add(req);
+                }
                 else {
-                    logger.warn("Rejected Request for download block " + req.getBlockId() + ". No free slot");
+                    logger.warn("Rejected Request for download block " + req.getBlockId() + ". No free slot. {simDown: " + simultaneousDownloads + ", currenTrans: " + currentTransfers.size() + "}");
                     Rejected rejected = new Rejected(self, cloudProvider, event.request());
                     trigger(rejected, network);
                 }
@@ -720,7 +725,6 @@ public class OS extends ComponentDefinition {
 	}
 
 	private void cancelAllPreviousTimers() {
-		logger.debug("Cancelling previous schedulers...");
 		for (Entry<UUID, String> en : currentTransfers.entrySet()) {
 			trigger(new MemoryCheckOperation(), cpu);
 			CancelTimeout cancel = new CancelTimeout(en.getKey());

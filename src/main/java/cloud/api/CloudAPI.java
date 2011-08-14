@@ -188,6 +188,7 @@ public class CloudAPI extends ComponentDefinition {
             logger.info("Received request to launch " + event.numberOfNodes() + "new instance(s)");
             for (Integer i=0; i<event.numberOfNodes(); i++) {
                 NodeConfiguration nodeConfiguration = new NodeConfiguration();
+                logger.debug("nodeConfiguration: \n" + nodeConfiguration);
                 Node node = getNewNodeInfo();
                 nodeConfiguration.setNodeInfo(node);
                 gui.addNewInstance(node);
