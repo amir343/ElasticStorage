@@ -22,9 +22,7 @@ public class TestScenario {
     	Cloud cloud = new Cloud(CloudProvider.class, Instance.class) {
     		{
     			cloudProviderAddress("127.0.0.1", 23444);
-/*
                 headless();
-*/
 //    			node("node1", "127.0.0.1", 23445)
 //    				.cpu(2.2)
 //    				.memoryGB(8)
@@ -42,7 +40,7 @@ public class TestScenario {
     			replicationDegree(2);
     			addressPoll("addresses.xml");
                 sla()
-                    .cpuLoad(30)
+                    .cpuLoad(50)
                     .responseTime(1000);
     		}
     	};

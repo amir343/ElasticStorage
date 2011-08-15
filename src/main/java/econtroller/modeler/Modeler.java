@@ -292,7 +292,7 @@ public class Modeler extends ComponentDefinition {
 		ModelerSnapshot snapshot = new ModelerSnapshot(snapshotId);
 		snapshot.setCpuChart(getCPUChart());
 		snapshot.setResponseTimeChart(getResponseTimeChart());
-		snapshot.setCpuSTDChart(getBandwidthChart());
+		snapshot.setAverageBandwidth(getBandwidthChart());
 		snapshot.setNrInstanceChart(getNrInstancesChart());
 		snapshot.setTotalCostChart(getTotalCostChart());
 		snapshot.setAverageThroughputChart(getAverageThroughputChart());

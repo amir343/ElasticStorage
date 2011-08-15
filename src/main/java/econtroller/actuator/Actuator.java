@@ -29,7 +29,7 @@ public class Actuator extends ComponentDefinition {
 
     protected ControllerConfiguration controllerConfiguration;
 	protected Address self;
-    private int MINIMUM_NUMBER_OF_NODES = 2;
+    private int MINIMUM_NUMBER_OF_NODES = 3;
 
 	public Actuator() {
 		subscribe(initHandler, control);
