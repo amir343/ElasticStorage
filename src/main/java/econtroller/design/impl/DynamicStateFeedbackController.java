@@ -81,7 +81,7 @@ public class DynamicStateFeedbackController implements ControllerDesign {
 	
 	private double getControlInput() {
         lastAverageCpuSTD = cpuSTD / nCpuSTD;
-		double controlInput = k1*(cpuLoadAverage/ nCpuLoad -20) +
+		double controlInput = k1*(cpuLoadAverage/ nCpuLoad -10) +
                               k2*(lastAverageCpuSTD) +
                               k3*(totalCost/nTotalCost) +
                               k4*(responseTimeAverage/nResponseTime);

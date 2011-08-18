@@ -134,7 +134,7 @@ public class RequestGenerator extends ComponentDefinition {
 	Handler<SendRawData> sendRawDataHandler = new Handler<SendRawData>() {
 		@Override
 		public void handle(SendRawData event) {
-			double averageResponseTime = calculateAverageResponseTime();
+			double averageResponseTime = calculateAverageResponseTime(event);
 			double averageThroughput = calculateAverageThroughput();
 
 			event.setAverageResponseTime(averageResponseTime);
@@ -179,10 +179,11 @@ public class RequestGenerator extends ComponentDefinition {
 		}
 	}
 
-	private double calculateAverageResponseTime() {
+	private double calculateAverageResponseTime(SendRawData event) {
 		Long responseTimeSum = 0L;
 		for (RequestStatistic req : completedRequestClone) {
 			responseTimeSum += req.getResponseTime();
+            event.addResponseTime(req.getResponseTime());
 		}
 		double mean;
 		if (completedRequestClone.size() == 0)

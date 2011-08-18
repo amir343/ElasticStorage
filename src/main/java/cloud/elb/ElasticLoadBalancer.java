@@ -239,7 +239,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
           public void handle(SendRawData event) {
                trigger(event, generator);
           }
-          };
+     };
 
     /**
       * This handler is triggered when RequestGenerator provides the average response time
@@ -252,18 +252,16 @@ public class ElasticLoadBalancer extends ComponentDefinition {
                 data.setNrNodes(event.numberOfNodes());
 				data.setResponseTimeMean(event.getAverageResponseTime());
 				data.setThroughputMean(event.getAverageThroughput());
-                sla.addResponseTime(event.getAverageResponseTime());
                 setCpuLoadAndSTD(data);
-                setSLAViolations(data, sla);
+                setSLAViolations(data, sla, event);
 				data.setBandwidthMean(calculateBandwidthMean());
 				data.setTotalCost(event.getTotalCost());
 				trigger(data, network);
 			} else {
 				SenseData data = new SenseData(self, event.controller());
                 data.setNrNodes(event.numberOfNodes());
-                sla.addResponseTime(event.getAverageResponseTime());
                 setCpuLoadAndSTD(data);
-                setSLAViolations(data, sla);
+                setSLAViolations(data, sla, event);
 				data.setResponseTimeMean(event.getAverageResponseTime());
 				data.setThroughputMean(event.getAverageThroughput());
 				data.setBandwidthMean(calculateBandwidthMean());
@@ -272,11 +270,6 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 			}
 		}
 	};
-
-    private void setSLAViolations(SLAViolation obj, SLA sla) {
-        obj.setCpuLoadViolation(sla.getCpuLoadViolation());
-        obj.setResponseTimeViolation(sla.getResponseTimeViolation());
-    }
 
 	/**
 	 * This handler is triggered when timer times out and it should update the ELB tree
@@ -358,6 +351,11 @@ public class ElasticLoadBalancer extends ComponentDefinition {
         }
     }
 
+    private void setSLAViolations(SLAViolation obj, SLA sla, SendRawData event) {
+        event.updateSLA(sla);
+        obj.setCpuLoadViolation(sla.getCpuLoadViolation());
+        obj.setResponseTimeViolation(sla.getResponseTimeViolation());
+    }
 
 
 }

@@ -10,9 +10,9 @@ import scala.Double
 class SLA extends Serializable {
 
   private var cpuLoad:Double = _
-  private var responseTime:Double = _
+  private var responseTime:Long = _
   private var cpuLoadList:List[Double] = List[Double]()
-  private var rtList:List[Double] = List[Double]()
+  private var rtList:List[Long] = List[Long]()
 
   def getCpuLoad = cpuLoad
 
@@ -28,13 +28,13 @@ class SLA extends Serializable {
     this
   }
 
-  def responseTime(rt:Double):SLA = {
+  def responseTime(rt:Long):SLA = {
     responseTime = rt
     this
   }
 
   def responseTime(rt:Int):SLA = {
-    responseTime = rt.asInstanceOf[Double]
+    responseTime = rt.asInstanceOf[Long]
     this
   }
 
@@ -42,7 +42,7 @@ class SLA extends Serializable {
     cpuLoadList = cpuLoadList ::: List(load)
   }
 
-  def addResponseTime(rt:Double) {
+  def addResponseTime(rt:Long) {
     rtList = rtList ::: List(rt)
   }
 
