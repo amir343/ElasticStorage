@@ -57,6 +57,7 @@ public class Modeler extends ComponentDefinition {
 	private UUID samplingTimeoutId;
 	private UUID actuationTimeoutId;
 	private int snapshotId = 0;
+    private double totalCost = 0;
 	
 	private DataFilesGenerator generator = new DataFilesGenerator();
 
@@ -78,7 +79,7 @@ public class Modeler extends ComponentDefinition {
 		subscribe(startModelerHandler, modeler);
         subscribe(senseDataHandler, modeler);
 		
-		subscribe(sampleTraingingDataHandler, timer);
+		subscribe(sampleTrainingDataHandler, timer);
 		subscribe(instanceCreationHandler, timer);
 		
 		subscribe(trainingDataHandler, network);
@@ -112,7 +113,7 @@ public class Modeler extends ComponentDefinition {
 	/**
 	 * This handler is responsible for requesting training data from cloudProvider
 	 */
-	Handler<SampleTrainingData> sampleTraingingDataHandler = new Handler<SampleTrainingData>() {
+	Handler<SampleTrainingData> sampleTrainingDataHandler = new Handler<SampleTrainingData>() {
 		@Override
 		public void handle(SampleTrainingData event) {
 			trigger(new RequestTrainingData(self, cloudProvider), network);
@@ -166,6 +167,8 @@ public class Modeler extends ComponentDefinition {
                             event.getNrNodes()
             );
             logger.warn("CPULoadViolation: %" + event.getCpuLoadViolation() + ", ResponseTimeViolation: %" + event.getResponseTimeViolation());
+            totalCost += event.getTotalCost();
+            logger.warn("Total Cost: $ " + totalCost);
 		}
 	};
 
@@ -185,6 +188,8 @@ public class Modeler extends ComponentDefinition {
                             event.getNrNodes()
             );
             logger.warn("CPULoadViolation: %" + event.getCpuLoadViolation() + ", ResponseTimeViolation: %" + event.getResponseTimeViolation());
+            totalCost += event.getTotalCost();
+            logger.warn("Total Cost: $ " + totalCost);
         }
     };
 
