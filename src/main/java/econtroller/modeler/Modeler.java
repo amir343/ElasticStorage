@@ -211,7 +211,7 @@ public class Modeler extends ComponentDefinition {
     }
 
     private void printViolations(SLAViolation event) {
-        logger.warn("CPULoadViolation: %" + event.getCpuLoadViolation() + ", ResponseTimeViolation: %" + event.getResponseTimeViolation());
+        logger.warn("Violations: {CPULoad: %" + event.getCpuLoadViolation() + ", ResponseTime: %" + event.getResponseTimeViolation() + ", Bandwidth: %" + event.getBandwidthViolation() + "}");
     }
 
     private void saveAndPlotData(double cpuLoad, double cpuSTD, double bandwidth, double responseTime, double totalCost, double throughPut, int numberOfNodes) {

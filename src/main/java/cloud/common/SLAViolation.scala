@@ -15,4 +15,7 @@ trait SLAViolation {
   @BeanProperty
   var responseTimeViolation:Double = _
 
+  @BeanProperty
+  var bandwidthViolation:Double = _
+
 }

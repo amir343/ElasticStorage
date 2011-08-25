@@ -252,23 +252,25 @@ public class ElasticLoadBalancer extends ComponentDefinition {
                 data.setNrNodes(event.numberOfNodes());
 				data.setResponseTimeMean(event.getAverageResponseTime());
 				data.setThroughputMean(event.getAverageThroughput());
-                setCpuLoadAndSTD(data);
-                setSLAViolations(data, sla, event);
-				data.setBandwidthMean(calculateBandwidthMean());
+                data.setBandwidthMean(calculateBandwidthMean());
 				data.setPeriodicTotalCost(event.getPeriodicTotalCost());
                 data.setTotalCost(event.getTotalCost());
-				trigger(data, network);
+                setCpuLoadAndSTD(data);
+                sla.addBandwidth(data.getBandwidthMean());
+                setSLAViolations(data, sla, event);
+                trigger(data, network);
 			} else {
 				SenseData data = new SenseData(self, event.controller());
                 data.setNrNodes(event.numberOfNodes());
-                setCpuLoadAndSTD(data);
-                setSLAViolations(data, sla, event);
 				data.setResponseTimeMean(event.getAverageResponseTime());
-				data.setThroughputMean(event.getAverageThroughput());
-				data.setBandwidthMean(calculateBandwidthMean());
-				data.setPeriodicTotalCost(event.getPeriodicTotalCost());
+                data.setThroughputMean(event.getAverageThroughput());
+                data.setBandwidthMean(calculateBandwidthMean());
+                data.setPeriodicTotalCost(event.getPeriodicTotalCost());
                 data.setTotalCost(event.getTotalCost());
-				trigger(data, network);
+                setCpuLoadAndSTD(data);
+                sla.addBandwidth(data.getBandwidthMean());
+                setSLAViolations(data, sla, event);
+                trigger(data, network);
 			}
 		}
 	};
@@ -357,6 +359,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
         event.updateSLA(sla);
         obj.setCpuLoadViolation(sla.getCpuLoadViolation());
         obj.setResponseTimeViolation(sla.getResponseTimeViolation());
+        obj.setBandwidthViolation(sla.getBandwidthViolation());
     }
 
 

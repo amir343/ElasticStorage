@@ -41,7 +41,8 @@ public class TestScenario {
     			addressPoll("addresses.xml");
                 sla()
                     .cpuLoad(55)
-                    .responseTime(1500);
+                    .responseTime(1500)
+                    .bandwidth(200000);
     		}
     	};
     	

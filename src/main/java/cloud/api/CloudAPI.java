@@ -56,8 +56,8 @@ public class CloudAPI extends ComponentDefinition {
     protected Address controllerAddress;
     protected boolean connectedToController = false;
     private List<Node> currentNodes = new ArrayList<Node>();
-    private ConcurrentHashMap<Address, Double> costTable = new ConcurrentHashMap<Address, Double>();
-    private ConcurrentHashMap<Address, Double> periodicCostTable = new ConcurrentHashMap<Address, Double>();
+    private ConcurrentHashMap<String, Double> costTable = new ConcurrentHashMap<String, Double>();
+    private ConcurrentHashMap<String, Double> periodicCostTable = new ConcurrentHashMap<String, Double>();
 
 	private int numberOfInstances = 0;
 
@@ -221,8 +221,8 @@ public class CloudAPI extends ComponentDefinition {
 		@Override
 		public void handle(InstanceCost event) {
 			gui.updateCostForNode(event.getNode(), event.getTotalCost());
-			costTable.put(event.getSource(), Double.parseDouble(event.getTotalCost()));
-			periodicCostTable.put(event.getSource(), Double.parseDouble(event.getPeriodicCost()));
+			costTable.put(event.getNode().getNodeName(), Double.parseDouble(event.getTotalCost()));
+			periodicCostTable.put(event.getNode().getNodeName(), Double.parseDouble(event.getPeriodicCost()));
 		}
 	};
 	
@@ -295,15 +295,15 @@ public class CloudAPI extends ComponentDefinition {
 
     private double calculateTotalCost() {
         double cost = 0;
-        for (Address address : costTable.keySet())
-            cost += costTable.get(address);
+        for (String node : costTable.keySet())
+            cost += costTable.get(node);
         return cost;
     }
 	
 	private double calculatePeriodicTotalCost() {
 		double cost = 0;
-		for (Address address : periodicCostTable.keySet())
-			cost += periodicCostTable.get(address);
+		for (String node : periodicCostTable.keySet())
+			cost += periodicCostTable.get(node);
 		return cost;
 	}
 	
