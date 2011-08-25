@@ -1,6 +1,8 @@
 package econtroller.modeler;
 
 import cloud.common.RequestTrainingData;
+import cloud.common.SLAViolation;
+import cloud.common.StateVariables;
 import cloud.common.TrainingData;
 import cloud.elb.SenseData;
 import econtroller.controller.NewNodeRequest;
@@ -27,17 +29,17 @@ import se.sics.kompics.timer.Timer;
 import java.util.UUID;
 
 /**
- * 
+ *
  * @author Amir Moulavi
  * @date 2011-05-08
  *
  */
 
 public class Modeler extends ComponentDefinition {
-	
+
 
 	private Logger logger = LoggerFactory.getLogger(Modeler.class, ControllerGUI.getInstance());
-	
+
 	// Ports
 	Negative<ModelPort> modeler = provides(ModelPort.class);
 	Positive<Network> network = requires(Network.class);
@@ -57,34 +59,34 @@ public class Modeler extends ComponentDefinition {
 	private UUID samplingTimeoutId;
 	private UUID actuationTimeoutId;
 	private int snapshotId = 0;
-    private double totalCost = 0;
-	
-	private DataFilesGenerator generator = new DataFilesGenerator();
-
-	private XYSeries nrInstancesSeries = new XYSeries("# of Instances");
-	private XYSeries rtSeries = new XYSeries("Average ResponseTime");
-	private XYSeries tpSeries = new XYSeries("Average Throughput");
-	private XYSeries cpuLoadSeries = new XYSeries("Average CPU Load");
-	private XYSeries costSeries = new XYSeries("Total Cost");
-	private XYSeries bandwidthSeries = new XYSeries("Average Bandwidth");
     private boolean orderingEnabled = true;
+    private boolean snapshotTaken = false;
+    private double takeSnapshotTime = 1350;
+
+	private DataFilesGenerator generator = new DataFilesGenerator();
+    private XYSeries nrInstancesSeries = new XYSeries("# of Instances");
+    private XYSeries rtSeries = new XYSeries("Average ResponseTime");
+    private XYSeries tpSeries = new XYSeries("Average Throughput");
+    private XYSeries cpuLoadSeries = new XYSeries("Average CPU Load");
+    private XYSeries costSeries = new XYSeries("Total Cost");
+    private XYSeries bandwidthSeries = new XYSeries("Average Bandwidth");
 
 
     public Modeler() {
 		gui = ControllerGUI.getInstance();
 		gui.setModeler(this);
-		
+
 		subscribe(initHandler, control);
-		
+
 		subscribe(startModelerHandler, modeler);
         subscribe(senseDataHandler, modeler);
-		
+
 		subscribe(sampleTrainingDataHandler, timer);
 		subscribe(instanceCreationHandler, timer);
-		
+
 		subscribe(trainingDataHandler, network);
 	}
-	
+
 	Handler<ModelerInit> initHandler = new Handler<ModelerInit>() {
 		@Override
 		public void handle(ModelerInit event) {
@@ -97,8 +99,8 @@ public class Modeler extends ComponentDefinition {
 			gui.updateNrOfInstancesChart(getNrInstancesChart());
 			gui.updateThroughputChart(getAverageThroughputChart());
 		}
-	};	
-	
+	};
+
 	/**
 	 * This handler is triggered when the Controller issues a START signal to Modeler
 	 */
@@ -107,9 +109,9 @@ public class Modeler extends ComponentDefinition {
 		public void handle(StartModeler event) {
 			logger.info("Modeler received START signal from controller");
 			cloudProvider = event.getCloudProviderAddress();
-		} 
+		}
 	};
-	
+
 	/**
 	 * This handler is responsible for requesting training data from cloudProvider
 	 */
@@ -149,7 +151,7 @@ public class Modeler extends ComponentDefinition {
 			scheduleActuation();
 		}
 	};
-	
+
 	/**
 	 * This handler is responsible for sorting out the response (raw data tuples) it receives from cloudProvider
 	 */
@@ -159,16 +161,16 @@ public class Modeler extends ComponentDefinition {
             logger.info("Training data: \n" + event.toString());
 			generator.add(event);
             saveAndPlotData(event.getCpuLoadMean(),
-                            event.getCpuLoadSTD(),
-                            event.getBandwidthMean(),
-                            event.responseTimeMean(),
-                            event.totalCost(),
-                            event.getThroughputMean(),
-                            event.getNrNodes()
+                    event.getCpuLoadSTD(),
+                    event.getBandwidthMean(),
+                    event.responseTimeMean(),
+                    event.periodicTotalCost(),
+                    event.getThroughputMean(),
+                    event.getNrNodes()
             );
-            logger.warn("CPULoadViolation: %" + event.getCpuLoadViolation() + ", ResponseTimeViolation: %" + event.getResponseTimeViolation());
-            totalCost += event.getTotalCost();
-            logger.warn("Total Cost: $ " + totalCost);
+            printViolations(event);
+            printTotalCost(event);
+            dumpAndSnapshot();
 		}
 	};
 
@@ -179,19 +181,38 @@ public class Modeler extends ComponentDefinition {
         @Override
         public void handle(SenseData event) {
             if (start == null) start = System.currentTimeMillis();
+            generator.add(event);
             saveAndPlotData(event.getCpuLoadMean(),
-                            event.getCpuLoadSTD(),
-                            event.getBandwidthMean(),
-                            event.getResponseTimeMean(),
-                            event.getTotalCost(),
-                            event.getThroughputMean(),
-                            event.getNrNodes()
+                    event.getCpuLoadSTD(),
+                    event.getBandwidthMean(),
+                    event.getResponseTimeMean(),
+                    event.getPeriodicTotalCost(),
+                    event.getThroughputMean(),
+                    event.getNrNodes()
             );
-            logger.warn("CPULoadViolation: %" + event.getCpuLoadViolation() + ", ResponseTimeViolation: %" + event.getResponseTimeViolation());
-            totalCost += event.getTotalCost();
-            logger.warn("Total Cost: $ " + totalCost);
+            printViolations(event);
+            printTotalCost(event);
+            dumpAndSnapshot();
         }
     };
+
+    private void dumpAndSnapshot() {
+        if (!snapshotTaken) {
+            if (logger.getTime() >= takeSnapshotTime) {
+                snapshotTaken = true;
+                generator.dump();
+                takeSnapshot();
+            }
+        }
+    }
+
+    private void printTotalCost(StateVariables event) {
+        logger.warn("Total Cost: $ " + event.getTotalCost());
+    }
+
+    private void printViolations(SLAViolation event) {
+        logger.warn("CPULoadViolation: %" + event.getCpuLoadViolation() + ", ResponseTimeViolation: %" + event.getResponseTimeViolation());
+    }
 
     private void saveAndPlotData(double cpuLoad, double cpuSTD, double bandwidth, double responseTime, double totalCost, double throughPut, int numberOfNodes) {
         bandwidthSeries.add(System.currentTimeMillis()-start, bandwidth);

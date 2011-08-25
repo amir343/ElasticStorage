@@ -1,6 +1,7 @@
 package econtroller.modeler;
 
 import cloud.common.TrainingData;
+import cloud.elb.SenseData;
 import econtroller.gui.ControllerGUI;
 import logger.Logger;
 import logger.LoggerFactory;
@@ -14,7 +15,7 @@ import java.util.Calendar;
 import java.util.List;
 
 /**
- * 
+ *
  * @author Amir Moulavi
  *
  */
@@ -22,7 +23,7 @@ import java.util.List;
 public class DataFilesGenerator {
 
 	private Logger logger = LoggerFactory.getLogger(DataFilesGenerator.class, ControllerGUI.getInstance());
-	
+
 	private List<Integer> nn = new ArrayList<Integer>();
 	private List<Double> tp = new ArrayList<Double>();
 	private List<Double> cpuLoad = new ArrayList<Double>();
@@ -41,14 +42,23 @@ public class DataFilesGenerator {
 	private File bandwidthDump;
 	private File tcDump;
 	private File rtDump;
-	
+
 	public void add(TrainingData td) {
         nn.add(td.getNrNodes());
         cpuLoad.add(td.getCpuLoadMean());
         bandwidth.add(td.getBandwidthMean());
         tp.add(td.getThroughputMean());
-        tc.add(td.getTotalCost());
+        tc.add(td.getPeriodicTotalCost());
 		rt.add(td.getResponseTimeMean());
+	}
+
+	public void add(SenseData senseData) {
+        nn.add(senseData.getNrNodes());
+        cpuLoad.add(senseData.getCpuLoadMean());
+        bandwidth.add(senseData.getBandwidthMean());
+        tp.add(senseData.getThroughputMean());
+        tc.add(senseData.getPeriodicTotalCost());
+		rt.add(senseData.getResponseTimeMean());
 	}
 
 	public void clear() {

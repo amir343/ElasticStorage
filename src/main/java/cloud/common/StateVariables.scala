@@ -18,6 +18,8 @@ trait StateVariables {
   @BeanProperty
 	var bandwidthMean:Double = _
   @BeanProperty
+	var periodicTotalCost:Double = _
+  @BeanProperty
 	var totalCost:Double = _
   @BeanProperty
 	var responseTimeMean:Double = _
@@ -32,7 +34,7 @@ trait StateVariables {
       sb.append("\tcpuMean: ").append(cpuLoadMean).append("\n")
       sb.append("\tcpuSTD: ").append(cpuLoadSTD).append("\n")
       sb.append("\tbandwidth: ").append(bandwidthMean).append("\n")
-      sb.append("\tcost: ").append(totalCost).append("\n")
+      sb.append("\tcost: ").append(periodicTotalCost).append("\n")
       sb.append("\tresponseTime: ").append(responseTimeMean).append("\n")
     sb.append("}")
     sb.toString

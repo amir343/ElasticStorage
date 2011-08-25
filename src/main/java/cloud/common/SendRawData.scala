@@ -15,6 +15,8 @@ class SendRawData(val controller:Address,
                   val trainingData:Boolean) extends Event {
 
   @BeanProperty
+  var periodicTotalCost: Double = _
+  @BeanProperty
   var totalCost: Double = _
   @BeanProperty
   var averageThroughput: Double = _

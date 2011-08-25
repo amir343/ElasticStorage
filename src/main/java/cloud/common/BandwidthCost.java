@@ -8,12 +8,12 @@ package cloud.common;
  */
 
 public enum BandwidthCost {
-	XLOW(0.1),
-	LOW(0.25),
-	MEDIUM(0.45),
-	HIGH(0.65),
-	XHIGH(0.8), 
-	XXHIGH(1.0);
+	XLOW(0.10),
+	LOW(0.15),
+	MEDIUM(0.2),
+	HIGH(0.25),
+	XHIGH(0.3),
+	XXHIGH(.35);
 	
 	private double cost;
 

@@ -45,7 +45,12 @@ public class ElasticLogger implements Logger {
 		log(text, "DEBUG");
 	}
 
-	@Override
+    @Override
+    public double getTime() {
+        return now();
+    }
+
+    @Override
 	public void warn(Object text) {
 		log(text, "WARN");
 	}

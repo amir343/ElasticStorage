@@ -255,7 +255,8 @@ public class ElasticLoadBalancer extends ComponentDefinition {
                 setCpuLoadAndSTD(data);
                 setSLAViolations(data, sla, event);
 				data.setBandwidthMean(calculateBandwidthMean());
-				data.setTotalCost(event.getTotalCost());
+				data.setPeriodicTotalCost(event.getPeriodicTotalCost());
+                data.setTotalCost(event.getTotalCost());
 				trigger(data, network);
 			} else {
 				SenseData data = new SenseData(self, event.controller());
@@ -265,7 +266,8 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 				data.setResponseTimeMean(event.getAverageResponseTime());
 				data.setThroughputMean(event.getAverageThroughput());
 				data.setBandwidthMean(calculateBandwidthMean());
-				data.setTotalCost(event.getTotalCost());
+				data.setPeriodicTotalCost(event.getPeriodicTotalCost());
+                data.setTotalCost(event.getTotalCost());
 				trigger(data, network);
 			}
 		}

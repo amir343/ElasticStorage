@@ -19,4 +19,5 @@ public interface Logger {
 
 	void debug(Object text);
 
+    double getTime();
 }

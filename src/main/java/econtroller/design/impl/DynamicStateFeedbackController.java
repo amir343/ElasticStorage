@@ -62,7 +62,7 @@ public class DynamicStateFeedbackController implements ControllerDesign {
         nCpuLoad++;
 		this.cpuSTD += monitorPacket.getCpuLoadSTD();
         nCpuSTD++;
-		this.totalCost += monitorPacket.getTotalCost();
+		this.totalCost += monitorPacket.getPeriodicTotalCost();
         nTotalCost++;
 		this.responseTimeAverage += monitorPacket.getResponseTimeMean();
         nResponseTime++;

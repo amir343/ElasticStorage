@@ -48,6 +48,7 @@ public class CloudGUI extends AbstractGUI {
     private DistributionRepository distributionRepository = DistributionRepository.getInstance();
 
     private int nn = 0;
+
     private ResponseTimeService responseTimeService = ResponseTimeService.getInstance();
     private Distribution currentDistribution;
     public static final String INSTANCES_ITEM_DEFAULT = "Please select an instance";
@@ -74,16 +75,17 @@ public class CloudGUI extends AbstractGUI {
     private JComboBox distributions;
     private JTextField parameter1;
     private JTextField parameter2;
+    private JLabel totalCostValueLbl;
     private JTextField parameter3;
     private JLabel numberOfNodesLbl;
     private JLabel parameter1Lbl;
     private JLabel parameter2Lbl;
     private JLabel parameter3Lbl;
     private JPanel parametersPanel;
-	private ChartPanel diagramPanel;
-	private ChartPanel responseTimeDiagramPanel;
-	private JPanel distributionPanelSelector;
-	private JButton startDistributionRequestButton;
+    private ChartPanel diagramPanel;
+    private ChartPanel responseTimeDiagramPanel;
+    private JPanel distributionPanelSelector;
+    private JButton startDistributionRequestButton;
 	private JLabel disLbl;
 	private JPanel statisticsPanel;
 	private JPanel snapshotPanel;
@@ -287,6 +289,7 @@ public class CloudGUI extends AbstractGUI {
         Box layout = Box.createVerticalBox();
 
         createNumberOfInstancesStatus(layout);
+        createTotalCost(layout);
 		createInstanceTable(layout);
 		
 		removeInstanceButton = new JButton("Remove instance");
@@ -303,6 +306,17 @@ public class CloudGUI extends AbstractGUI {
         numberOfNodesLbl = new JLabel("0", JLabel.CENTER);
         horizonLayout.add(nn);
         horizonLayout.add(numberOfNodesLbl);
+
+        layout.add(horizonLayout);
+    }
+
+    private void createTotalCost(Box layout) {
+        JLabel nn = new JLabel("Total Cost: ", JLabel.CENTER);
+        Box horizonLayout = Box.createHorizontalBox();
+
+        totalCostValueLbl = new JLabel("0", JLabel.CENTER);
+        horizonLayout.add(nn);
+        horizonLayout.add(totalCostValueLbl);
 
         layout.add(horizonLayout);
     }
@@ -746,6 +760,11 @@ public class CloudGUI extends AbstractGUI {
 		elbTab.add(elbTree);
 		elbTab.revalidate();
 	}
+
+    public void updateTotalCost(double totalCost) {
+        totalCostValueLbl.setText("$ " + String.valueOf(totalCost));
+        totalCostValueLbl.revalidate();
+    }
 
 
 }

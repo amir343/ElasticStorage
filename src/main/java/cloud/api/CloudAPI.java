@@ -10,7 +10,6 @@ import econtroller.controller.*;
 import instance.Node;
 import instance.common.InstanceStarted;
 import instance.common.ShutDown;
-import instance.common.ShutDownAck;
 import instance.os.InstanceCost;
 import logger.Logger;
 import logger.LoggerFactory;
@@ -23,9 +22,8 @@ import se.sics.kompics.network.Network;
 import se.sics.kompics.timer.Timer;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 
@@ -58,8 +56,8 @@ public class CloudAPI extends ComponentDefinition {
     protected Address controllerAddress;
     protected boolean connectedToController = false;
     private List<Node> currentNodes = new ArrayList<Node>();
-    private Map<Address, Double> costTable = new HashMap<Address, Double>();
-    private Map<Address, Double> periodicCostTable = new HashMap<Address, Double>();
+    private ConcurrentHashMap<Address, Double> costTable = new ConcurrentHashMap<Address, Double>();
+    private ConcurrentHashMap<Address, Double> periodicCostTable = new ConcurrentHashMap<Address, Double>();
 
 	private int numberOfInstances = 0;
 
@@ -287,12 +285,22 @@ public class CloudAPI extends ComponentDefinition {
 	
 	private void collectData(Address source, boolean isTrainingData) {
 		SendRawData data = new SendRawData(source, numberOfInstances, isTrainingData);
-		double periodicTotalCost = calculateTotalCost();
-		data.setTotalCost(periodicTotalCost);
+        double totalCost = calculateTotalCost();
+		double periodicTotalCost = calculatePeriodicTotalCost();
+		data.setPeriodicTotalCost(periodicTotalCost);
+        data.setTotalCost(totalCost);
+        gui.updateTotalCost(totalCost);
 		trigger(data, elb);
 	}
+
+    private double calculateTotalCost() {
+        double cost = 0;
+        for (Address address : costTable.keySet())
+            cost += costTable.get(address);
+        return cost;
+    }
 	
-	private double calculateTotalCost() {
+	private double calculatePeriodicTotalCost() {
 		double cost = 0;
 		for (Address address : periodicCostTable.keySet())
 			cost += periodicCostTable.get(address);

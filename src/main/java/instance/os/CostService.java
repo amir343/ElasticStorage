@@ -20,6 +20,7 @@ public class CostService {
 	private BandwidthCost bandwidthCost;
 	private CPUCost cpuCost;
 	private Double previousCost;
+    private Double costOfExistence = 0.001;
 
 	public CostService() {
 		start = System.currentTimeMillis();
@@ -35,11 +36,17 @@ public class CostService {
 		
 		totalCost += computeCpuCost();
 		totalCost += computeDataTransferCost(megaBytesDownloadedSoFar);
+        totalCost += computeCostOfExistence();
 		
 		return totalCost;
 	}
-	
-	public double computeCostInThisPeriod(int megaBytesDownloadedSoFar) {
+
+    private double computeCostOfExistence() {
+        long runningTimeInSeconds = (System.currentTimeMillis() - start)/1000;
+        return costOfExistence*runningTimeInSeconds;
+    }
+
+    public double computeCostInThisPeriod(int megaBytesDownloadedSoFar) {
 		if (previousCost == null) {
 			previousCost = computeCostSoFar(megaBytesDownloadedSoFar);
 			return previousCost;
@@ -53,14 +60,12 @@ public class CostService {
 	}
 
 	private double computeDataTransferCost(int megaBytesDownloadedSoFar) {
-		double cost = (bandwidthCost.getCostPerGB()/1000)*megaBytesDownloadedSoFar;
-		return cost;
+        return (bandwidthCost.getCostPerGB()/1000)*megaBytesDownloadedSoFar;
 	}
 
 	private double computeCpuCost() {
 		long runningTimeInSeconds = (System.currentTimeMillis() - start)/1000;
-		double cost = (cpuCost.getPerhour()/3600)*runningTimeInSeconds;
-		return cost;
+        return (cpuCost.getPerhour()/3600)*runningTimeInSeconds;
 	}
 	
 }
