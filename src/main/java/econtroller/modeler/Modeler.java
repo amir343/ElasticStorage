@@ -61,9 +61,9 @@ public class Modeler extends ComponentDefinition {
 	private int snapshotId = 0;
     private boolean orderingEnabled = true;
     private boolean snapshotTaken = false;
-    private double takeSnapshotTime = 1350;
+    private double takeSnapshotTime = 2050;
 
-	private DataFilesGenerator generator = new DataFilesGenerator();
+	private DataFilesGenerator2 generator = new DataFilesGenerator2();
     private XYSeries nrInstancesSeries = new XYSeries("# of Instances");
     private XYSeries rtSeries = new XYSeries("Average ResponseTime");
     private XYSeries tpSeries = new XYSeries("Average Throughput");

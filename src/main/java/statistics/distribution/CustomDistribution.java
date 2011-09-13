@@ -43,7 +43,7 @@ public class CustomDistribution implements Distribution {
 
 	@Override
 	public JFreeChart getChart() {
-		JFreeChart chart = ChartFactory.createXYLineChart("Custom Distribution", "", "", getDataset(), PlotOrientation.VERTICAL, true, true, false);
+		JFreeChart chart = ChartFactory.createXYLineChart("Workload", "Time (s)", "Timeout (s)", getDataset(), PlotOrientation.VERTICAL, true, true, false);
 		return chart;
 	}
 	

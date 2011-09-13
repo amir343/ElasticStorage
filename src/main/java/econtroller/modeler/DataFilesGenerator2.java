@@ -15,21 +15,18 @@ import java.util.Calendar;
 import java.util.List;
 
 /**
- *
  * @author Amir Moulavi
- *
  */
+public class DataFilesGenerator2 {
 
-public class DataFilesGenerator {
+    private Logger logger = LoggerFactory.getLogger(DataFilesGenerator.class, ControllerGUI.getInstance());
 
-	private Logger logger = LoggerFactory.getLogger(DataFilesGenerator.class, ControllerGUI.getInstance());
-
-	private List<Integer> nn = new ArrayList<Integer>();
-	private List<Double> tp = new ArrayList<Double>();
-	private List<Double> cpuLoad = new ArrayList<Double>();
-	private List<Double> bandwidth = new ArrayList<Double>();
-	private List<Double> tc = new ArrayList<Double>();
-	private List<Double> rt = new ArrayList<Double>();
+    private List<Integer> nn = new ArrayList<Integer>();
+    private List<Double> tp = new ArrayList<Double>();
+    private List<Double> cpuLoad = new ArrayList<Double>();
+    private List<Double> bandwidth = new ArrayList<Double>();
+    private List<Double> tc = new ArrayList<Double>();
+    private List<Double> rt = new ArrayList<Double>();
 
     private File nnStateDump;
     private File tpStateDump;
@@ -38,51 +35,51 @@ public class DataFilesGenerator {
     private File tcStateDump;
     private File rtStateDump;
 
-	private File cpuLoadDump;
-	private File bandwidthDump;
-	private File tcDump;
-	private File rtDump;
+    private File cpuLoadDump;
+    private File bandwidthDump;
+    private File tcDump;
+    private File rtDump;
 
-	public void add(TrainingData td) {
+    public void add(TrainingData td) {
         nn.add(td.getNrNodes());
         cpuLoad.add(td.getCpuLoadMean());
-        bandwidth.add(td.getBandwidthMean()/1000);
+        bandwidth.add(td.getBandwidthMean());
         tp.add(td.getThroughputMean());
         tc.add(td.getPeriodicTotalCost());
-		rt.add(td.getResponseTimeMean());
-	}
+        rt.add(td.getResponseTimeMean());
+    }
 
-	public void add(SenseData senseData) {
+    public void add(SenseData senseData) {
         nn.add(senseData.getNrNodes());
         cpuLoad.add(senseData.getCpuLoadMean());
-        bandwidth.add(senseData.getBandwidthMean()/1000);
+        bandwidth.add(senseData.getBandwidthMean());
         tp.add(senseData.getThroughputMean());
         tc.add(senseData.getPeriodicTotalCost());
-		rt.add(senseData.getResponseTimeMean());
-	}
+        rt.add(senseData.getResponseTimeMean());
+    }
 
-	public void clear() {
-		tp.clear();
-		cpuLoad.clear();
-		nn.clear();
-		bandwidth.clear();
-		tc.clear();
-		rt.clear();		
-	}
-	
-	public void dump() {
+    public void clear() {
+        tp.clear();
+        cpuLoad.clear();
+        nn.clear();
+        bandwidth.clear();
+        tc.clear();
+        rt.clear();
+    }
+
+    public void dump() {
         prepareFiles();
-		generateCpuLoadDumpFile();
-		generateBandwidthDumpFile();
-		generateTCDumpFile();
-		generateRTDumpFile();
+        generateCpuLoadDumpFile();
+        generateBandwidthDumpFile();
+        generateTCDumpFile();
+        generateRTDumpFile();
         generateStateDumpFile(nnStateDump, nn);
         generateStateDumpFile(tpStateDump, tp);
         generateStateDumpFile(cpuLoadStateDump, cpuLoad);
         generateStateDumpFile(bandwidthStateDump, bandwidth);
         generateStateDumpFile(tcStateDump, tc);
         generateStateDumpFile(rtStateDump, rt);
-	}
+    }
 
     private void prepareFiles() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy.MM.dd-HH.mm.ss");
@@ -109,40 +106,40 @@ public class DataFilesGenerator {
     }
 
     private void generateRTDumpFile() {
-		StringBuilder sb = new StringBuilder();
-		for (int i=1; i<nn.size(); i++) {
-			sb.append(rt.get(i)).append(" ").append(tp.get(i-1)).append(" ").append(cpuLoad.get(i-1)).append(" ").append(bandwidth.get(i-1)).append(" ").append(nn.get(i-1));
-			if (i != nn.size() - 1) sb.append("\n");
-		}
+        StringBuilder sb = new StringBuilder();
+        for (int i=1; i<nn.size(); i++) {
+            sb.append(rt.get(i)).append(" ").append(cpuLoad.get(i-1)).append(" ").append(rt.get(i-1)).append(" ").append(nn.get(i - 1));
+            if (i != nn.size() - 1) sb.append("\n");
+        }
         writeToFile(rtDump, sb.toString());
-	}
+    }
 
-	private void generateTCDumpFile() {
-		StringBuilder sb = new StringBuilder();
-		for (int i=1; i<nn.size(); i++) {
-			sb.append(tc.get(i)).append(" ").append(tp.get(i-1)).append(" ").append(bandwidth.get(i-1)).append(" ").append(tc.get(i-1)).append(" ").append(nn.get(i-1));
-			if (i != nn.size() - 1) sb.append("\n");
-		}
-		writeToFile(tcDump, sb.toString());
-	}
+    private void generateTCDumpFile() {
+        StringBuilder sb = new StringBuilder();
+        for (int i=1; i<nn.size(); i++) {
+            sb.append(tc.get(i)).append(" ").append(tc.get(i - 1)).append(" ").append(nn.get(i - 1));
+            if (i != nn.size() - 1) sb.append("\n");
+        }
+        writeToFile(tcDump, sb.toString());
+    }
 
-	private void generateBandwidthDumpFile() {
-		StringBuilder sb = new StringBuilder();
-		for (int i=1; i<nn.size(); i++) {
-			sb.append(bandwidth.get(i)).append(" ").append(tp.get(i-1)).append(" ").append(bandwidth.get(i-1)).append(" ").append(nn.get(i-1));
-			if (i != nn.size() - 1) sb.append("\n");
-		}
-		writeToFile(bandwidthDump, sb.toString());
-	}
+    private void generateBandwidthDumpFile() {
+        StringBuilder sb = new StringBuilder();
+        for (int i=1; i<nn.size(); i++) {
+            sb.append(bandwidth.get(i)).append(" ").append(tp.get(i-1)).append(" ").append(bandwidth.get(i-1)).append(" ").append(nn.get(i-1));
+            if (i != nn.size() - 1) sb.append("\n");
+        }
+        writeToFile(bandwidthDump, sb.toString());
+    }
 
-	private void generateCpuLoadDumpFile() {
-		StringBuilder sb = new StringBuilder();
-		for (int i=1; i<nn.size(); i++) {
-			sb.append(cpuLoad.get(i)).append(" ").append(tp.get(i-1)).append(" ").append(cpuLoad.get(i-1)).append(" ").append(nn.get(i-1));
-			if (i != nn.size() - 1) sb.append("\n");
-		}
+    private void generateCpuLoadDumpFile() {
+        StringBuilder sb = new StringBuilder();
+        for (int i=1; i<nn.size(); i++) {
+            sb.append(cpuLoad.get(i)).append(" ").append(cpuLoad.get(i - 1)).append(" ").append(nn.get(i - 1));
+            if (i != nn.size() - 1) sb.append("\n");
+        }
         writeToFile(cpuLoadDump, sb.toString());
-	}
+    }
 
     private void writeToFile(File file, String str) {
         try {

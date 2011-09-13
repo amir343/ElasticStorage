@@ -22,26 +22,9 @@ public class DynamicStateFeedbackController implements ControllerDesign {
 	private Controller controller;
     private FuzzyInferenceEngine fuzzyEngine = new FuzzyInferenceEngine();
 	
-/*
-    One of the best results so far
-    private final double k1 = 0.161096566166813;
-    private final double k2 = -2.34614217089670e-06;
-    private final double k3 = 1.08954419535251e-06;
-    private final double k4 = -2.01946724014184e-11;
-*/
-
-/*
-    one of the best results
-    private final double k1 = 0.4206;
-    private final double k2 = -8.7796e-06;
-    private final double k3 = 9.7144e-07;
-    private final double k4 = -6.2524e-11;
-*/
-
-    private final double k1 = 0.34791;
-    private final double k2 = -1.1586e-05;
-    private final double k3 = 1.7997e-06;
-    private final double k4 = -2.7859e-11;
+    private final double k1 = 0.13436;
+    private final double k2 = 1.4702e-06;
+    private final double k3 = 0.0031878;
 
 	private double cpuLoadAverage;
 	private double cpuSTD;
@@ -82,9 +65,8 @@ public class DynamicStateFeedbackController implements ControllerDesign {
 	private double getControlInput() {
         lastAverageCpuSTD = cpuSTD / nCpuSTD;
 		double controlInput = k1*(cpuLoadAverage/ nCpuLoad -10) +
-                              k2*(lastAverageCpuSTD) +
-                              k3*(totalCost/nTotalCost) +
-                              k4*(responseTimeAverage/nResponseTime);
+                              k2*(totalCost/nTotalCost) +
+                              k3*(responseTimeAverage/nResponseTime);
 		logger.info("Control input: " + controlInput);
         nCpuLoad = 0; nCpuSTD = 0; nTotalCost = 0; nResponseTime = 0;
         cpuLoadAverage = 0; cpuSTD = 0; totalCost = 0; responseTimeAverage = 0;
