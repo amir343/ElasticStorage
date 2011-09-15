@@ -35,10 +35,17 @@ public class DataFilesGenerator2 {
     private File tcStateDump;
     private File rtStateDump;
 
+    private File meDump;
+
     private File cpuLoadDump;
     private File bandwidthDump;
     private File tcDump;
     private File rtDump;
+
+    private double cpuCoefficient = 1.02024267035455;
+    private double tcCoefficient = 0;
+    private double rtCoefficient = 1.87196306940221e-06;
+    private double nnCoefficient = 2.3004;
 
     public void add(TrainingData td) {
         nn.add(td.getNrNodes());
@@ -79,6 +86,7 @@ public class DataFilesGenerator2 {
         generateStateDumpFile(bandwidthStateDump, bandwidth);
         generateStateDumpFile(tcStateDump, tc);
         generateStateDumpFile(rtStateDump, rt);
+        generateModelEvaluation(meDump, cpuLoad);
     }
 
     private void prepareFiles() {
@@ -94,6 +102,18 @@ public class DataFilesGenerator2 {
         bandwidthDump = new File("dumps/" + folder + "/bw.dump");
         tcDump = new File("dumps/" + folder + "/tc.dump");
         rtDump = new File("dumps/" + folder + "/rt.dump");
+        meDump = new File("dumps/" + folder + "/modelEvaluation.dump");
+    }
+
+    private void generateModelEvaluation(File meDump, List<Double> cpuLoad) {
+        StringBuilder sb = new StringBuilder();
+        double predicted;
+        for (int i=1; i<cpuLoad.size(); i++) {
+            if (cpuLoad.get(i) == 0.0) continue;
+            predicted = cpuCoefficient*cpuLoad.get(i-1) + tcCoefficient*tc.get(i-1) + rtCoefficient*rt.get(i-1) + nnCoefficient*nn.get(i-1) - 10;
+            sb.append(cpuLoad.get(i)).append(" ").append(predicted).append("\n");
+        }
+        writeToFile(meDump, sb.toString());
     }
 
     private void generateStateDumpFile(File dumpFile, List data) {

@@ -6,3 +6,6 @@ target/*
 thesis-simulation.iml
 .idea
 dumps/*
+experiment/*
+modelEvaluation/*
+si/*
