@@ -122,9 +122,55 @@ public class TestScenario {
 
 This definition includes 2866 unique elastic addresses. Note that `startPort` can not be greater than `endPort`. 
 
+# Taking snapshot
+
+At any point during the running of the simulation, you can take snapshots from any of cloud provider, instance or controller. This can be done by using
+`ALT` + `s` keys. You can take as many snapshots as you may need. These snapshots are saved into _Snapshots_ panel in controller/instances windows and
+_Statistics_ panel in cloud provider. You can save any of the snapshots to disk later on by selecting and right clicking on your desire one in the
+corresponding panel. If you need only the log messages to be saved you can right click on the log panel and select _save to file_.
+
+Each snapshot includes the set of all diagrams and also log messages for that specific node in the system.
+
+# Headless Run
+
+In order to consume less resources on the target machine, you can specify `headless()` in the cloud class of your scenario. This will prevent any 
+construction of GUI for storage instances and save a lot of JVM heap memory. 
+
+# How to add your own controller
+
+If you require to write your own controller, you can do so by implementing the `ControllerDesign` interface. When you run the simulation, your controller
+will be listed with the name you have chosen for the class that implements the interface. It is a good practice to put the implemented class in package 
+`econtroller.design.impl`. The name should not be used before and should be unique.
+
+# How to define custom distributions
+
+You can define your own custom distribution to be used by Request Generator when sending request to cloud provider. Simply create a file and put your timeouts
+one in each line. So if you have something like
+
+	2
+	3
+	10
+
+it means that the first request will be sent after 2 seconds, second request after 5 and the third one after 15 seconds. When the request generator reaches
+the end of the file, it repeats the distribution from the beginning. After you create the file, choose `Custom` from drop down list in Request Generator panel
+in cloud provider window.
+
+# How to do System Identification?
+
+First define your scenario with Cloud and controller classes. Run your scenario. Try to launch at least two instances by cloud provider. Then connect
+the controller to cloud provider. In the meantime the instances are launching, select the distribution you want the Request Generator to send request and start
+it. When the instances are launched and ready to use, browse to System Identification panel in controller window. Make sure that settings are the ones you 
+need start the modeler.
+
+At any time during the system identification, you can stop the modeler or dump the collected training data into files. After one 
+period that instances are scaled up and down, the modeler dumps the collected data into files and takes a snapshot as well which is listed in snapshot panel.
+It is recommended to do the system identification in headless mode that is described earlier. 
+
+By default _Ordering enabled_ check box is checked and it means that modeler acts as a System Identifier and orders new to launch/shut down instances.
+However, if you need to just monitor the system without affecting the number of instances, you can disable this option.
 
 # License
 
-Copyright (C) 2011 [Amir Moulavi](http://amirmoulavi.com)
+Copyright (C) 2012 [Amir Moulavi](http://amirmoulavi.com)
 
 Distributed under the [Apache Software License](http://www.apache.org/licenses/LICENSE-2.0.html).
