@@ -4,6 +4,17 @@ Project is an implementation to simulate the elasticity property for storage nod
 
 This project is built on top of Kompics [1] which is a distributed event-driven message-passing component model for building distributed systems.
 
+# Check out and build
+
+Check out the source code from GIT repository:
+
+    # git clone git://github.com/amir343/ElasticStorage.git 
+
+You should have Maven 2 installed in order to be able to build the source code:
+
+    # mvn clean install
+
+This will download the required libraries from Maven repositories and builds the source code.
 
 [1]: Kompics: http://kompics.sics.se/
 
