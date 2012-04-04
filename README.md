@@ -2,7 +2,7 @@
 
 Project is an implementation to simulate the elasticity property for storage nodes in a Distributed Storage Systems (DSS) in the context of a cloud environment like Amazon. 
 
-This project is built on top of Kompics [1] which is a distributed event-driven message-passing component model for building distributed systems.
+This project is built on top of [Kompics] which is a distributed event-driven message-passing component model for building distributed systems.
 
 # Check out and build
 
@@ -16,7 +16,7 @@ You should have Maven 2 installed in order to be able to build the source code:
 
 This will download the required libraries from Maven repositories and builds the source code.
 
-[1]: Kompics: http://kompics.sics.se/
+[Kompics]: http://kompics.sics.se/
 
 # How to construct the cloud?
 
@@ -27,13 +27,13 @@ A cloud environment consists of several elements that each one is described in t
 *	`replicationDegree(number)`: defines the replication degree to meet by Elastic Load Balancer.
 *	`addressPoll(file name)`: points to address ranges that are available for this simulation.
 *	`node(name, address, port)`: defines a storage instance with a name and address, port to bind to. The name should be unique.
-	*	`cpu(n)`: defines the CPU for the instance with frequency of `n` GHz.
-	*	`memoryGB(n)`: defines the memory for the instance with size of `n` GB.
-	*	`bandwidthMB(n)`: defines the bandwidth for the instance with capacity of `n` MB.
+	*	`cpu(n)`: defines the CPU for the instance with frequency of _n_ GHz.
+	*	`memoryGB(n)`: defines the memory for the instance with size of _n_ GB.
+	*	`bandwidthMB(n)`: defines the bandwidth for the instance with capacity of _n_ MB.
 *	`sla()`: enables the SLA violation calculation according to the parameter that will be defined as the following:
 	*	`cpuLoad(n)`: SLA requirements for percentage of average CPU load in the system.
-	*	`responseTime(n)`: SLA requirements for average response time (`ms`) in the system.
-	*	`bandwidth(n)`: SLA requirements for average bandwidth per download (`B/s`) in the system.
+	*	`responseTime(n)`: SLA requirements for average response time (_ms_) in the system.
+	*	`bandwidth(n)`: SLA requirements for average bandwidth per download (_B/s_) in the system.
 
 Using these elements a complete cloud environment can be built. Note that elements related to instances are not mandatory. Instances can be launched by 
 cloud provider as well. After this definition, the object that holds theses elements should be started by calling the method `start()`.
@@ -94,7 +94,7 @@ public class TestScenario {
     }
 ```
 
-## addressPoll}
+## addressPoll
 
 `addressPoll` is an XML file that defines the elastic IP address ranges that can be used by cloud provider. A simple example is like:
 
