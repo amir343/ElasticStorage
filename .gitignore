@@ -9,3 +9,7 @@ dumps/*
 experiment/*
 modelEvaluation/*
 si/*
+.idea_modules/
+project/project/
+project/target/
+
