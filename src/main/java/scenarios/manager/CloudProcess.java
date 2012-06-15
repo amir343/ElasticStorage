@@ -15,6 +15,8 @@
  */
 package scenarios.manager;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.*;
 import java.util.UUID;
 
@@ -32,6 +34,8 @@ public class CloudProcess extends Thread {
 	private String classPath;
 	private Process process;
 	private BufferedWriter input;
+    private File logFile = new File("/tmp/EStoreSim.log");
+    private StringBuilder sb = new StringBuilder();
 
 	public CloudProcess(String classPath, String topologyFile, String mainClass) {
 		this.classPath = classPath;
@@ -47,8 +51,10 @@ public class CloudProcess extends Thread {
 	}
 	
 	private void launchProcess() {
-		
-		ProcessBuilder processBuilder = new ProcessBuilder("java", "-classpath", classPath, "-Dlog4j.properties=log4j.properties", 
+
+        sb.append("Launching the cloud process...");
+
+		ProcessBuilder processBuilder = new ProcessBuilder("java", "-classpath", classPath, "-Dlog4j.properties=log4j.properties",
 				"-DcloudConfiguration=" + cloudConfigurationFile, mainClass, "" + UUID.randomUUID().toString(), "");
 		processBuilder.redirectErrorStream(true);
 
@@ -61,6 +67,8 @@ public class CloudProcess extends Thread {
 			do {
 				line = out.readLine();
 				if (line != null) {
+                    sb.append(line);
+                    FileUtils.writeStringToFile(logFile, sb.toString());
 					if (line.equals("2DIE")) {
 						if (process != null) {
 							process.destroy();

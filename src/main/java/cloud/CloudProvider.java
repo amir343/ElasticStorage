@@ -43,16 +43,8 @@ import se.sics.kompics.timer.java.JavaTimer;
 
 public class CloudProvider extends ComponentDefinition {
 
-	static {
-		PropertyConfigurator.configureAndWatch("log4j.properties");
-	}
-	
 	private CloudConfiguration cloudConfiguration = CloudConfiguration.load(System.getProperty("cloudConfiguration"));
 	private CloudGUI gui;
-	
-	public static void main(String[] args) {
-		Kompics.createAndStart(CloudProvider.class);
-	}
 	
 	public CloudProvider() {
 		bringUpGUI();

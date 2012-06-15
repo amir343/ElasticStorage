@@ -16,6 +16,10 @@
 package logger;
 
 import common.GUI;
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.IOException;
 
 /**
  * 
@@ -29,6 +33,8 @@ public class ElasticLogger implements Logger {
 	private GUI gui;
 	private String className;
 	private long start;
+    private File logFile = new File("/tmp/EStoreSim.log");
+    private StringBuilder sb = new StringBuilder();
 
 	public ElasticLogger(Class<?> class1, GUI guiLogger, long start) {
 		this.className = class1.getSimpleName();
@@ -42,7 +48,13 @@ public class ElasticLogger implements Logger {
 			log = String.format("[%010.4f] %s {%s} %s", now(), level, className, text);
 		else
 			log = String.format("[%010.4f] %s", now(), text);;
-		gui.log(log);		
+        sb.append(log).append("\n");
+        try {
+            FileUtils.writeStringToFile(logFile, sb.toString());
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+        gui.log(log);
 	}
 
 	@Override

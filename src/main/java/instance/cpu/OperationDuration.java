@@ -65,7 +65,4 @@ public class OperationDuration {
 		return (long) ((baseTime.doubleValue()*baseCpuSpeed.doubleValue())/cpuSpeed.doubleValue());
 	}
 	
-	public static void main(String[] args) {
-		System.out.println(getBootOperation(2*1024*1024*1024L));
-	}
 }

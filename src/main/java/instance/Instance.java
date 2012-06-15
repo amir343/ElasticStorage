@@ -52,10 +52,6 @@ public class Instance extends ComponentDefinition {
 	InstanceConfiguration nodeConfiguration = InstanceConfiguration.load(System.getProperty("nodeConfiguration"));
 	private GenericInstanceGUI gui;
 	
-	public static void main(String[] args) {
-		Kompics.createAndStart(Instance.class);
-	}
-	
 	public Instance() {
 		try {
             boolean headless = nodeConfiguration.getNodeConfiguration().getHeadLess();

@@ -52,11 +52,6 @@ public class ElasticController extends ComponentDefinition {
 	private ControllerConfiguration controllerConfiguration = ControllerConfiguration.load(System.getProperty("controllerConfiguration"));
 	private ControllerGUI gui = ControllerGUI.getInstance();
 	
-	
-	public static void main(String[] args) {
-		Kompics.createAndStart(ElasticController.class);
-	}
-	
 	public ElasticController() {
 		try {
 			Component controller = create(Controller.class);

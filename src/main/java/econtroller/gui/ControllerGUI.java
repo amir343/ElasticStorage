@@ -665,11 +665,6 @@ public class ControllerGUI extends AbstractGUI {
 		
 	}
 	
-	public static void main(String[] args) {
-		ControllerGUI.getInstance();
-		
-	}
-
 	public void setModeler(Modeler modeler) {
 		this.modeler = modeler;
 	}
