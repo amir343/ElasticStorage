@@ -1,5 +1,11 @@
+package instance
+
+import akka.actor.{Props, ActorLogging, Actor}
+import protocol.{CPULog, CPUInit, InstanceStart}
+import cloud.common.NodeConfiguration
+
 /**
- * Copyright 2011 Amir Moulavi (amir.moulavi@gmail.com)
+ * Copyright 2012 Amir Moulavi (amir.moulavi@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,19 +18,20 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
-package instance.common
-
-import se.sics.kompics.Event
-import instance.os.Process
-
-/**
- * @author Amir Moulavi
  *
+ * @author Amir Moulavi
  */
-@Deprecated
-class StartProcess(process: Process) extends Event {
+class InstanceActor extends Actor with ActorLogging {
 
-  def getProcess = process
+  val cpu = context.actorOf(Props[CPUActor])
+
+  def receive = {
+    case InstanceStart(nodeConfig) => initialize(nodeConfig)
+    case CPULog(msg) => //TODO
+  }
+
+  private def initialize(nodeConfig:NodeConfiguration) {
+    cpu ! CPUInit(nodeConfig)
+  }
 
 }

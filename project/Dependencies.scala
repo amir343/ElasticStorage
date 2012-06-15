@@ -21,10 +21,16 @@ import sbt._
 object Dependencies {
 
   object Compile {
+
+    val akkaActor =        "com.typesafe.akka"       %      "akka-actor"         %        "2.0"
+    val akkaTestKit =      "com.typesafe.akka"       %      "akka-testkit"       %        "2.0"
+
+    // Deprecated
     val kompicsCore = "se.sics.kompics" % "kompics-core" % "0.4.3-SNAPSHOT"
     val kompicsTimer = "se.sics.kompics.basic" % "kompics-component-java-timer" % "0.4.3-SNAPSHOT"
     val kompicsMinaNetwork = "se.sics.kompics.basic" % "kompics-component-mina-network" % "0.4.3-SNAPSHOT"
     val kompicsPLauncher = "se.sics.kompics.launcher" % "kompics-local-process-launcher" % "0.4.3-SNAPSHOT"
+
     val googleCollections = "com.google.collections" % "google-collections" % "1.0-rc4"
     val commonsCollection = "commons-collections" % "commons-collections" % "3.2.1"
     val commonsLang = "commons-lang" % "commons-lang" % "2.2"
@@ -37,6 +43,8 @@ object Dependencies {
     val scalaTest = "org.scalatest" %% "scalatest" % "1.8"
 
     val allDependencies = Seq(
+      akkaActor,
+      akkaTestKit,
       kompicsCore,
       kompicsTimer,
       kompicsMinaNetwork,

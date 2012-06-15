@@ -24,6 +24,7 @@ import cloud.common.NodeConfiguration
  *
  */
 
+@Deprecated
 class CPUInit(nodeConfiguration: NodeConfiguration) extends Init {
 
   def getNodeConfiguration = nodeConfiguration
