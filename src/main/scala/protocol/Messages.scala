@@ -53,3 +53,14 @@ case class DiskReady() extends InstanceMessages
 case class LoadBlock(blocks:List[Block]) extends InstanceMessages
 case class ReadBlock(id:String, process:Process) extends InstanceMessages
 case class BlockResponse(block:Block, process:Process) extends InstanceMessages
+
+// Memory Messages
+case class MemoryInit(nodeConfig:NodeConfiguration) extends InstanceMessages
+case class MemoryInfoLabel(label:String) extends InstanceMessages
+case class MemoryLog(msg:String) extends InstanceMessages
+case class MemoryReady() extends InstanceMessages
+case class RequestBlock(process:Process) extends InstanceMessages
+case class AckBlock(process:Process) extends InstanceMessages
+case class NackBlock(process:Process) extends InstanceMessages
+case class WriteBlockIntoMemory(block:Block) extends InstanceMessages
+case class MemoryStart() extends InstanceMessages

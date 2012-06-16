@@ -67,8 +67,8 @@ class DiskActor extends Actor with ActorLogging {
   private def readBlock(id:String, process:Process) {
     _blocks.find( _.getName == id ) match {
       case Some(block) =>
-        log.debug("Block %s is read".format(id))
-        instance ! BlockResponse(block, process)
+                          log.debug("Block %s is read".format(id))
+                          instance ! BlockResponse(block, process)
 
       case None        => log.error("Block %s does not exist on the disk".format(id))
     }

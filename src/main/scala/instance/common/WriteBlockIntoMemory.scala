@@ -22,6 +22,7 @@ import se.sics.kompics.Event
  * @date 2011-07-16
  *
  */
+@Deprecated
 class WriteBlockIntoMemory(block: Block) extends Event {
   def getBlock = block
 }

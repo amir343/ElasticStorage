@@ -23,6 +23,7 @@ import cloud.common.NodeConfiguration
  * @date 2011-07-16
  *
  */
+@Deprecated
 class MemoryInit(nodeConfiguration: NodeConfiguration) extends Init {
   def getNodeConfiguration = nodeConfiguration
 }

@@ -32,16 +32,18 @@ import protocol.CPULog
  */
 class InstanceActor extends Actor with ActorLogging {
 
-  // Children
+  // Components
   val cpu = context.actorOf(Props[CPUActor])
   val disk = context.actorOf(Props[DiskActor])
+  val memory = context.actorOf(Props[MemoryActor])
 
   val gui = InstanceGUI.getInstance()
   gui.setInstanceReference(this)
 
   def receive = genericHandler   orElse
                 cpuHandler       orElse
-                diskHandler
+                diskHandler      orElse
+                memoryHandler
 
   def genericHandler:Receive = {
     case InstanceStart(nodeConfig)                         => initialize(nodeConfig)
@@ -60,14 +62,21 @@ class InstanceActor extends Actor with ActorLogging {
     case BlockResponse(block, process)                     => //TODO
   }
 
+  def memoryHandler:Receive = {
+    case MemoryInfoLabel(label)                            => gui.updateMemoryInfoLabel(label)
+    case MemoryReady()                                     => log.info("Memory is ready")
+    case MemoryLog(msg)                                    => gui.log(msg)
+  }
+
   private def initialize(nodeConfig:NodeConfiguration) {
     cpu ! CPUInit(nodeConfig)
     disk ! DiskInit(nodeConfig)
+    memory ! MemoryInit(nodeConfig)
   }
 
   def stopActor() {
     log.info("Getting ready to die!")
-    self ! PoisonPill
+    context.system.stop(self)
   }
 
 }

@@ -22,6 +22,7 @@ import instance.os.Process
  * @author Amir Moulavi
  *
  */
+@Deprecated
 class RequestBlock(process: Process) extends Event {
 
   def getProcess = process
