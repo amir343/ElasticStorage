@@ -25,20 +25,24 @@ import org.jfree.chart.JFreeChart
  */
 trait Messages
 
+
+trait InstanceMessages extends Messages
 // Instance Messages
-case class InstanceStart(nodeConfiguration:NodeConfiguration) extends Messages
+case class InstanceStart(nodeConfiguration:NodeConfiguration) extends InstanceMessages
 
 // CPU Messages
-case class CPUInit(nodeConfiguration:NodeConfiguration) extends Messages
-case class CPULog(log:String) extends Messages
-case class CPUReady() extends Messages
-case class LoadSamplerTimeout() extends Messages
-case class LoadCalculationTimeout() extends Messages
-case class CPULoad(load:Double) extends Messages
-case class RestartSignal() extends Messages
-case class Restart() extends Messages
-case class StartProcess(process:Process) extends Messages
-case class EndProcess(process:Process) extends Messages
-case class AbstractOperation(operation:AOperation) extends Messages
-case class OperationFinishedTimeout(pid:String) extends Messages
-case class SnapshotRequest(chart:JFreeChart = null) extends Messages
+case class CPUInit(nodeConfiguration:NodeConfiguration) extends InstanceMessages
+case class CPULog(log:String) extends InstanceMessages
+case class CPUReady() extends InstanceMessages
+case class LoadSamplerTimeout() extends InstanceMessages
+case class LoadCalculationTimeout() extends InstanceMessages
+case class CPULoad(load:Double) extends InstanceMessages
+case class RestartSignal() extends InstanceMessages
+case class Restart() extends InstanceMessages
+case class StartProcess(process:Process) extends InstanceMessages
+case class EndProcess(process:Process) extends InstanceMessages
+case class AbstractOperation(operation:AOperation) extends InstanceMessages
+case class OperationFinishedTimeout(pid:String) extends InstanceMessages
+case class SnapshotRequest(chart:JFreeChart = null) extends InstanceMessages
+case class UpdateCPUInfoLabel(label:String) extends InstanceMessages
+case class CPULoadDiagram(chart:JFreeChart) extends InstanceMessages

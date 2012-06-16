@@ -1,6 +1,6 @@
 package instance
 
-import akka.actor.{ActorRef, Actor}
+import akka.actor.{ActorLogging, ActorRef, Actor}
 import akka.util.duration._
 import gui.GenericInstanceGUI
 import org.jfree.data.xy.{XYSeries, XYSeriesCollection}
@@ -35,7 +35,7 @@ import org.jfree.chart.plot.PlotOrientation
  *
  * @author Amir Moulavi
  */
-class CPUActor extends Actor {
+class CPUActor extends Actor with ActorLogging {
 
   private var CPU_CLOCK: Long = 2000000000L
   private val LOAD_CALC_INTERVAL: Long = 5000
@@ -65,25 +65,20 @@ class CPUActor extends Actor {
     case AbstractOperation(operation)     => handleAbstractOperation(operation)
     case OperationFinishedTimeout(pid)    => operationFinished(pid)
     case SnapshotRequest(_)               => handleSnapshot()
-
   }
 
   private def initialize(nodeConfig:NodeConfiguration) {
     enabled = true
     _nodeConfig = nodeConfig
     CPU_CLOCK = nodeConfig.getCpuConfiguration.getCpuSpeedInstructionPerSecond
-
-    // TODO
-    //gui.updateCPUInfoLabel(event.getNodeConfiguration.getCpuConfiguration.getCpuSpeed + " GHz")
-
+    instance ! UpdateCPUInfoLabel("%s GHz".format(nodeConfig.getCpuConfiguration.getCpuSpeed))
     dataSet.addSeries(xySeries)
     printCPULog()
     sendReadySignal()
     context.system.scheduler.schedule(1000 milliseconds, SAMPLER_INTERVAL milliseconds, self, LoadSamplerTimeout())
     context.system.scheduler.schedule(LOAD_CALC_INTERVAL milliseconds, LOAD_CALC_INTERVAL milliseconds, self, LoadCalculationTimeout())
-
-    // TODO
-    //gui.createCPULoadDiagram(getChart)
+    log.debug("CPU is initialized")
+    instance ! CPULoadDiagram(getChart)
   }
 
   private def printCPULog() {
@@ -97,14 +92,14 @@ class CPUActor extends Actor {
 
   private def handleRestartSignal() {
     if (enabled) {
+      log.debug("Received Restart signal")
       enabled  = false
  			xySeries.clear()
  			pt.clear()
  			loadSamples.clear()
  			loads.clear()
  			tasks.set(0)
-      //TODO
-      //gui.createCPULoadDiagram(getChart())
+      instance ! CPULoadDiagram(getChart)
  			context.system.scheduler.scheduleOnce(1000 milliseconds, self, Restart())
 		}
   }
@@ -112,21 +107,21 @@ class CPUActor extends Actor {
   private def restart() {
     enabled = true
     instance ! CPUReady()
-    //TODO
-    //gui.createCPULoadDiagram(getChart());
+    instance ! CPULoadDiagram(getChart)
   }
 
   private def calculateLoad() {
     if (enabled) {
-          val load:Double = loadSamples.sum / loadSamples.size
-          loadSamples.clear()
- 					loads += load
-          //TODO
- 					//gui.cpuLoad(load);
- 					instance ! CPULoad(load)
- 					xySeries.add( (System.currentTimeMillis() - startTime), load)
-          //TODO
- 					//gui.createCPULoadDiagram(getChart())
+      val load = loadSamples.size match {
+        case 0 => 1
+        case n => loadSamples.sum / n
+      }
+      loadSamples.clear()
+ 			loads += load
+ 			instance ! CPULoad(load)
+ 			instance ! CPULoad(load)
+ 			xySeries.add( (System.currentTimeMillis() - startTime), load)
+ 			instance ! CPULoadDiagram(getChart)
  			}
   }
 
@@ -150,7 +145,8 @@ class CPUActor extends Actor {
 
   private def handleSnapshot() {
     if (enabled) {
- 				instance ! SnapshotRequest(getChart)
+      log.debug("Received Snapshot request")
+      instance ! SnapshotRequest(getChart)
  		}
   }
 

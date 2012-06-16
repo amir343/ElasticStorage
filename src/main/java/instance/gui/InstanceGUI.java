@@ -19,6 +19,7 @@ import common.AbstractGUI;
 import eu.hansolo.steelseries.gauges.Radial;
 import eu.hansolo.steelseries.tools.BackgroundColor;
 import eu.hansolo.steelseries.tools.FrameDesign;
+import instance.InstanceActor;
 import instance.common.Block;
 import instance.common.Size;
 import instance.os.InstanceSnapshot;
@@ -49,6 +50,8 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
 	
 	private static InstanceGUI instance = new InstanceGUI();
 	private Logger logger = LoggerFactory.getLogger(InstanceGUI.class, this);
+    private InstanceActor instanceActor;
+
     public static InstanceGUI getInstance() {
 		return instance;
 	}
@@ -96,7 +99,11 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
 	private List<InstanceSnapshot> snapshots = new ArrayList<InstanceSnapshot>();
 	private JMenuItem restartMenuItem;
 	private JLabel costLabel;
-	
+
+    public void setInstanceReference(InstanceActor actor) {
+        this.instanceActor = actor;
+    }
+
 	public InstanceGUI() {
         setUIManager();
 		createMenuBar();
@@ -114,7 +121,7 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
 	private void addWindowListener() {
 		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
-				System.exit(0); //
+				instanceActor.stopActor();
 			}
 		});
 	}
