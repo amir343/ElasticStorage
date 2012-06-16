@@ -1,5 +1,7 @@
 import sbt._
 import Keys._
+import com.typesafe.sbtscalariform.ScalariformPlugin
+import com.typesafe.sbtscalariform.ScalariformPlugin.ScalariformKeys
 
 /**
  * Copyright 2012 Amir Moulavi (amir.moulavi@gmail.com)
@@ -41,5 +43,18 @@ object BuildSettings {
     publish := (),
     publishLocal := ()
   )
+
+  lazy val formatSettings = ScalariformPlugin.scalariformSettings ++ Seq(
+      ScalariformKeys.preferences in Compile := formattingPreferences,
+      ScalariformKeys.preferences in Test    := formattingPreferences
+    )
+
+  def formattingPreferences = {
+    import scalariform.formatter.preferences._
+    FormattingPreferences()
+    .setPreference(RewriteArrowSymbols, true)
+    .setPreference(AlignParameters, true)
+    .setPreference(AlignSingleLineCaseStatements, true)
+  }
 
 }

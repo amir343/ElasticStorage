@@ -31,7 +31,10 @@ object EStoreSimBuild extends Build {
 
   lazy val eStoreSim = Project("EStoreSim", file("."))
     .settings(basicSettings: _*)
+    .settings(formatSettings: _*)
     .settings(libraryDependencies ++= Compile.allDependencies)
+/*
     .settings(com.github.retronym.SbtOneJar.oneJarSettings: _*)
+*/
 
 }
