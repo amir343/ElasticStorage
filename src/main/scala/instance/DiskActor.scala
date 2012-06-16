@@ -1,6 +1,6 @@
 package instance
 
-import akka.actor.{ActorRef, ActorLogging, Actor}
+import akka.actor.{ ActorRef, ActorLogging, Actor }
 import common.Block
 import protocol._
 import cloud.common.NodeConfiguration
@@ -8,7 +8,6 @@ import protocol.DiskReady
 import protocol.LoadBlock
 import protocol.DiskInit
 import instance.os.Process
-
 
 /**
  * Copyright 2012 Amir Moulavi (amir.moulavi@gmail.com)
@@ -29,27 +28,26 @@ import instance.os.Process
  */
 class DiskActor extends Actor with ActorLogging {
 
-  private var diskReady:Boolean = false
- 	private var _blocks = List.empty[Block]
- 	private var enabled:Boolean = false
-  private var instance:ActorRef = _
-
+  private var diskReady: Boolean = false
+  private var _blocks = List.empty[Block]
+  private var enabled: Boolean = false
+  private var instance: ActorRef = _
 
   def receive = {
-    case DiskInit(nodeConfig)            => initialize(nodeConfig)
-    case LoadBlock(blks)                 => loadBlocks(blks)
-    case RestartSignal()                 => restart()
-    case ReadBlock(id, process)          => readBlock(id, process)
+    case DiskInit(nodeConfig)   ⇒ initialize(nodeConfig)
+    case LoadBlock(blks)        ⇒ loadBlocks(blks)
+    case RestartSignal()        ⇒ restart()
+    case ReadBlock(id, process) ⇒ readBlock(id, process)
   }
 
-  private def initialize(nodeConfig:NodeConfiguration) {
+  private def initialize(nodeConfig: NodeConfiguration) {
     enabled = true
     instance = sender
     log.debug("Disk is started")
     instance ! DiskReady()
   }
 
-  private def loadBlocks(blks:List[Block]) {
+  private def loadBlocks(blks: List[Block]) {
     if (enabled) {
       if (_blocks.size == 0) {
         _blocks = blks
@@ -64,13 +62,13 @@ class DiskActor extends Actor with ActorLogging {
     log.debug("Disk received SHUTDOWN signal")
   }
 
-  private def readBlock(id:String, process:Process) {
-    _blocks.find( _.getName == id ) match {
-      case Some(block) =>
-                          log.debug("Block %s is read".format(id))
-                          instance ! BlockResponse(block, process)
+  private def readBlock(id: String, process: Process) {
+    _blocks.find(_.getName == id) match {
+      case Some(block) ⇒
+        log.debug("Block %s is read".format(id))
+        instance ! BlockResponse(block, process)
 
-      case None        => log.error("Block %s does not exist on the disk".format(id))
+      case None ⇒ log.error("Block %s does not exist on the disk".format(id))
     }
   }
 }

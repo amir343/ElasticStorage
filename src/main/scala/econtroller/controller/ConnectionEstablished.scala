@@ -17,7 +17,7 @@ package econtroller.controller
 
 import se.sics.kompics.network.Message
 import se.sics.kompics.address.Address
-import java.util.{List => JList}
+import java.util.{ List ⇒ JList }
 
 /**
  * @author Amir Moulavi

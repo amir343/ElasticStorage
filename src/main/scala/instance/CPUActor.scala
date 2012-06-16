@@ -1,11 +1,11 @@
 package instance
 
-import akka.actor.{ActorLogging, ActorRef, Actor}
+import akka.actor.{ ActorLogging, ActorRef, Actor }
 import akka.util.duration._
 import gui.GenericInstanceGUI
-import org.jfree.data.xy.{XYSeries, XYSeriesCollection}
+import org.jfree.data.xy.{ XYSeries, XYSeriesCollection }
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.{ConcurrentHashMap, ConcurrentMap}
+import java.util.concurrent.{ ConcurrentHashMap, ConcurrentMap }
 import protocol._
 import cloud.common.NodeConfiguration
 import protocol.CPUInit
@@ -14,8 +14,8 @@ import protocol.CPUReady
 import protocol.CPULog
 import collection.mutable.ListBuffer
 import instance.os.Process
-import instance.common.{ AbstractOperation => AOperation }
-import org.jfree.chart.{ChartFactory, JFreeChart}
+import instance.common.{ AbstractOperation ⇒ AOperation }
+import org.jfree.chart.{ ChartFactory, JFreeChart }
 import org.jfree.chart.plot.PlotOrientation
 
 /**
@@ -49,25 +49,25 @@ class CPUActor extends Actor with ActorLogging {
   private val loads = ListBuffer.empty[Double]
   protected var enabled: Boolean = false
   protected var gui: GenericInstanceGUI = null
-  private var _nodeConfig:NodeConfiguration = _
-  private var instance:ActorRef = _
+  private var _nodeConfig: NodeConfiguration = _
+  private var instance: ActorRef = _
 
   tasks.set(0)
 
   def receive = {
-    case CPUInit(nodeConfig)              => {instance = sender; initialize(nodeConfig) }
-    case LoadSamplerTimeout()             => collectLoad()
-    case LoadCalculationTimeout()         => calculateLoad()
-    case RestartSignal()                  => handleRestartSignal()
-    case Restart()                        => restart()
-    case StartProcess(p)                  => startProcess(p)
-    case EndProcess(p)                    => endProcess(p)
-    case AbstractOperation(operation)     => handleAbstractOperation(operation)
-    case OperationFinishedTimeout(pid)    => operationFinished(pid)
-    case SnapshotRequest(_)               => handleSnapshot()
+    case CPUInit(nodeConfig)           ⇒ { instance = sender; initialize(nodeConfig) }
+    case LoadSamplerTimeout()          ⇒ collectLoad()
+    case LoadCalculationTimeout()      ⇒ calculateLoad()
+    case RestartSignal()               ⇒ handleRestartSignal()
+    case Restart()                     ⇒ restart()
+    case StartProcess(p)               ⇒ startProcess(p)
+    case EndProcess(p)                 ⇒ endProcess(p)
+    case AbstractOperation(operation)  ⇒ handleAbstractOperation(operation)
+    case OperationFinishedTimeout(pid) ⇒ operationFinished(pid)
+    case SnapshotRequest(_)            ⇒ handleSnapshot()
   }
 
-  private def initialize(nodeConfig:NodeConfiguration) {
+  private def initialize(nodeConfig: NodeConfiguration) {
     enabled = true
     _nodeConfig = nodeConfig
     CPU_CLOCK = nodeConfig.getCpuConfiguration.getCpuSpeedInstructionPerSecond
@@ -84,7 +84,7 @@ class CPUActor extends Actor with ActorLogging {
   private def printCPULog() {
     val sb = new StringBuilder()
     sb.append(" CPU: Unsupported number of siblings 4\n")
- 		sb.append("CPU Intel ").append(_nodeConfig.getCpuConfiguration().getCpuSpeed).append(" (GHz) core i7 started...")
+    sb.append("CPU Intel ").append(_nodeConfig.getCpuConfiguration().getCpuSpeed).append(" (GHz) core i7 started...")
     instance ! CPULog(sb.toString())
   }
 
@@ -93,15 +93,15 @@ class CPUActor extends Actor with ActorLogging {
   private def handleRestartSignal() {
     if (enabled) {
       log.debug("Received Restart signal")
-      enabled  = false
- 			xySeries.clear()
- 			pt.clear()
- 			loadSamples.clear()
- 			loads.clear()
- 			tasks.set(0)
+      enabled = false
+      xySeries.clear()
+      pt.clear()
+      loadSamples.clear()
+      loads.clear()
+      tasks.set(0)
       instance ! CPULoadDiagram(getChart)
- 			context.system.scheduler.scheduleOnce(1000 milliseconds, self, Restart())
-		}
+      context.system.scheduler.scheduleOnce(1000 milliseconds, self, Restart())
+    }
   }
 
   private def restart() {
@@ -113,32 +113,32 @@ class CPUActor extends Actor with ActorLogging {
   private def calculateLoad() {
     if (enabled) {
       val load = loadSamples.size match {
-        case 0 => 1
-        case n => loadSamples.sum / n
+        case 0 ⇒ 1
+        case n ⇒ loadSamples.sum / n
       }
       loadSamples.clear()
- 			loads += load
- 			instance ! CPULoad(load)
- 			instance ! CPULoad(load)
- 			xySeries.add( (System.currentTimeMillis() - startTime), load)
- 			instance ! CPULoadDiagram(getChart)
- 			}
-  }
-
-  private def endProcess(process:Process) {
-    if(enabled) {
-      pt.remove(process.getPid)
-      tasks decrementAndGet()
+      loads += load
+      instance ! CPULoad(load)
+      instance ! CPULoad(load)
+      xySeries.add((System.currentTimeMillis() - startTime), load)
+      instance ! CPULoadDiagram(getChart)
     }
   }
 
-  private def handleAbstractOperation(operation:AOperation) {
+  private def endProcess(process: Process) {
     if (enabled) {
-      tasks incrementAndGet()
-      for (i <- 1 until operation.getNumberOfOperations()) {
+      pt.remove(process.getPid)
+      tasks decrementAndGet ()
+    }
+  }
+
+  private def handleAbstractOperation(operation: AOperation) {
+    if (enabled) {
+      tasks incrementAndGet ()
+      for (i ← 1 until operation.getNumberOfOperations()) {
         val p = Process.createAbstractProcess()
-      	pt.put(p.getPid, p)
-      	context.system.scheduler.scheduleOnce(operation.getDuration(CPU_CLOCK) milliseconds, self, OperationFinishedTimeout(p.getPid))
+        pt.put(p.getPid, p)
+        context.system.scheduler.scheduleOnce(operation.getDuration(CPU_CLOCK) milliseconds, self, OperationFinishedTimeout(p.getPid))
       }
     }
   }
@@ -147,25 +147,25 @@ class CPUActor extends Actor with ActorLogging {
     if (enabled) {
       log.debug("Received Snapshot request")
       instance ! SnapshotRequest(getChart)
- 		}
-  }
-
-  private def operationFinished(pid:String) {
-    if (enabled) {
-      pt.remove(pid)
-      tasks decrementAndGet()
     }
   }
 
-  private def startProcess(process:Process) {
-    if(enabled) {
+  private def operationFinished(pid: String) {
+    if (enabled) {
+      pt.remove(pid)
+      tasks decrementAndGet ()
+    }
+  }
+
+  private def startProcess(process: Process) {
+    if (enabled) {
       pt.put(process.getPid, process)
-      tasks incrementAndGet()
+      tasks incrementAndGet ()
     }
   }
 
   private def collectLoad() {
-    if(enabled) {
+    if (enabled) {
       loads += pt.size()
     }
   }

@@ -15,7 +15,7 @@
  */
 package cloud.elb
 
-import se.sics.kompics.timer.{Timeout, ScheduleTimeout}
+import se.sics.kompics.timer.{ Timeout, ScheduleTimeout }
 
 /**
  * @author Amir Moulavi

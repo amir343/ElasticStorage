@@ -16,7 +16,7 @@
 package cloud.common
 
 import se.sics.kompics.PortType
-import cloud.api.{RebalanceResponseMap, RebalanceDataBlocks}
+import cloud.api.{ RebalanceResponseMap, RebalanceDataBlocks }
 import cloud.elb.NodesToRemove
 
 /**

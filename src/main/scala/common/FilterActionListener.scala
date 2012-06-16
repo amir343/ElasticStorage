@@ -15,7 +15,7 @@
  */
 package common
 
-import java.awt.event.{ActionEvent, ActionListener}
+import java.awt.event.{ ActionEvent, ActionListener }
 
 /**
  * @author Amir Moulavi

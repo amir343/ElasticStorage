@@ -17,7 +17,7 @@ package cloud.elb
 
 import se.sics.kompics.network.Message
 import se.sics.kompics.address.Address
-import cloud.common.{SLAViolation, StateVariables}
+import cloud.common.{ SLAViolation, StateVariables }
 
 /**
  * @author Amir Moulavi

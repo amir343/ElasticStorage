@@ -16,7 +16,7 @@
 package econtroller.sensor
 
 import se.sics.kompics.PortType
-import econtroller.controller.{StartSense, Sense}
+import econtroller.controller.{ StartSense, Sense }
 import cloud.elb.SenseData
 
 /**

@@ -2,7 +2,7 @@ import cloud.CloudProvider
 import econtroller.ElasticController
 import instance.common.Size
 import instance.Instance
-import scenarios.manager.{ControllerApplication, Cloud}
+import scenarios.manager.{ ControllerApplication, Cloud }
 
 /**
  * Copyright 2012 Amir Moulavi (amir.moulavi@gmail.com)
@@ -57,5 +57,4 @@ object TestScenario {
     controller.start()
   }
 }
-
 

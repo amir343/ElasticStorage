@@ -16,7 +16,7 @@
 package instance.common
 
 import se.sics.kompics.Event
-import java.util.{List => JList}
+import java.util.{ List ⇒ JList }
 
 /**
  * @author Amir Moulavi

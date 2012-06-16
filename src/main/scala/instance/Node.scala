@@ -16,7 +16,7 @@
 package instance
 
 import se.sics.kompics.address.Address
-import java.net.{UnknownHostException, InetAddress}
+import java.net.{ UnknownHostException, InetAddress }
 import org.apache.commons.lang.builder.HashCodeBuilder
 
 /**
@@ -46,9 +46,8 @@ class Node(private val nodeName: String,
     var self: Address = null
     try {
       self = new Address(InetAddress.getByName(address), port, 1)
-    }
-    catch {
-      case e: UnknownHostException => {
+    } catch {
+      case e: UnknownHostException ⇒ {
         e.printStackTrace()
       }
     }
@@ -56,8 +55,8 @@ class Node(private val nodeName: String,
   }
 
   override def equals(another: Any) = another match {
-    case another: Node => another.getIP == this.getIP && another.getNodeName == this.getNodeName && another.getPort == this.getPort
-    case _ => false
+    case another: Node ⇒ another.getIP == this.getIP && another.getNodeName == this.getNodeName && another.getPort == this.getPort
+    case _             ⇒ false
   }
 
   override def hashCode: Int = {
@@ -82,14 +81,12 @@ object Node {
     var tokens: Array[String] = string.split(":")
     try {
       self = new Address(InetAddress.getByName(tokens(0)), Integer.parseInt(tokens(1)), 1)
-    }
-    catch {
-      case e: UnknownHostException => {
+    } catch {
+      case e: UnknownHostException ⇒ {
         e.printStackTrace()
       }
     }
     self
   }
-
 
 }

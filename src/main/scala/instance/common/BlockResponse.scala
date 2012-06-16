@@ -31,5 +31,4 @@ class BlockResponse(block: Block) extends Event {
 
   def getBlock = block
 
-
 }

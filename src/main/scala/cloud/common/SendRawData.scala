@@ -45,7 +45,7 @@ class SendRawData(val controller: Address,
   }
 
   def updateSLA(sla: SLA) {
-    for (element <- rt)
+    for (element ← rt)
       sla.addResponseTime(element)
   }
 

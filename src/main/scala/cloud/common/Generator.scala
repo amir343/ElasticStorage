@@ -16,7 +16,7 @@
 package cloud.common
 
 import se.sics.kompics.PortType
-import cloud.requestengine.{DownloadStarted, RequestGeneratorInit}
+import cloud.requestengine.{ DownloadStarted, RequestGeneratorInit }
 import cloud.elb.BlocksActivated
 import instance.common.Request
 

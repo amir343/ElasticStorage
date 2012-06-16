@@ -15,7 +15,7 @@
  */
 package instance.common
 
-import instance.os.{RestartSignal, SnapshotRequest, CPULoad}
+import instance.os.{ RestartSignal, SnapshotRequest, CPULoad }
 import se.sics.kompics.PortType
 
 /**

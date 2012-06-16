@@ -1,7 +1,7 @@
 package instance
 
-import akka.actor.{ActorRef, ActorLogging, Actor}
-import common.{Size, Block}
+import akka.actor.{ ActorRef, ActorLogging, Actor }
+import common.{ Size, Block }
 import protocol._
 import cloud.common.NodeConfiguration
 import protocol.MemoryInit
@@ -32,48 +32,48 @@ import scala.collection.JavaConversions._
  */
 class MemoryActor extends Actor with ActorLogging {
 
-  private var instance:ActorRef = _
-  private val blocks:mutable.ConcurrentMap[String, Block] = new ConcurrentHashMap[String, Block]()
+  private var instance: ActorRef = _
+  private val blocks: mutable.ConcurrentMap[String, Block] = new ConcurrentHashMap[String, Block]()
   private var capacity: Long = 16000000000L
   private var currentSize: Long = 0
   private var enabled: Boolean = false
 
   def receive = {
-    case MemoryInit(nodeConfig)               => initialize(nodeConfig)
-    case RestartSignal()                      => restart()
-    case RequestBlock(process)                => requestBlock(process)
-    case WriteBlockIntoMemory(block)          => writeBlockIntoMemory(block)
-    case MemoryStart()                        => startMemory()
+    case MemoryInit(nodeConfig)      ⇒ initialize(nodeConfig)
+    case RestartSignal()             ⇒ restart()
+    case RequestBlock(process)       ⇒ requestBlock(process)
+    case WriteBlockIntoMemory(block) ⇒ writeBlockIntoMemory(block)
+    case MemoryStart()               ⇒ startMemory()
   }
 
-  private def initialize(nodeConfig:NodeConfiguration) {
+  private def initialize(nodeConfig: NodeConfiguration) {
     enabled = true
     instance = sender
-    capacity = nodeConfig.getMemory()*Size.GB.getSize
+    capacity = nodeConfig.getMemory() * Size.GB.getSize
     instance ! MemoryInfoLabel(Size.getSizeString(capacity))
     instance ! MemoryLog(initLog)
     instance ! MemoryReady()
     log.debug("Memory is initialized.")
   }
 
-  private def requestBlock(process:Process) {
+  private def requestBlock(process: Process) {
     if (enabled) {
-      log.debug("Received request for data block %s" .format(process.getRequest.getBlockId))
+      log.debug("Received request for data block %s".format(process.getRequest.getBlockId))
       blocks.get(process.getRequest.getBlockId) match {
-        case Some(block)   =>
-                              process.setBlockSize(block.getSize)
-                              instance ! AckBlock(process)
+        case Some(block) ⇒
+          process.setBlockSize(block.getSize)
+          instance ! AckBlock(process)
 
-        case None          => instance ! NackBlock(process)
+        case None ⇒ instance ! NackBlock(process)
       }
     }
   }
 
-  private def writeBlockIntoMemory(block:Block) {
+  private def writeBlockIntoMemory(block: Block) {
     if (enabled) {
       blocks.get(block.getName) match {
-        case Some(blk)     => log.debug("Block %s is now in memory".format(blk.getName))
-        case None          => loadIntoMemory(block)
+        case Some(blk) ⇒ log.debug("Block %s is now in memory".format(blk.getName))
+        case None      ⇒ loadIntoMemory(block)
       }
     }
   }
@@ -81,26 +81,26 @@ class MemoryActor extends Actor with ActorLogging {
   /**
    * Implements LFU (Least Frequently Used) algorithm
    */
-  private def loadIntoMemory(block:Block) {
+  private def loadIntoMemory(block: Block) {
     (currentSize + block.getSize > capacity) match {
-      case true  =>
-                   val sorted = blocks.values.toList.sortWith( compareBlocks )
-                   var accumulatedSize = 0L
-                   val removableBlocks = sorted.takeWhile { b =>
-                    accumulatedSize += b.getSize
-                    accumulatedSize < block.getSize
-                   }
-                   removableBlocks.foreach( b => blocks.remove(b.getName))
-                   currentSize -= removableBlocks.map(_.getSize).sum
+      case true ⇒
+        val sorted = blocks.values.toList.sortWith(compareBlocks)
+        var accumulatedSize = 0L
+        val removableBlocks = sorted.takeWhile { b ⇒
+          accumulatedSize += b.getSize
+          accumulatedSize < block.getSize
+        }
+        removableBlocks.foreach(b ⇒ blocks.remove(b.getName))
+        currentSize -= removableBlocks.map(_.getSize).sum
     }
-    block accessed()
+    block accessed ()
     block.setTimeEnteredInMemory(System.currentTimeMillis())
     blocks.put(block.getName, block)
     currentSize += block.getSize
   }
 
-  private def compareBlocks(a:Block, b:Block):Boolean = {
-    if (a.getNrOfAccessedTimes == b.getNrOfAccessedTimes )
+  private def compareBlocks(a: Block, b: Block): Boolean = {
+    if (a.getNrOfAccessedTimes == b.getNrOfAccessedTimes)
       a.getTimeEnteredInMemory.compare(b.getTimeEnteredInMemory) < 0
     else
       a.getNrOfAccessedTimes.compare(b.getNrOfAccessedTimes) < 0
@@ -121,7 +121,7 @@ class MemoryActor extends Actor with ActorLogging {
     val sb = new StringBuilder
     sb.append(" Initializing HighMem for node 0 (00000000:00000000)\n")
       .append(" Memory: %s available (2759k kernel code, 13900k reserved, 1287k data, 408k init, 0k highmem)\n".format(Size.getSizeString(capacity)))
- 		  .append(" virtual kernel memory layout:\n")
+      .append(" virtual kernel memory layout:\n")
       .append("     fixmap  : 0xf5716000 - 0xf57ff000   ( 932 kB)\n")
       .append("     pkmap   : 0xf5400000 - 0xf5600000   (2048 kB)\n")
       .append("     vmalloc : 0xe6f00000 - 0xf53fe000   ( 228 MB)\n")

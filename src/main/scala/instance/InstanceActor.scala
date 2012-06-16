@@ -40,35 +40,35 @@ class InstanceActor extends Actor with ActorLogging {
   val gui = InstanceGUI.getInstance()
   gui.setInstanceReference(this)
 
-  def receive = genericHandler   orElse
-                cpuHandler       orElse
-                diskHandler      orElse
-                memoryHandler
+  def receive = genericHandler orElse
+    cpuHandler orElse
+    diskHandler orElse
+    memoryHandler
 
-  def genericHandler:Receive = {
-    case InstanceStart(nodeConfig)                         => initialize(nodeConfig)
+  def genericHandler: Receive = {
+    case InstanceStart(nodeConfig) ⇒ initialize(nodeConfig)
   }
 
-  def cpuHandler:Receive = {
-    case CPUReady()                                        => log.info("CPU is ready")
-    case CPULog(msg)                                       => gui.log(msg)
-    case UpdateCPUInfoLabel(label)                         => gui.updateCPUInfoLabel(label)
-    case CPULoadDiagram(chart)                             => gui.createCPULoadDiagram(chart)
-    case CPULoad(load)                                     => gui.cpuLoad(load)
+  def cpuHandler: Receive = {
+    case CPUReady()                ⇒ log.info("CPU is ready")
+    case CPULog(msg)               ⇒ gui.log(msg)
+    case UpdateCPUInfoLabel(label) ⇒ gui.updateCPUInfoLabel(label)
+    case CPULoadDiagram(chart)     ⇒ gui.createCPULoadDiagram(chart)
+    case CPULoad(load)             ⇒ gui.cpuLoad(load)
   }
 
-  def diskHandler:Receive = {
-    case DiskReady()                                       => log.info("Disk is ready")
-    case BlockResponse(block, process)                     => //TODO
+  def diskHandler: Receive = {
+    case DiskReady()                   ⇒ log.info("Disk is ready")
+    case BlockResponse(block, process) ⇒ //TODO
   }
 
-  def memoryHandler:Receive = {
-    case MemoryInfoLabel(label)                            => gui.updateMemoryInfoLabel(label)
-    case MemoryReady()                                     => log.info("Memory is ready")
-    case MemoryLog(msg)                                    => gui.log(msg)
+  def memoryHandler: Receive = {
+    case MemoryInfoLabel(label) ⇒ gui.updateMemoryInfoLabel(label)
+    case MemoryReady()          ⇒ log.info("Memory is ready")
+    case MemoryLog(msg)         ⇒ gui.log(msg)
   }
 
-  private def initialize(nodeConfig:NodeConfiguration) {
+  private def initialize(nodeConfig: NodeConfiguration) {
     cpu ! CPUInit(nodeConfig)
     disk ! DiskInit(nodeConfig)
     memory ! MemoryInit(nodeConfig)
@@ -82,7 +82,7 @@ class InstanceActor extends Actor with ActorLogging {
 }
 
 object InstanceActorApp {
-  def main(args:Array[String]) {
+  def main(args: Array[String]) {
     val ins = ActorSystem("testsystem").actorOf(Props[InstanceActor], "instance")
     val nodeConfig = new NodeConfiguration(2000.0, 50000.0, 1000, 20)
     ins ! InstanceStart(nodeConfig)

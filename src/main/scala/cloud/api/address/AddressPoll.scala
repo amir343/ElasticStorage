@@ -15,7 +15,7 @@
  */
 package cloud.api.address
 
-import java.util.{List => JList}
+import java.util.{ List ⇒ JList }
 import reflect.BeanProperty
 
 /**

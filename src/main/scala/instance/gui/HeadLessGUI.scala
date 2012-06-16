@@ -16,7 +16,7 @@
 package instance.gui
 
 import java.io.File
-import instance.os.{OS, InstanceSnapshot}
+import instance.os.{ OS, InstanceSnapshot }
 import org.jfree.chart.JFreeChart
 import java.util.List
 import instance.common.Block

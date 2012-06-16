@@ -25,13 +25,13 @@ import instance.common.Size
 class CpuConfiguration(cpuSpeed: Double) extends Serializable {
 
   val cost: CPUCost = cpuSpeed match {
-    case m if cpuSpeed < 1.8 => CPUCost.MICRO
-    case m if (cpuSpeed >= 1.8 && cpuSpeed < 2.0) => CPUCost.XSMALL
-    case m if (cpuSpeed >= 2.0 && cpuSpeed < 2.4) => CPUCost.SMALL
-    case m if (cpuSpeed >= 2.4 && cpuSpeed < 2.8) => CPUCost.LARGE
-    case m if (cpuSpeed >= 2.8 && cpuSpeed < 3.2) => CPUCost.XLARGE
-    case m if (cpuSpeed >= 3.2 && cpuSpeed < 3.8) => CPUCost.XXLARGE
-    case _ => CPUCost.XXXLARGE
+    case m if cpuSpeed < 1.8                      ⇒ CPUCost.MICRO
+    case m if (cpuSpeed >= 1.8 && cpuSpeed < 2.0) ⇒ CPUCost.XSMALL
+    case m if (cpuSpeed >= 2.0 && cpuSpeed < 2.4) ⇒ CPUCost.SMALL
+    case m if (cpuSpeed >= 2.4 && cpuSpeed < 2.8) ⇒ CPUCost.LARGE
+    case m if (cpuSpeed >= 2.8 && cpuSpeed < 3.2) ⇒ CPUCost.XLARGE
+    case m if (cpuSpeed >= 3.2 && cpuSpeed < 3.8) ⇒ CPUCost.XXLARGE
+    case _                                        ⇒ CPUCost.XXXLARGE
   }
 
   def getCost: CPUCost = cost

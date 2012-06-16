@@ -15,7 +15,7 @@
  */
 package cloud.requestengine
 
-import se.sics.kompics.timer.{ScheduleTimeout, Timeout}
+import se.sics.kompics.timer.{ ScheduleTimeout, Timeout }
 
 /**
  * @author Amir Moulavi

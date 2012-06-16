@@ -16,7 +16,7 @@
 package instance.os
 
 import scala.reflect.BeanProperty
-import java.util.{Calendar, Date => JDate}
+import java.util.{ Calendar, Date ⇒ JDate }
 
 /**
  * @author Amir Moulavi

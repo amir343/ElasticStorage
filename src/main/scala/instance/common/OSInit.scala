@@ -20,7 +20,7 @@ import cloud.api.InstanceConfiguration
 import se.sics.kompics.address.Address
 import instance.Node
 import cloud.common.NodeConfiguration
-import java.util.{List => JList}
+import java.util.{ List ⇒ JList }
 
 /**
  * @author Amir Moulavi
