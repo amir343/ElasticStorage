@@ -20,6 +20,8 @@ import instance.os.{ OS, InstanceSnapshot }
 import org.jfree.chart.JFreeChart
 import java.util.List
 import instance.common.Block
+import instance.InstanceActor
+import common.{ AbstractGUI, GUI }
 
 /**
  * @author Amir Moulavi
@@ -27,7 +29,7 @@ import instance.common.Block
  *       This implementation will be used when the headless for instance is requested
  *
  */
-class HeadLessGUI extends GenericInstanceGUI {
+class HeadLessGUI extends GenericInstanceGUI with GUI {
 
   def cpuLoad(load: Double) {}
 
@@ -78,4 +80,18 @@ class HeadLessGUI extends GenericInstanceGUI {
   def updateRequestQueue(n: Int) {}
 
   def updateSimultaneousDownloads(info: String) {}
+
+  def setInstanceReference(actor: InstanceActor) {}
+
+  def getGUIComponent: AbstractGUI = null
+
+  def log(text: String) {}
+
+  def saveLogFileTo(selectedDir: File) {}
+
+  def saveSelectedSnapshotTo(selectedFile: File) {}
+
+  def lockLogText() {}
+
+  def unlockLogText() {}
 }

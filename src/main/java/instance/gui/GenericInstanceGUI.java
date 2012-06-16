@@ -15,6 +15,7 @@
  */
 package instance.gui;
 
+import instance.InstanceActor;
 import instance.common.Block;
 import instance.os.InstanceSnapshot;
 import instance.os.OS;
@@ -55,4 +56,5 @@ public interface GenericInstanceGUI {
     void updateTitle(String title);
     void updateCurrentTransfers(int size);
     void updateRequestQueue(int n);
+    void setInstanceReference(InstanceActor actor);
 }

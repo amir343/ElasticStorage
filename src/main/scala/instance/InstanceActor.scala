@@ -1,8 +1,11 @@
 package instance
 
+import _root_.common.GUI
 import akka.actor._
-import gui.InstanceGUI
+import common.{ Request, Block, Size }
+import gui.{ HeadLessGUI, GenericInstanceGUI, InstanceGUI }
 import cloud.common.NodeConfiguration
+import os.{ CostService, Kernel }
 import protocol._
 import akka.util.duration._
 import protocol.CPUInit
@@ -12,6 +15,11 @@ import protocol.UpdateCPUInfoLabel
 import protocol.InstanceStart
 import protocol.CPUReady
 import protocol.CPULog
+import org.jfree.data.xy.{ XYSeries, XYSeriesCollection }
+import collection.mutable
+import java.util.concurrent.{ ConcurrentLinkedQueue, ConcurrentHashMap }
+import java.util.UUID
+import scala.collection.JavaConversions._
 
 /**
  * Copyright 2012 Amir Moulavi (amir.moulavi@gmail.com)
@@ -33,20 +41,55 @@ import protocol.CPULog
 class InstanceActor extends Actor with ActorLogging {
 
   // Components
-  val cpu = context.actorOf(Props[CPUActor])
-  val disk = context.actorOf(Props[DiskActor])
-  val memory = context.actorOf(Props[MemoryActor])
+  private val cpu = context.actorOf(Props[CPUActor])
+  private val disk = context.actorOf(Props[DiskActor])
+  private val memory = context.actorOf(Props[MemoryActor])
+  private val kernel = context.actorOf(Props[KernelActor])
 
-  val gui = InstanceGUI.getInstance()
-  gui.setInstanceReference(this)
+  // TODO: should be filled with correct actor by referencing the path ../cloudProvider
+  private var cloudProvider: ActorRef = _
+
+  private var uname_r = "2.2-2"
+  private val numberOfDevices = 3
+  private var numberOfDevicesLoaded = 0
+  private var BANDWIDTH: Long = 2 * Size.MB.getSize
+  private val WAIT: Long = 1000
+  private val REQUEST_QUEUE_PROCESSING_INTERVAL: Long = 1000
+  private val CPU_LOAD_PROPAGATION_INTERVAL: Long = 5000
+  val RESTART_PERIOD: Long = 60000
+  private val COST_CALCULATION_INTERVAL: Long = 10000
+  private var simultaneousDownloads: Int = 70
+  private var pt: mutable.ConcurrentMap[String, Process] = new ConcurrentHashMap[String, Process]
+  private var currentTransfers: mutable.ConcurrentMap[UUID, String] = new ConcurrentHashMap[UUID, String]
+  private val requestQueue = new ConcurrentLinkedQueue[Request]
+  private var costService: CostService = new CostService
+  protected var gui: GenericInstanceGUI with GUI = null
+  protected var _nodeConfiguration: NodeConfiguration = null
+  protected var currentCpuLoad: Double = .0
+  private var dataSet: XYSeriesCollection = new XYSeriesCollection
+  private var xySeries: XYSeries = new XYSeries("Load")
+  private var startTime: Long = System.currentTimeMillis
+  private var lastSnapshotID: Int = 1
+  private var currentBandwidth: Long = BANDWIDTH
+  private var blocks = List.empty[Block]
+  private var enabled = true
+  private var megaBytesDownloadedSoFar = 0
+  private var totalCost = 0.0
+  private var headless = false
+  private var dataBlocks = mutable.Map.empty[String, Address]
 
   def receive = genericHandler orElse
+    kernelHandler orElse
     cpuHandler orElse
     diskHandler orElse
     memoryHandler
 
   def genericHandler: Receive = {
     case InstanceStart(nodeConfig) ⇒ initialize(nodeConfig)
+  }
+
+  def kernelHandler: Receive = {
+    case KernelLog(msg) ⇒ gui.log(msg)
   }
 
   def cpuHandler: Receive = {
@@ -69,9 +112,11 @@ class InstanceActor extends Actor with ActorLogging {
   }
 
   private def initialize(nodeConfig: NodeConfiguration) {
+    retrieveInitParameters(nodeConfig)
     cpu ! CPUInit(nodeConfig)
     disk ! DiskInit(nodeConfig)
     memory ! MemoryInit(nodeConfig)
+    loadKernel()
   }
 
   def stopActor() {
@@ -79,12 +124,31 @@ class InstanceActor extends Actor with ActorLogging {
     context.system.stop(self)
   }
 
+  private def retrieveInitParameters(nodeConfig: NodeConfiguration) {
+    _nodeConfiguration = nodeConfig
+    BANDWIDTH = nodeConfig.getBandwidthConfiguration.getBandwidthMegaBytePerSecond
+    simultaneousDownloads = nodeConfig.getSimultaneousDownloads()
+    headless = nodeConfig.getHeadLess
+    headless match {
+      case true  ⇒ gui = new HeadLessGUI()
+      case false ⇒ gui = InstanceGUI.getInstance()
+    }
+    log.info("NodeConfigurations:\n%s".format(nodeConfig.toString()))
+    gui.updateSimultaneousDownloads(String.valueOf(simultaneousDownloads))
+    gui.setInstanceReference(this)
+  }
+
+  private def loadKernel() {
+    kernel ! KernelInit(_nodeConfiguration.getCpuConfiguration().getCpuSpeedInstructionPerSecond)
+  }
+
 }
 
 object InstanceActorApp {
   def main(args: Array[String]) {
     val ins = ActorSystem("testsystem").actorOf(Props[InstanceActor], "instance")
-    val nodeConfig = new NodeConfiguration(2000.0, 50000.0, 1000, 20)
+    val nodeConfig = new NodeConfiguration(2.0, 50000.0, 1000, 20)
+    nodeConfig.setHeadLess(false)
     ins ! InstanceStart(nodeConfig)
   }
 }

@@ -62,3 +62,7 @@ case class AckBlock(process: Process) extends InstanceMessages
 case class NackBlock(process: Process) extends InstanceMessages
 case class WriteBlockIntoMemory(block: Block) extends InstanceMessages
 case class MemoryStart() extends InstanceMessages
+
+// Kernel
+case class KernelInit(cpuSpeed: Long) extends InstanceMessages
+case class KernelLog(msg: String) extends InstanceMessages
