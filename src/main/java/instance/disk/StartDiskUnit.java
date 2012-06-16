@@ -23,7 +23,7 @@ import se.sics.kompics.Event;
  * @date 2011-04-15
  *
  */
-
+@Deprecated
 public class StartDiskUnit extends Event {
 
 }

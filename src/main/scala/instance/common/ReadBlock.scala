@@ -24,6 +24,7 @@ import reflect.BeanProperty
  * @date 2011-07-16
  *
  */
+@Deprecated
 class ReadBlock(id: String) extends Event {
 
   @BeanProperty var process: Process = _

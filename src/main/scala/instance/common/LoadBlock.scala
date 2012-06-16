@@ -23,6 +23,7 @@ import java.util.{List => JList}
  * @date 2011-07-16
  *
  */
+@Deprecated
 class LoadBlock(blocks: JList[Block]) extends Event {
   def getBlocks = blocks
 }

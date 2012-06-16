@@ -3,6 +3,8 @@ package instance
 import akka.actor._
 import gui.InstanceGUI
 import cloud.common.NodeConfiguration
+import protocol._
+import akka.util.duration._
 import protocol.CPUInit
 import protocol.CPULoadDiagram
 import protocol.CPULoad
@@ -10,7 +12,6 @@ import protocol.UpdateCPUInfoLabel
 import protocol.InstanceStart
 import protocol.CPUReady
 import protocol.CPULog
-import akka.util.duration._
 
 /**
  * Copyright 2012 Amir Moulavi (amir.moulavi@gmail.com)
@@ -31,29 +32,42 @@ import akka.util.duration._
  */
 class InstanceActor extends Actor with ActorLogging {
 
+  // Children
   val cpu = context.actorOf(Props[CPUActor])
+  val disk = context.actorOf(Props[DiskActor])
+
   val gui = InstanceGUI.getInstance()
   gui.setInstanceReference(this)
 
-  def receive = {
+  def receive = genericHandler   orElse
+                cpuHandler       orElse
+                diskHandler
+
+  def genericHandler:Receive = {
     case InstanceStart(nodeConfig)                         => initialize(nodeConfig)
-    case CPUReady()                                        => println("CPU is ready")
+  }
+
+  def cpuHandler:Receive = {
+    case CPUReady()                                        => log.info("CPU is ready")
     case CPULog(msg)                                       => gui.log(msg)
     case UpdateCPUInfoLabel(label)                         => gui.updateCPUInfoLabel(label)
     case CPULoadDiagram(chart)                             => gui.createCPULoadDiagram(chart)
     case CPULoad(load)                                     => gui.cpuLoad(load)
   }
 
+  def diskHandler:Receive = {
+    case DiskReady()                                       => log.info("Disk is ready")
+    case BlockResponse(block, process)                     => //TODO
+  }
+
   private def initialize(nodeConfig:NodeConfiguration) {
     cpu ! CPUInit(nodeConfig)
-   }
+    disk ! DiskInit(nodeConfig)
+  }
 
   def stopActor() {
     log.info("Getting ready to die!")
     self ! PoisonPill
-    context.stop(cpu)
-    context.system.stop(self)
-    context.system.shutdown()
   }
 
 }

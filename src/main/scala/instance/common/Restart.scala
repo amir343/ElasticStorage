@@ -21,4 +21,5 @@ import se.sics.kompics.timer.{ScheduleTimeout, Timeout}
  * @author Amir Moulavi
  *
  */
+@Deprecated
 class Restart(request: ScheduleTimeout) extends Timeout(request)

@@ -2,7 +2,7 @@ package protocol
 
 import cloud.common.NodeConfiguration
 import instance.os.Process
-import instance.common.{ AbstractOperation => AOperation }
+import instance.common.{AbstractOperation => AOperation, Block}
 import org.jfree.chart.JFreeChart
 
 
@@ -29,6 +29,7 @@ trait Messages
 trait InstanceMessages extends Messages
 // Instance Messages
 case class InstanceStart(nodeConfiguration:NodeConfiguration) extends InstanceMessages
+case class RestartSignal() extends InstanceMessages
 
 // CPU Messages
 case class CPUInit(nodeConfiguration:NodeConfiguration) extends InstanceMessages
@@ -37,7 +38,6 @@ case class CPUReady() extends InstanceMessages
 case class LoadSamplerTimeout() extends InstanceMessages
 case class LoadCalculationTimeout() extends InstanceMessages
 case class CPULoad(load:Double) extends InstanceMessages
-case class RestartSignal() extends InstanceMessages
 case class Restart() extends InstanceMessages
 case class StartProcess(process:Process) extends InstanceMessages
 case class EndProcess(process:Process) extends InstanceMessages
@@ -46,3 +46,10 @@ case class OperationFinishedTimeout(pid:String) extends InstanceMessages
 case class SnapshotRequest(chart:JFreeChart = null) extends InstanceMessages
 case class UpdateCPUInfoLabel(label:String) extends InstanceMessages
 case class CPULoadDiagram(chart:JFreeChart) extends InstanceMessages
+
+// Disk Messages
+case class DiskInit(nodeConfig:NodeConfiguration) extends InstanceMessages
+case class DiskReady() extends InstanceMessages
+case class LoadBlock(blocks:List[Block]) extends InstanceMessages
+case class ReadBlock(id:String, process:Process) extends InstanceMessages
+case class BlockResponse(block:Block, process:Process) extends InstanceMessages

@@ -23,6 +23,7 @@ import cloud.common.NodeConfiguration
  * @dater 2011-07-16
  *
  */
+@Deprecated
 class DiskInit(nodeConfiguration: NodeConfiguration) extends Init {
 
   def getNodeConfiguration = nodeConfiguration

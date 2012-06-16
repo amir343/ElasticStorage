@@ -24,6 +24,7 @@ import reflect.BeanProperty
  * @date 2011-07-16
  *
  */
+@Deprecated
 class BlockResponse(block: Block) extends Event {
 
   @BeanProperty var process: Process = _
