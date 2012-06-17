@@ -37,6 +37,8 @@ import org.jfree.chart.plot.PlotOrientation
  */
 class CPUActor extends Actor with ActorLogging {
 
+  private val scheduler = context.actorFor("../../scheduler")
+
   private var CPU_CLOCK: Long = 2000000000L
   private val LOAD_CALC_INTERVAL: Long = 5000
   private val SAMPLER_INTERVAL: Long = 500
@@ -75,8 +77,8 @@ class CPUActor extends Actor with ActorLogging {
     dataSet.addSeries(xySeries)
     printCPULog()
     sendReadySignal()
-    context.system.scheduler.schedule(1000 milliseconds, SAMPLER_INTERVAL milliseconds, self, LoadSamplerTimeout())
-    context.system.scheduler.schedule(LOAD_CALC_INTERVAL milliseconds, LOAD_CALC_INTERVAL milliseconds, self, LoadCalculationTimeout())
+    scheduler ! Schedule(1000L, self, LoadSamplerTimeout())
+    scheduler ! Schedule(LOAD_CALC_INTERVAL, self, LoadCalculationTimeout())
     log.debug("CPU is initialized")
     instance ! CPULoadDiagram(getChart)
   }
@@ -100,7 +102,7 @@ class CPUActor extends Actor with ActorLogging {
       loads.clear()
       tasks.set(0)
       instance ! CPULoadDiagram(getChart)
-      context.system.scheduler.scheduleOnce(1000 milliseconds, self, Restart())
+      scheduler ! Schedule(1000L, self, Restart())
     }
   }
 
@@ -123,6 +125,7 @@ class CPUActor extends Actor with ActorLogging {
       xySeries.add((System.currentTimeMillis() - startTime), load)
       instance ! CPULoadDiagram(getChart)
     }
+    scheduler ! Schedule(LOAD_CALC_INTERVAL, self, LoadCalculationTimeout())
   }
 
   private def endProcess(process: Process) {
@@ -138,7 +141,7 @@ class CPUActor extends Actor with ActorLogging {
       for (i ← 1 until operation.getNumberOfOperations()) {
         val p = Process.createAbstractProcess()
         pt.put(p.getPid, p)
-        context.system.scheduler.scheduleOnce(operation.getDuration(CPU_CLOCK) milliseconds, self, OperationFinishedTimeout(p.getPid))
+        scheduler ! Schedule(operation.getDuration(CPU_CLOCK), self, OperationFinishedTimeout(p.getPid))
       }
     }
   }
@@ -168,6 +171,7 @@ class CPUActor extends Actor with ActorLogging {
     if (enabled) {
       loads += pt.size()
     }
+    scheduler ! Schedule(SAMPLER_INTERVAL, self, LoadSamplerTimeout())
   }
 
   private def getChart: JFreeChart = ChartFactory.createXYLineChart("CPU Load", "Time (ms)", "Cpu Load", dataSet, PlotOrientation.VERTICAL, true, true, false)

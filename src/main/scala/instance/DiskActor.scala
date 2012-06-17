@@ -28,6 +28,8 @@ import instance.os.Process
  */
 class DiskActor extends Actor with ActorLogging {
 
+  private val scheduler = context.actorFor("../../scheduler")
+
   private var diskReady: Boolean = false
   private var _blocks = List.empty[Block]
   private var enabled: Boolean = false

@@ -8,16 +8,9 @@ import cloud.common.NodeConfiguration
 import os.{ CostService, Kernel }
 import protocol._
 import akka.util.duration._
-import protocol.CPUInit
-import protocol.CPULoadDiagram
-import protocol.CPULoad
-import protocol.UpdateCPUInfoLabel
-import protocol.InstanceStart
-import protocol.CPUReady
-import protocol.CPULog
 import org.jfree.data.xy.{ XYSeries, XYSeriesCollection }
 import collection.mutable
-import java.util.concurrent.{ ConcurrentLinkedQueue, ConcurrentHashMap }
+import java.util.concurrent.ConcurrentHashMap
 import java.util.UUID
 import scala.collection.JavaConversions._
 import protocol.DiskReady
@@ -42,6 +35,7 @@ import protocol.AbstractOperation
 import protocol.KernelInit
 import protocol.CPUReady
 import protocol.CPULog
+import scheduler.SchedulerActor
 
 /**
  * Copyright 2012 Amir Moulavi (amir.moulavi@gmail.com)
@@ -68,6 +62,8 @@ class InstanceActor extends Actor with ActorLogging {
   private val memory = context.actorOf(Props[MemoryActor])
   private val kernel = context.actorOf(Props[KernelActor])
 
+  private val scheduler = context.actorFor("../scheduler")
+
   // TODO: should be filled with correct actor by referencing the path ../cloudProvider
   private var cloudProvider: ActorRef = _
 
@@ -82,9 +78,9 @@ class InstanceActor extends Actor with ActorLogging {
   private val COST_CALCULATION_INTERVAL: Long = 10000
   private var simultaneousDownloads: Int = 70
   private var pt: mutable.ConcurrentMap[String, Process] = new ConcurrentHashMap[String, Process]
-  private var currentTransfers: mutable.ConcurrentMap[UUID, String] = new ConcurrentHashMap[UUID, String]
-  private val requestQueue = new ConcurrentLinkedQueue[Request]
-  private var costService: CostService = new CostService
+  private val currentTransfers: mutable.ConcurrentMap[UUID, String] = new ConcurrentHashMap[UUID, String]
+  private val requestQueue = mutable.Queue.empty[Request]
+  private val costService: CostService = new CostService
   protected var gui: GenericInstanceGUI with GUI = null
   protected var _nodeConfiguration: NodeConfiguration = null
   protected var currentCpuLoad: Double = .0
@@ -207,7 +203,7 @@ class InstanceActor extends Actor with ActorLogging {
   }
 
   private def waitForSystemStartUp() {
-    context.system.scheduler.scheduleOnce(WAIT milliseconds, self, WaitTimeout())
+    scheduler ! Schedule(WAIT, self, WaitTimeout())
   }
 
   private def handleWaitTimeout() {
@@ -215,7 +211,7 @@ class InstanceActor extends Actor with ActorLogging {
       case true ⇒ waitForSystemStartUp()
       case false ⇒
         //TODO
-        context.system.scheduler.scheduleOnce(REQUEST_QUEUE_PROCESSING_INTERVAL milliseconds, self, ProcessRequestQueue())
+        scheduler ! Schedule(REQUEST_QUEUE_PROCESSING_INTERVAL, self, ProcessRequestQueue())
       /*
         TODO
  				scheduleCPULoadPropagationToCloudProvider()
@@ -229,29 +225,24 @@ class InstanceActor extends Actor with ActorLogging {
   }
 
   def processRequestQueue() {
-    //TODO:Refactor this bloddy shit!
     if (instanceRunning) {
       val freeSlot = simultaneousDownloads - currentTransfers.size()
       cpu ! AbstractOperation(new MemoryCheckOperation)
-      var i: Int = 0
-      for (i ← 0 to freeSlot) {
-        if (!requestQueue.isEmpty) {
-          val req = requestQueue.remove()
-          cpu ! AbstractOperation(new MemoryCheckOperation())
-          cpu ! AbstractOperation(new MemoryReadOperation(8))
-          startProcessForRequest(req)
-        }
+      val taken = requestQueue.take(freeSlot)
+      val diff = requestQueue diff taken
+      requestQueue.clear()
+      requestQueue ++= diff
+      taken.foreach { req ⇒
+        cpu ! AbstractOperation(new MemoryCheckOperation())
+        cpu ! AbstractOperation(new MemoryReadOperation(8))
+        startProcessForRequest(req)
       }
       gui.updateRequestQueue(requestQueue.size())
       requestQueue.synchronized {
-        for (j ← i to requestQueue.size()) {
-          val req = requestQueue.remove()
-          if (req != null)
-            cloudProvider ! Rejected(req)
-        }
+        requestQueue.dequeueAll(r ⇒ true).filter(_ != null).foreach(cloudProvider ! Rejected(_))
       }
     }
-    context.system.scheduler.scheduleOnce(REQUEST_QUEUE_PROCESSING_INTERVAL milliseconds, self, ProcessRequestQueue())
+    scheduler ! Schedule(REQUEST_QUEUE_PROCESSING_INTERVAL, self, ProcessRequestQueue())
   }
 
   private def startProcessForRequest(req: Request) {
@@ -262,8 +253,10 @@ class InstanceActor extends Actor with ActorLogging {
 
 object InstanceActorApp {
   def main(args: Array[String]) {
-    val ins = ActorSystem("testsystem").actorOf(Props[InstanceActor], "instance")
-    val nodeConfig = new NodeConfiguration(2.0, 50000.0, 1000, 20)
+    val system = ActorSystem("testsystem")
+    val scheduler = system.actorOf(Props[SchedulerActor], "scheduler")
+    val ins = system.actorOf(Props[InstanceActor], "instance")
+    val nodeConfig = new NodeConfiguration(2.0, 5.0, 4, 20)
     nodeConfig.setHeadLess(false)
     ins ! InstanceStart(nodeConfig)
   }

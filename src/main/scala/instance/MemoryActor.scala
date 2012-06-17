@@ -32,6 +32,8 @@ import scala.collection.JavaConversions._
  */
 class MemoryActor extends Actor with ActorLogging {
 
+  private val scheduler = context.actorFor("../../scheduler")
+
   private var instance: ActorRef = _
   private val blocks: mutable.ConcurrentMap[String, Block] = new ConcurrentHashMap[String, Block]()
   private var capacity: Long = 16000000000L
