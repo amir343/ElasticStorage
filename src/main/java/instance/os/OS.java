@@ -816,10 +816,8 @@ public class OS extends ComponentDefinition {
 	}
 
 	private boolean instanceRunning() {
-		if ( numberOfDevices != numberOfDevicesLoaded ) 
-			return false;
-		return enabled;
-	}
+        return numberOfDevices == numberOfDevicesLoaded && enabled;
+    }
 
     public void restartInstance() {
         trigger(new RestartSignal(), cpu);

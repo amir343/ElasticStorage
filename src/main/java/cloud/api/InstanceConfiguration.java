@@ -57,9 +57,11 @@ public class InstanceConfiguration implements Serializable {
 		return nodeConfiguration;
 	}
 	
+/*
 	public List<Block> getBlocks() {
 		return nodeConfiguration.getBlocks();
 	}
+*/
 
     public Address getSelfAddress() {
 		Address self = null;

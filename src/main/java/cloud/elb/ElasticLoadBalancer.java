@@ -113,7 +113,10 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 			logger.debug("Preparing Replicas....");
 			List<Block> blocks = elbTable.prepareBlocksForNode(event.nodeConfiguration().getNode());
 			NodeConfiguration nodeConfiguration = event.nodeConfiguration();
+            //TODO:This should be fixed when migrated
+/*
 			nodeConfiguration.setBlocks(blocks);
+*/
 			trigger(new Replicas(nodeConfiguration), elb);
 			logger.debug(nodeConfiguration.getBlocks().size() + " Replicas created! ");
 		}

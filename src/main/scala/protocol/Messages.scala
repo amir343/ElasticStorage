@@ -2,7 +2,7 @@ package protocol
 
 import cloud.common.NodeConfiguration
 import instance.os.Process
-import instance.common.{ AbstractOperation ⇒ AOperation, Block }
+import instance.common.{ AbstractOperation ⇒ AOperation, Request, Block }
 import org.jfree.chart.JFreeChart
 
 /**
@@ -28,6 +28,12 @@ trait InstanceMessages extends Messages
 // Instance Messages
 case class InstanceStart(nodeConfiguration: NodeConfiguration) extends InstanceMessages
 case class RestartSignal() extends InstanceMessages
+case class BlocksAck() extends InstanceMessages
+case class RebalanceRequest(blockId: String) extends InstanceMessages
+case class InstanceStarted() extends InstanceMessages
+case class WaitTimeout() extends InstanceMessages
+case class ProcessRequestQueue() extends InstanceMessages
+case class Rejected(req: Request) extends InstanceMessages
 
 // CPU Messages
 case class CPUInit(nodeConfiguration: NodeConfiguration) extends InstanceMessages

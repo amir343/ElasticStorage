@@ -19,6 +19,8 @@ import instance.Node
 import se.sics.kompics.address.Address
 import instance.common.Block
 import reflect.BeanProperty
+import akka.actor.ActorRef
+import scala.collection.mutable
 
 /**
  * @author Amir Moulavi
@@ -42,9 +44,12 @@ class NodeConfiguration(cpuSpeed: Double,
   @BeanProperty
   var node: Node = null
   @BeanProperty
-  var blocks: java.util.List[Block] = null
+  var blocks = List.empty[Block]
+  @Deprecated
   @BeanProperty
   var dataBlocksMap: java.util.Map[String, Address] = null
+  @BeanProperty
+  var blocksMap = mutable.Map.empty[String, ActorRef]
   @BeanProperty
   var headLess: Boolean = false
 

@@ -27,9 +27,16 @@ import java.util.{ List ⇒ JList }
  * @date 2011-07-16
  *
  */
+@Deprecated
 class OSInit(instanceConfiguration: InstanceConfiguration) extends Init {
 
-  def getBlocks: JList[Block] = instanceConfiguration.getBlocks
+  def getBlocks: JList[Block] = {
+    /*
+    TODO
+    instanceConfiguration.getBlocks
+*/
+    null
+  }
 
   def getCloudProviderAddress: Address = instanceConfiguration.getCloudProviderAddress
 
