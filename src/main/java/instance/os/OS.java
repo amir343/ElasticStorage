@@ -157,6 +157,7 @@ public class OS extends ComponentDefinition {
         subscribe(closeMyStreamHandler, network);
 	}
 
+    // DONE
     Handler<OSInit> initHandler = new Handler<OSInit>() {
 		@Override
 		public void handle(OSInit event) {
@@ -169,6 +170,7 @@ public class OS extends ComponentDefinition {
 			gui.updateBandwidthInfoLabel(Size.getSizeString(BANDWIDTH));
 		}
 
+        // DONE
 		private void retrieveInitParameters(OSInit event) {
             nodeConfiguration = event.getNodeConfiguration();
 			BANDWIDTH = nodeConfiguration.getBandwidthConfiguration().getBandwidthMegaBytePerSecond();
@@ -218,6 +220,7 @@ public class OS extends ComponentDefinition {
 	/**
 	 * This event handler is triggered periodically to process request queue
 	 */
+    // DONE
 	Handler<ProcessRequestQueue> processRequestQueueHandler = new Handler<ProcessRequestQueue>() {
 		@Override
 		public void handle(ProcessRequestQueue event) {
@@ -277,6 +280,7 @@ public class OS extends ComponentDefinition {
 	 * Memory hit: this means the next operation is to transfer the block
 	 * from memory into the network according to the bandwidth we have
 	 */
+    // DONE
 	Handler<AckBlock> ackBlockHandler = new Handler<AckBlock>() {
 		@Override
 		public void handle(AckBlock event) {
@@ -621,6 +625,7 @@ public class OS extends ComponentDefinition {
 		gui.decorateSystemStarted();
 	}
 
+    // DONE
 	protected void scheduleCostCalculation() {
 		ScheduleTimeout st = new ScheduleTimeout(COST_CALCULATION_INTERVAL);
 		st.setTimeoutEvent(new CalculateCost(st));
@@ -635,6 +640,7 @@ public class OS extends ComponentDefinition {
 		return null;
 	}
 
+    // DONE
 	protected void scheduleCPULoadPropagationToCloudProvider() {
 		ScheduleTimeout st = new ScheduleTimeout(CPU_LOAD_PROPAGATION_INTERVAL);
 		st.setTimeoutEvent(new PropagateCPULoad(st));
@@ -648,6 +654,7 @@ public class OS extends ComponentDefinition {
 		trigger(st, timer);		
 	}
 
+    // DONE
 	protected void loadKernel() {
 		gui.updateTitle(node.getNodeName() + "@" + node.getIP() + ":" + node.getPort());
 		gui.decorateWhileSystemStartUp();
@@ -662,6 +669,7 @@ public class OS extends ComponentDefinition {
 		trigger(st, timer);		
 	}
 
+    // DONE
 	private void waitForSystemStartUp() {
 		ScheduleTimeout st = new ScheduleTimeout(WAIT);
 		st.setTimeoutEvent(new WaitTimeout(st));
@@ -679,6 +687,7 @@ public class OS extends ComponentDefinition {
 		trigger(st, timer);		
 	}
 
+    // DONE
 	private synchronized void scheduleTransferForBlock(Process process) {
 		if (currentTransfers.size() == 0) {
 			logger.debug("Transfer started " + process);
@@ -697,6 +706,7 @@ public class OS extends ComponentDefinition {
 		trigger(new DownloadStarted(self, cloudProvider, process.getRequest().getId()), network);
 	}
 
+    // DONE
 	private void rescheduleAllTimers(long newBandwidth, long now) {
 		logger.debug("Rescheduling all current downloads with bandwidth: " + newBandwidth + " B/s");
 		addToBandwidthDiagram(newBandwidth);	
@@ -725,7 +735,8 @@ public class OS extends ComponentDefinition {
 		currentTransfers.putAll(ct);
 	}
 
-	private void scheduleTimeoutFor(Process process, long bandwidth) {
+	// DONE
+    private void scheduleTimeoutFor(Process process, long bandwidth) {
 		trigger(new MemoryCheckOperation(), cpu);
 		long transferDelay = 1000 * process.getBlockSize() / bandwidth ;
 		ScheduleTimeout st = new ScheduleTimeout(1000 * process.getBlockSize() / bandwidth );
@@ -739,6 +750,7 @@ public class OS extends ComponentDefinition {
 		trigger(st, timer);
 	}
 
+    // DONE
 	private void cancelAllPreviousTimers() {
 		for (Entry<UUID, String> en : currentTransfers.entrySet()) {
 			trigger(new MemoryCheckOperation(), cpu);
@@ -747,6 +759,7 @@ public class OS extends ComponentDefinition {
 		}
 	}
 
+    // DONE
 	protected void startProcessForRequest(Request event) {
 		Process p = new Process(event);
 		startTransferProcessOnCPU(p);
@@ -756,12 +769,14 @@ public class OS extends ComponentDefinition {
         gui.updateCurrentTransfers(currentTransfers.size());
 	}
 
+    // DONE
 	private void checkMemory(Process p) {
 		RequestBlock rBlock = new RequestBlock(p);
 		trigger(rBlock, memory);
 		trigger(new MemoryCheckOperation(), cpu);
 	}
 
+    // DONE
 	private void addToProcessTable(Process p) {
 		pt.put(p.getPid(), p);		
 	}
@@ -770,6 +785,7 @@ public class OS extends ComponentDefinition {
 		pt.remove(pid);		
 	}
 
+    // DONE
 	private void startTransferProcessOnCPU(Process p) {
 		StartProcess process = new StartProcess(p);
 		trigger(process, cpu);		
@@ -780,6 +796,7 @@ public class OS extends ComponentDefinition {
 		trigger(process, cpu);		
 	}
 
+    // DONE
 	protected void loadBlocksToDisk(OSInit event) {
 		if (event.getBlocks() != null ) {
 			blocks = event.getBlocks();
@@ -798,7 +815,8 @@ public class OS extends ComponentDefinition {
 		}
 		trigger(new InstanceStarted(self, cloudProvider, node), network);
 	}
-	
+
+    // DONE
 	private void addToBandwidthDiagram(long bandWidth) {
 		xySeries.add(System.currentTimeMillis() - startTime, bandWidth);		
 	}

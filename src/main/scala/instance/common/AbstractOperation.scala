@@ -2,6 +2,8 @@ package instance.common
 
 import se.sics.kompics.Event
 
+//TODO: Event should be removed. This needs to be refactored after migration.
+
 abstract class AbstractOperation extends Event with Operation
 
 /**

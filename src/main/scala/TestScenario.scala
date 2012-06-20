@@ -29,7 +29,7 @@ import scenarios.manager.{ ControllerApplication, Cloud }
  */
 object TestScenario {
 
-  def main(args: Array[String]) {
+  def testMain(args: Array[String]) {
     val cloud: Cloud = new Cloud(classOf[CloudProvider], classOf[Instance]) {
       cloudProviderAddress("127.0.0.1", 23444)
       node("node1", "127.0.0.1", 23445).cpu(2.2).memoryGB(8).bandwidthMB(2)

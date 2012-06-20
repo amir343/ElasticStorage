@@ -1,8 +1,10 @@
 package scheduler
 
-import akka.actor.{ ActorRef, Actor }
+import akka.actor.{ ActorLogging, ActorRef, Actor }
 import akka.util.duration._
-import protocol.{ Message, Schedule }
+import protocol._
+import protocol.CancellableSchedule
+import protocol.Schedule
 
 /**
  * Copyright 2012 Amir Moulavi (amir.moulavi@gmail.com)
@@ -21,19 +23,32 @@ import protocol.{ Message, Schedule }
  *
  * @author Amir Moulavi
  */
-class SchedulerActor extends Actor {
+class SchedulerActor extends Actor with ActorLogging {
 
   val scheduler = context.system.scheduler
 
   val semiRealTimeSimulation = true
 
   def receive = {
-    case Schedule(delay, actor, message) ⇒ schedule(delay, actor, message)
+    case Schedule(delay, actor, message)                                ⇒ schedule(delay, actor, message)
+    case CancellableSchedule(delay, actor, message, cancellableMessage) ⇒ scheduleCancellable(delay, actor, message, cancellableMessage)
   }
 
   private def schedule(delay: Long, actor: ActorRef, message: Message) {
     semiRealTimeSimulation match {
       case true  ⇒ scheduler.scheduleOnce(delay milliseconds, actor, message)
+      case false ⇒ //Implementation of simulated time
+    }
+  }
+
+  private def scheduleCancellable(delay: Long, actor: ActorRef, message: Message, cancellableMessage: CancellableMessage) {
+    semiRealTimeSimulation match {
+      case true ⇒
+        val cancellable = scheduler.scheduleOnce(delay milliseconds, actor, message)
+        cancellableMessage match {
+          case CancelProcess(pid, _) ⇒ sender ! CancelProcess(pid, cancellable)
+          case z @ _                 ⇒ log.debug("Unrecognized cancellable message: %s".format(z))
+        }
       case false ⇒ //Implementation of simulated time
     }
   }

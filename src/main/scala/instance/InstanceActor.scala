@@ -5,7 +5,7 @@ import akka.actor._
 import common._
 import gui.{ HeadLessGUI, GenericInstanceGUI, InstanceGUI }
 import cloud.common.NodeConfiguration
-import os.{ CostService, Kernel }
+import os.{ InstanceCost, CostService, Kernel, Process }
 import protocol._
 import akka.util.duration._
 import org.jfree.data.xy.{ XYSeries, XYSeriesCollection }
@@ -36,6 +36,12 @@ import protocol.KernelInit
 import protocol.CPUReady
 import protocol.CPULog
 import scheduler.SchedulerActor
+import cloud.CloudProviderActor
+import org.jfree.chart.{ ChartFactory, JFreeChart }
+import org.jfree.chart.plot.{ XYPlot, PlotOrientation }
+import org.jfree.chart.renderer.xy.XYItemRenderer
+import java.awt.Color
+import java.text.DecimalFormat
 
 /**
  * Copyright 2012 Amir Moulavi (amir.moulavi@gmail.com)
@@ -63,9 +69,7 @@ class InstanceActor extends Actor with ActorLogging {
   private val kernel = context.actorOf(Props[KernelActor])
 
   private val scheduler = context.actorFor("../scheduler")
-
-  // TODO: should be filled with correct actor by referencing the path ../cloudProvider
-  private var cloudProvider: ActorRef = _
+  private val cloudProvider = context.actorFor("../cloudProvider")
 
   private var uname_r = "2.2-2"
   private val numberOfDevices = 3
@@ -78,7 +82,7 @@ class InstanceActor extends Actor with ActorLogging {
   private val COST_CALCULATION_INTERVAL: Long = 10000
   private var simultaneousDownloads: Int = 70
   private var pt: mutable.ConcurrentMap[String, Process] = new ConcurrentHashMap[String, Process]
-  private val currentTransfers: mutable.ConcurrentMap[UUID, String] = new ConcurrentHashMap[UUID, String]
+  private val currentTransfers: mutable.ConcurrentMap[String, Cancellable] = new ConcurrentHashMap[String, Cancellable]
   private val requestQueue = mutable.Queue.empty[Request]
   private val costService: CostService = new CostService
   protected var gui: GenericInstanceGUI with GUI = null
@@ -101,12 +105,15 @@ class InstanceActor extends Actor with ActorLogging {
     cpuHandler orElse
     diskHandler orElse
     memoryHandler orElse
+    cancellableHandler orElse
     uncategorizedHandler
 
   def genericHandler: Receive = {
     case InstanceStart(nodeConfig) ⇒ initialize(nodeConfig)
     case WaitTimeout()             ⇒ handleWaitTimeout()
     case ProcessRequestQueue()     ⇒ processRequestQueue()
+    case PropagateCPULoad()        ⇒ propagateCPULoad()
+    case CalculateCost()           ⇒ calculateCost()
   }
 
   def kernelHandler: Receive = {
@@ -127,13 +134,19 @@ class InstanceActor extends Actor with ActorLogging {
   }
 
   def memoryHandler: Receive = {
+    case AckBlock(process)      ⇒ handleAckBlock(process)
+    case NackBlock(process)     ⇒ //TODO
     case MemoryInfoLabel(label) ⇒ gui.updateMemoryInfoLabel(label)
     case MemoryReady()          ⇒ numberOfDevicesLoaded += 1
     case MemoryLog(msg)         ⇒ gui.log(msg)
   }
 
+  def cancellableHandler: Receive = {
+    case CancelProcess(pid, cancellable) ⇒ currentTransfers.put(pid, cancellable)
+  }
+
   def uncategorizedHandler: Receive = {
-    case z ⇒ log.warning("Unrecognized or unhandled message: %s".format(z))
+    case z @ _ ⇒ log.warning("Unrecognized or unhandled message: %s".format(z))
   }
 
   private def initialize(nodeConfig: NodeConfiguration) {
@@ -174,8 +187,7 @@ class InstanceActor extends Actor with ActorLogging {
       //TODO
       //logger.info("Starting with " + blocks.size() + " block(s) in hand");
       disk ! LoadBlock(blocks)
-      //TODO
-      //cloudProvider ! BlocksAck()
+      cloudProvider ! BlocksAck()
       gui.initializeDataBlocks(blocks)
     } else {
       //TODO
@@ -184,14 +196,12 @@ class InstanceActor extends Actor with ActorLogging {
       dataBlocks.keySet.foreach { b ⇒
         dataBlocks.get(b) match {
           case Some(actor) ⇒ actor ! RebalanceRequest(b)
-          case None        ⇒ //TODO:Should not happen!
+          case None        ⇒ //TODO:Should not happen!!
         }
       }
       addToBandwidthDiagram(BANDWIDTH)
     }
-    //TODO
-    //cloudProvider ! InstanceStarted()
-
+    cloudProvider ! InstanceStarted()
   }
 
   private def loadKernel() {
@@ -212,17 +222,32 @@ class InstanceActor extends Actor with ActorLogging {
       case false ⇒
         //TODO
         scheduler ! Schedule(REQUEST_QUEUE_PROCESSING_INTERVAL, self, ProcessRequestQueue())
-      /*
-        TODO
- 				scheduleCPULoadPropagationToCloudProvider()
- 				scheduleCostCalculation()
-*/
+        scheduleCPULoadPropagationToCloudProvider()
+        scheduleCostCalculation()
     }
   }
 
-  private def instanceRunning: Boolean = {
-    numberOfDevices == numberOfDevicesLoaded && enabled
+  private def scheduleCPULoadPropagationToCloudProvider() {
+    scheduler ! Schedule(CPU_LOAD_PROPAGATION_INTERVAL, self, PropagateCPULoad())
+    gui.createBandwidthDiagram(getBandwidthChart)
   }
+
+  private def scheduleCostCalculation() {
+    scheduler ! Schedule(COST_CALCULATION_INTERVAL, self, CalculateCost())
+  }
+
+  private def calculateCost() {
+    totalCost = costService.computeCostSoFar(megaBytesDownloadedSoFar)
+    val costToSend: Double = costService.computeCostInThisPeriod(megaBytesDownloadedSoFar)
+    val df: DecimalFormat = new DecimalFormat("##.####")
+    val totalCostString: String = df.format(totalCost)
+    val periodicCostString: String = df.format(costToSend)
+    gui.updateCurrentCost(totalCostString)
+    cloudProvider ! InstanceCost(totalCostString, periodicCostString)
+    scheduleCostCalculation()
+  }
+
+  private def instanceRunning: Boolean = numberOfDevices == numberOfDevicesLoaded && enabled
 
   def processRequestQueue() {
     if (instanceRunning) {
@@ -246,18 +271,112 @@ class InstanceActor extends Actor with ActorLogging {
   }
 
   private def startProcessForRequest(req: Request) {
-    //TODO
+    val process = new Process(req)
+    cpu ! StartProcess(process)
+    pt.put(process.getPid, process)
+    memory ! RequestBlock(process)
+    gui.increaseNrDownloadersFor(req.getBlockId)
+    gui.updateCurrentTransfers(currentTransfers.size())
   }
 
+  private def handleAckBlock(process: Process) {
+    if (instanceRunning) {
+      log.debug("Block %s exists in the memory".format(process.getRequest.getBlockId))
+      scheduleTransferForBlock(process)
+      cpu ! AbstractOperation(new MemoryReadOperation(process.getBlockSize))
+    }
+
+  }
+
+  private def scheduleTransferForBlock(process: Process) {
+    currentTransfers.size() match {
+      case 0 ⇒
+        //TODO
+        //logger.debug("Transfer started " + process)
+        scheduleTimeoutFor(process, BANDWIDTH)
+        addToBandwidthDiagram(BANDWIDTH)
+        currentBandwidth = BANDWIDTH
+      case _ ⇒
+        cpu ! AbstractOperation(new MemoryCheckOperation())
+        val newBandwidth = BANDWIDTH / (currentTransfers.size() + 1)
+        val now = System.currentTimeMillis()
+        cancelAllPreviousTimers()
+        rescheduleAllTimers(newBandwidth, now)
+        //TODO
+        //logger.debug("Transfer started " + process)
+        scheduleTimeoutFor(process, newBandwidth)
+    }
+    cloudProvider ! DownloadStarted(process.getRequest.getId)
+  }
+
+  private def cancelAllPreviousTimers() {
+    currentTransfers.values.foreach { c ⇒
+      c.cancel()
+      cpu ! AbstractOperation(new MemoryCheckOperation())
+    }
+  }
+
+  private def rescheduleAllTimers(newBandwidth: Long, now: Long) {
+    log.debug("Rescheduling all current downloads with bandwidth: %s B/s".format(newBandwidth))
+    addToBandwidthDiagram(newBandwidth)
+    currentBandwidth = newBandwidth
+
+    val currentTransferClone = currentTransfers.clone()
+    currentTransfers.clear()
+
+    currentTransferClone.foreach { c ⇒
+      cpu ! AbstractOperation(new MemoryCheckOperation())
+      pt.get(c._1) match {
+        case Some(p) ⇒
+          p.setRemainingBlockSize(p.getRemainingBlockSize - (now - p.getSnapshot) * p.getCurrentBandwidth / 1000)
+          if (p.getRemainingBlockSize < 0) p.setRemainingBlockSize(0)
+          p.setCurrentBandwidth(newBandwidth)
+          p.setTimeout(p.getRemainingBlockSize / p.getCurrentBandwidth)
+          p.setSnapshot(now)
+          pt.put(p.getPid, p)
+          val duration: Long = 1000 * p.getRemainingBlockSize / p.getCurrentBandwidth
+          scheduler ! CancellableSchedule(duration, self, TransferringFinished(p.getPid), CancelProcess(p.getPid))
+        case None ⇒ //TODO:What should we do?
+      }
+    }
+
+  }
+
+  private def scheduleTimeoutFor(process: Process, bandwidth: Long) {
+    cpu ! AbstractOperation(new MemoryCheckOperation())
+    val transferDelay = 1000 * process.getBlockSize / bandwidth
+    val pid = process.getPid
+    val duration: Long = 1000L * process.getBlockSize / bandwidth
+    scheduler ! CancellableSchedule(duration, self, TransferringFinished(pid), CancelProcess(pid))
+    process.setCurrentBandwidth(bandwidth).setRemainingBlockSize(process.getBlockSize).setSnapshot(System.currentTimeMillis()).setTimeout(transferDelay)
+    pt.put(pid, process)
+  }
+
+  private def getBandwidthChart: JFreeChart = {
+    val chart: JFreeChart = ChartFactory.createXYLineChart("Bandwidth per download", "Time (ms)", "Bandwidth (B/s)", dataSet, PlotOrientation.VERTICAL, true, true, false)
+    val plot: XYPlot = chart.getXYPlot
+    val renderer: XYItemRenderer = plot.getRenderer
+    renderer.setSeriesPaint(0, Color.blue)
+    chart
+  }
+
+  private def propagateCPULoad() {
+    if (instanceRunning) {
+      cloudProvider ! MyCPULoadAndBandwidth(currentCpuLoad, currentBandwidth)
+      cpu ! AbstractOperation(new MemoryCheckOperation())
+      scheduleCPULoadPropagationToCloudProvider()
+    }
+  }
 }
 
 object InstanceActorApp {
   def main(args: Array[String]) {
     val system = ActorSystem("testsystem")
     val scheduler = system.actorOf(Props[SchedulerActor], "scheduler")
-    val ins = system.actorOf(Props[InstanceActor], "instance")
+    val cloudProvider = system.actorOf(Props[CloudProviderActor], "cloudProvider")
+    val instance = system.actorOf(Props[InstanceActor], "instance")
     val nodeConfig = new NodeConfiguration(2.0, 5.0, 4, 20)
     nodeConfig.setHeadLess(false)
-    ins ! InstanceStart(nodeConfig)
+    instance ! InstanceStart(nodeConfig)
   }
 }

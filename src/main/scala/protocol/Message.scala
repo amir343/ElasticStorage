@@ -4,7 +4,7 @@ import cloud.common.NodeConfiguration
 import instance.os.Process
 import instance.common.{ AbstractOperation ⇒ AOperation, Request, Block }
 import org.jfree.chart.JFreeChart
-import akka.actor.ActorRef
+import akka.actor.{ Cancellable, ActorRef }
 
 /**
  * Copyright 2012 Amir Moulavi (amir.moulavi@gmail.com)
@@ -25,7 +25,11 @@ import akka.actor.ActorRef
  */
 trait Message
 
+trait CancellableMessage
+case class CancelProcess(pid: String, cancellable: Cancellable = null) extends CancellableMessage
+
 case class Schedule(delay: Long, actor: ActorRef, message: Message) extends Message
+case class CancellableSchedule(delay: Long, actor: ActorRef, message: Message, cancellableMessage: CancellableMessage) extends Message
 
 trait InstanceMessage extends Message
 // Instance Messages
@@ -37,6 +41,12 @@ case class InstanceStarted() extends InstanceMessage
 case class WaitTimeout() extends InstanceMessage
 case class ProcessRequestQueue() extends InstanceMessage
 case class Rejected(req: Request) extends InstanceMessage
+case class DownloadStarted(pid: String) extends InstanceMessage
+case class TransferringFinished(pid: String) extends InstanceMessage
+case class PropagateCPULoad() extends InstanceMessage
+case class MyCPULoadAndBandwidth(cpuLoad: Double, bandwidth: Long) extends InstanceMessage
+case class CalculateCost() extends InstanceMessage
+case class InstanceCost(totalCostString: String, periodicCostString: String) extends InstanceMessage
 
 // CPU Messages
 case class CPUInit(nodeConfiguration: NodeConfiguration) extends InstanceMessage
