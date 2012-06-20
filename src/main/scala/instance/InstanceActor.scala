@@ -42,6 +42,7 @@ import org.jfree.chart.plot.{ XYPlot, PlotOrientation }
 import org.jfree.chart.renderer.xy.XYItemRenderer
 import java.awt.Color
 import java.text.DecimalFormat
+import logger.{ LoggerFactory, Logger }
 
 /**
  * Copyright 2012 Amir Moulavi (amir.moulavi@gmail.com)
@@ -99,6 +100,9 @@ class InstanceActor extends Actor with ActorLogging {
   private var totalCost = 0.0
   private var headless = false
   private var dataBlocks = mutable.Map.empty[String, ActorRef]
+  private var kernelLoaded = false
+  //TODO: should not use the old logger, instead call directly gui.log
+  private var guiLogger: Logger = _
 
   def receive = genericHandler orElse
     kernelHandler orElse
@@ -118,10 +122,11 @@ class InstanceActor extends Actor with ActorLogging {
 
   def kernelHandler: Receive = {
     case KernelLog(msg) ⇒ gui.log(msg)
+    case KernelLoaded() ⇒ osStarted()
   }
 
   def cpuHandler: Receive = {
-    case CPUReady()                ⇒ numberOfDevicesLoaded += 1
+    case CPUReady()                ⇒ handleCPUReady()
     case CPULog(msg)               ⇒ gui.log(msg)
     case UpdateCPUInfoLabel(label) ⇒ gui.updateCPUInfoLabel(label)
     case CPULoadDiagram(chart)     ⇒ gui.createCPULoadDiagram(chart)
@@ -129,7 +134,7 @@ class InstanceActor extends Actor with ActorLogging {
   }
 
   def diskHandler: Receive = {
-    case DiskReady()                   ⇒ numberOfDevicesLoaded += 1
+    case DiskReady()                   ⇒ handleDiskReady()
     case BlockResponse(block, process) ⇒ //TODO
   }
 
@@ -137,7 +142,7 @@ class InstanceActor extends Actor with ActorLogging {
     case AckBlock(process)      ⇒ handleAckBlock(process)
     case NackBlock(process)     ⇒ //TODO
     case MemoryInfoLabel(label) ⇒ gui.updateMemoryInfoLabel(label)
-    case MemoryReady()          ⇒ numberOfDevicesLoaded += 1
+    case MemoryReady()          ⇒ handleMemoryReady()
     case MemoryLog(msg)         ⇒ gui.log(msg)
   }
 
@@ -147,6 +152,32 @@ class InstanceActor extends Actor with ActorLogging {
 
   def uncategorizedHandler: Receive = {
     case z @ _ ⇒ log.warning("Unrecognized or unhandled message: %s".format(z))
+  }
+
+  private def handleCPUReady() {
+    numberOfDevicesLoaded += 1
+    for (i ← 1 to 10)
+      cpu ! AbstractOperation(new BootOperation())
+    guiLogger.debug("Received ready signal from CPU")
+    if (instanceRunning) osStarted()
+  }
+
+  private def handleMemoryReady() {
+    numberOfDevicesLoaded += 1
+    guiLogger.debug("Received ready signal from MEMORY")
+    if (instanceRunning) osStarted()
+  }
+
+  private def handleDiskReady() {
+    numberOfDevicesLoaded += 1
+    guiLogger.debug("Received ready signal from DISK")
+    if (instanceRunning) osStarted()
+  }
+
+  private def osStarted() {
+    kernelLoaded = true
+    guiLogger.debug("OS with kernel %s started".format(uname_r))
+    gui.decorateSystemStarted()
   }
 
   private def initialize(nodeConfig: NodeConfiguration) {
@@ -173,8 +204,12 @@ class InstanceActor extends Actor with ActorLogging {
     simultaneousDownloads = nodeConfig.getSimultaneousDownloads()
     headless = nodeConfig.getHeadLess
     headless match {
-      case true  ⇒ gui = new HeadLessGUI()
-      case false ⇒ gui = InstanceGUI.getInstance()
+      case true ⇒
+        gui = new HeadLessGUI()
+        guiLogger = LoggerFactory.getLogger(classOf[InstanceActor], gui)
+      case false ⇒
+        gui = InstanceGUI.getInstance()
+        guiLogger = LoggerFactory.getLogger(classOf[InstanceActor], gui)
     }
     log.info("NodeConfigurations:\n%s".format(nodeConfig.toString()))
     gui.updateSimultaneousDownloads(String.valueOf(simultaneousDownloads))
@@ -184,14 +219,12 @@ class InstanceActor extends Actor with ActorLogging {
   private def loadBlocksToDisk() {
     if (_nodeConfiguration.getBlocks() != null) {
       blocks = _nodeConfiguration.getBlocks()
-      //TODO
-      //logger.info("Starting with " + blocks.size() + " block(s) in hand");
+      guiLogger.info("Starting with %s block(s) in hand".format(blocks.size))
       disk ! LoadBlock(blocks)
       cloudProvider ! BlocksAck()
       gui.initializeDataBlocks(blocks)
     } else {
-      //TODO
-      //logger.warn("I should get blocks from " + event.getNodeConfiguration().getDataBlocksMap().size() + " other instance(s)");
+      guiLogger.warn("I should get blocks from %s other instance(s)".format(_nodeConfiguration.getDataBlocksMap().size()))
       dataBlocks = _nodeConfiguration.getBlocksMap()
       dataBlocks.keySet.foreach { b ⇒
         dataBlocks.get(b) match {
@@ -205,6 +238,8 @@ class InstanceActor extends Actor with ActorLogging {
   }
 
   private def loadKernel() {
+    gui.updateTitle(context.self.path.address.toString)
+    gui.decorateWhileSystemStartUp()
     kernel ! KernelInit(_nodeConfiguration.getCpuConfiguration().getCpuSpeedInstructionPerSecond)
   }
 
@@ -220,7 +255,6 @@ class InstanceActor extends Actor with ActorLogging {
     !instanceRunning match {
       case true ⇒ waitForSystemStartUp()
       case false ⇒
-        //TODO
         scheduler ! Schedule(REQUEST_QUEUE_PROCESSING_INTERVAL, self, ProcessRequestQueue())
         scheduleCPULoadPropagationToCloudProvider()
         scheduleCostCalculation()
@@ -247,7 +281,7 @@ class InstanceActor extends Actor with ActorLogging {
     scheduleCostCalculation()
   }
 
-  private def instanceRunning: Boolean = numberOfDevices == numberOfDevicesLoaded && enabled
+  private def instanceRunning = numberOfDevices == numberOfDevicesLoaded && enabled && kernelLoaded
 
   def processRequestQueue() {
     if (instanceRunning) {
@@ -281,18 +315,16 @@ class InstanceActor extends Actor with ActorLogging {
 
   private def handleAckBlock(process: Process) {
     if (instanceRunning) {
-      log.debug("Block %s exists in the memory".format(process.getRequest.getBlockId))
+      guiLogger.debug("Block %s exists in the memory".format(process.getRequest.getBlockId))
       scheduleTransferForBlock(process)
       cpu ! AbstractOperation(new MemoryReadOperation(process.getBlockSize))
     }
-
   }
 
   private def scheduleTransferForBlock(process: Process) {
     currentTransfers.size() match {
       case 0 ⇒
-        //TODO
-        //logger.debug("Transfer started " + process)
+        guiLogger.debug("Transfer started %s".format(process))
         scheduleTimeoutFor(process, BANDWIDTH)
         addToBandwidthDiagram(BANDWIDTH)
         currentBandwidth = BANDWIDTH
@@ -302,8 +334,7 @@ class InstanceActor extends Actor with ActorLogging {
         val now = System.currentTimeMillis()
         cancelAllPreviousTimers()
         rescheduleAllTimers(newBandwidth, now)
-        //TODO
-        //logger.debug("Transfer started " + process)
+        guiLogger.debug("Transfer started %s".format(process))
         scheduleTimeoutFor(process, newBandwidth)
     }
     cloudProvider ! DownloadStarted(process.getRequest.getId)
@@ -317,7 +348,7 @@ class InstanceActor extends Actor with ActorLogging {
   }
 
   private def rescheduleAllTimers(newBandwidth: Long, now: Long) {
-    log.debug("Rescheduling all current downloads with bandwidth: %s B/s".format(newBandwidth))
+    guiLogger.debug("Rescheduling all current downloads with bandwidth: %s B/s".format(newBandwidth))
     addToBandwidthDiagram(newBandwidth)
     currentBandwidth = newBandwidth
 

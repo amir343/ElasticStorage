@@ -85,3 +85,4 @@ case class MemoryStart() extends InstanceMessage
 // Kernel
 case class KernelInit(cpuSpeed: Long) extends InstanceMessage
 case class KernelLog(msg: String) extends InstanceMessage
+case class KernelLoaded() extends InstanceMessage

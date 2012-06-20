@@ -1,7 +1,7 @@
 package cloud
 
 import akka.actor.{ ActorLogging, Actor }
-import protocol.{ InstanceStarted, BlocksAck }
+import protocol.{ InstanceCost, MyCPULoadAndBandwidth, InstanceStarted, BlocksAck }
 
 /**
  * Copyright 2012 Amir Moulavi (amir.moulavi@gmail.com)
@@ -28,8 +28,10 @@ class CloudProviderActor extends Actor with ActorLogging {
     uncategorizedMessagesHandler
 
   def genericHandler: Receive = {
-    case BlocksAck()       ⇒ //TODO:
-    case InstanceStarted() ⇒ //TODO:
+    case BlocksAck()                               ⇒ //TODO:
+    case InstanceStarted()                         ⇒ //TODO:
+    case MyCPULoadAndBandwidth(cpuLoad, bandwidth) ⇒ //TODO
+    case InstanceCost(totalCost, periodicCost)     ⇒ //TODO
   }
 
   def uncategorizedMessagesHandler: Receive = {

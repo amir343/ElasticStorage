@@ -2,7 +2,7 @@ package instance
 
 import akka.actor.{ ActorLogging, ActorRef, Actor }
 import cpu.OperationDuration
-import protocol.{ KernelInit, KernelLog }
+import protocol.{ KernelLoaded, KernelInit, KernelLog }
 import akka.util.duration._
 
 /**
@@ -45,7 +45,10 @@ class KernelActor extends Actor with ActorLogging {
   }
 
   private def kernelLoaded() {
-    schedule(2000L, "Kernel Loaded Successfully")
+    val delay = OperationDuration.getExecutionOperation(cpuSpeed, 2000L)
+    currentAccumulatedDelay += delay
+    log.debug("Kernel loaded: " + currentAccumulatedDelay)
+    context.system.scheduler.scheduleOnce(currentAccumulatedDelay milliseconds, instance, KernelLoaded())
   }
 
   private def loadKernelInfo() {
