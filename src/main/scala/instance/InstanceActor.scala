@@ -3,6 +3,7 @@ package instance
 import _root_.common.GUI
 import akka.actor._
 import common._
+import cpu.{ OperationDuration, CPU }
 import gui.{ HeadLessGUI, GenericInstanceGUI, InstanceGUI }
 import cloud.common.NodeConfiguration
 import os.{ InstanceCost, CostService, Kernel, Process }
@@ -72,7 +73,7 @@ class InstanceActor extends Actor with ActorLogging {
   private val scheduler = context.actorFor("../scheduler")
   private val cloudProvider = context.actorFor("../cloudProvider")
 
-  private var uname_r = "2.2-2"
+  private val uname_r = "2.2-2"
   private val numberOfDevices = 3
   private var numberOfDevicesLoaded = 0
   private var BANDWIDTH: Long = 2 * Size.MB.getSize
@@ -82,7 +83,7 @@ class InstanceActor extends Actor with ActorLogging {
   val RESTART_PERIOD: Long = 60000
   private val COST_CALCULATION_INTERVAL: Long = 10000
   private var simultaneousDownloads: Int = 70
-  private var pt: mutable.ConcurrentMap[String, Process] = new ConcurrentHashMap[String, Process]
+  private val pt: mutable.ConcurrentMap[String, Process] = new ConcurrentHashMap[String, Process]
   private val currentTransfers: mutable.ConcurrentMap[String, Cancellable] = new ConcurrentHashMap[String, Cancellable]
   private val requestQueue = mutable.Queue.empty[Request]
   private val costService: CostService = new CostService
@@ -105,6 +106,7 @@ class InstanceActor extends Actor with ActorLogging {
   private var guiLogger: Logger = _
 
   def receive = genericHandler orElse
+    cloudHandler orElse
     kernelHandler orElse
     cpuHandler orElse
     diskHandler orElse
@@ -118,6 +120,12 @@ class InstanceActor extends Actor with ActorLogging {
     case ProcessRequestQueue()     ⇒ processRequestQueue()
     case PropagateCPULoad()        ⇒ propagateCPULoad()
     case CalculateCost()           ⇒ calculateCost()
+    case ReadDiskFinished(pid)     ⇒ handleReadDiskFinished(pid)
+    case TransferringFinished(pid) ⇒ handleTransferringFinished(pid)
+  }
+
+  def cloudHandler: Receive = {
+    case RequestMessage(request) ⇒ handleRequest(request)
   }
 
   def kernelHandler: Receive = {
@@ -135,12 +143,12 @@ class InstanceActor extends Actor with ActorLogging {
 
   def diskHandler: Receive = {
     case DiskReady()                   ⇒ handleDiskReady()
-    case BlockResponse(block, process) ⇒ //TODO
+    case BlockResponse(block, process) ⇒ handleBlockResponse(block, process)
   }
 
   def memoryHandler: Receive = {
     case AckBlock(process)      ⇒ handleAckBlock(process)
-    case NackBlock(process)     ⇒ //TODO
+    case NackBlock(process)     ⇒ handleNackBlock(process)
     case MemoryInfoLabel(label) ⇒ gui.updateMemoryInfoLabel(label)
     case MemoryReady()          ⇒ handleMemoryReady()
     case MemoryLog(msg)         ⇒ gui.log(msg)
@@ -152,6 +160,45 @@ class InstanceActor extends Actor with ActorLogging {
 
   def uncategorizedHandler: Receive = {
     case z @ _ ⇒ log.warning("Unrecognized or unhandled message: %s".format(z))
+  }
+
+  private def handleRequest(request: Request) {
+    if (instanceRunning) {
+      guiLogger.debug("Received request for block %s".format(request))
+      (simultaneousDownloads > currentTransfers.size()) match {
+        case true ⇒
+          guiLogger.debug("Admitted Request for block '%s'".format(request.getBlockId))
+          requestQueue.enqueue(request)
+        case false ⇒
+          guiLogger.warn("Rejected Request for download block %s. No free slot. {simDown: %s, currentTrans: %s}".format(request.getBlockId, simultaneousDownloads, currentTransfers.size))
+          cloudProvider ! Rejected(request)
+      }
+    }
+
+  }
+
+  private def handleBlockResponse(block: Block, process: Process) {
+    if (instanceRunning) {
+      readFromDiskIntoMemory(block, process)
+      cpu ! AbstractOperation(new DiskReadOperation(block.getSize))
+      cpu ! AbstractOperation(new MemoryWriteOperation(block.getSize))
+      memory ! WriteBlockIntoMemory(block)
+    }
+  }
+
+  private def readFromDiskIntoMemory(block: Block, process: Process) {
+    process.setBlockSize(block.getSize)
+    scheduler ! Schedule(OperationDuration.getDiskReadDuration(CPU.CPU_CLOCK, block.getSize), self, ReadDiskFinished(process.getPid))
+  }
+
+  private def handleReadDiskFinished(pid: String) {
+    if (instanceRunning) {
+      pt.get(pid) match {
+        case Some(process) ⇒ scheduleTransferForBlock(process)
+        case None          ⇒ // Process already finished!
+      }
+      cpu ! AbstractOperation(new MemoryCheckOperation())
+    }
   }
 
   private def handleCPUReady() {
@@ -178,6 +225,13 @@ class InstanceActor extends Actor with ActorLogging {
     kernelLoaded = true
     guiLogger.debug("OS with kernel %s started".format(uname_r))
     gui.decorateSystemStarted()
+  }
+
+  private def handleNackBlock(process: Process) {
+    if (instanceRunning) {
+      guiLogger.debug("Block %s does not exists in the memory".format(process.getRequest.getBlockId))
+      disk ! ReadBlock(process.getRequest.getBlockId, process)
+    }
   }
 
   private def initialize(nodeConfig: NodeConfiguration) {
@@ -229,7 +283,7 @@ class InstanceActor extends Actor with ActorLogging {
       dataBlocks.keySet.foreach { b ⇒
         dataBlocks.get(b) match {
           case Some(actor) ⇒ actor ! RebalanceRequest(b)
-          case None        ⇒ //TODO:Should not happen!!
+          case None        ⇒ //Should not happen!!
         }
       }
       addToBandwidthDiagram(BANDWIDTH)
@@ -283,7 +337,7 @@ class InstanceActor extends Actor with ActorLogging {
 
   private def instanceRunning = numberOfDevices == numberOfDevicesLoaded && enabled && kernelLoaded
 
-  def processRequestQueue() {
+  private def processRequestQueue() {
     if (instanceRunning) {
       val freeSlot = simultaneousDownloads - currentTransfers.size()
       cpu ! AbstractOperation(new MemoryCheckOperation)
@@ -341,7 +395,10 @@ class InstanceActor extends Actor with ActorLogging {
   }
 
   private def cancelAllPreviousTimers() {
-    currentTransfers.values.foreach { c ⇒
+    //TODO
+    val ctClone = currentTransfers.clone()
+    currentTransfers.clear()
+    ctClone.values.foreach { c ⇒
       c.cancel()
       cpu ! AbstractOperation(new MemoryCheckOperation())
     }
@@ -370,7 +427,6 @@ class InstanceActor extends Actor with ActorLogging {
         case None ⇒ //TODO:What should we do?
       }
     }
-
   }
 
   private def scheduleTimeoutFor(process: Process, bandwidth: Long) {
@@ -383,6 +439,45 @@ class InstanceActor extends Actor with ActorLogging {
     pt.put(pid, process)
   }
 
+  private def handleTransferringFinished(pid: String) {
+    if (instanceRunning) {
+      pt.get(pid) match {
+        case Some(process) ⇒
+          val request = process.getRequest
+          updateTransferredBandwidth(process)
+          currentTransfers.get(pid) match {
+            case Some(c) ⇒
+              c.cancel()
+              currentTransfers -= pid
+            case None ⇒ //NOP
+          }
+          gui.decreaseNrDownloadersFor(request.getBlockId)
+          gui.updateCurrentTransfers(currentTransfers.size())
+          //TODO
+          //informDownloader(process, request)
+          pt -= pid
+          cpu ! EndProcess(pid)
+          if (currentTransfers.size() != 0) {
+            cancelAllPreviousTimers()
+            rescheduleAllTimers(BANDWIDTH / currentTransfers.size(), System.currentTimeMillis())
+          }
+        case None ⇒ //NOP
+      }
+    }
+  }
+
+  /*
+  private def informDownloader(process:Process, request:Request) {
+    logger.info("Rebalancing finished for " + event.getPid());
+ 		trigger(new BlockTransferred(self, request.getDestinationNode(), process.getBlockSize(), process.getRequest().getBlockId()), network);
+		logger.debug("Transferring finished for " + event.getPid() );
+  }
+*/
+
+  private def updateTransferredBandwidth(process: Process) {
+    // TODO: Should it be synchronized?
+    megaBytesDownloadedSoFar += (process.getBlockSize / (1024 * 1024)).asInstanceOf[Int]
+  }
   private def getBandwidthChart: JFreeChart = {
     val chart: JFreeChart = ChartFactory.createXYLineChart("Bandwidth per download", "Time (ms)", "Bandwidth (B/s)", dataSet, PlotOrientation.VERTICAL, true, true, false)
     val plot: XYPlot = chart.getXYPlot

@@ -198,6 +198,7 @@ public class OS extends ComponentDefinition {
 	/**
 	 * This handler is in charge of handling the request that are sent by Elastic Load Balancer
 	 */
+    // DONE
 	Handler<RequestMessage> requestMessageHandler = new Handler<RequestMessage>() {
 		@Override
 		public void handle(RequestMessage event) {
@@ -247,6 +248,7 @@ public class OS extends ComponentDefinition {
 		}
 	};
 
+    // DONE
 	Handler<Ready> cpuReadySignalHandler = new Handler<Ready>() {
 		@Override
 		public void handle(Ready event) {
@@ -258,6 +260,7 @@ public class OS extends ComponentDefinition {
 		}
 	};
 
+    // DONE
 	Handler<Ready> memoryReadySignalHandler = new Handler<Ready>() {
 		@Override
 		public void handle(Ready event) {
@@ -267,6 +270,7 @@ public class OS extends ComponentDefinition {
 		}
 	};
 
+    // DONE
 	Handler<Ready> diskReadySignalHandler = new Handler<Ready>() {
 		@Override
 		public void handle(Ready event) {
@@ -296,6 +300,7 @@ public class OS extends ComponentDefinition {
 	 * Memory miss: this means that the next operation is an I/O from the disk
 	 * that may take much more time than a memory read
 	 */
+    // DONE
 	Handler<NAckBlock> nackBlockHandler = new Handler<NAckBlock>() {
 		@Override
 		public void handle(NAckBlock event) {
@@ -311,6 +316,7 @@ public class OS extends ComponentDefinition {
 	/**
 	 * This is the response from Disk containing the block requested earlier
 	 */
+    // DONE
 	Handler<BlockResponse> blockResponseHandler = new Handler<BlockResponse>() {
 		@Override
 		public void handle(BlockResponse event) {
@@ -327,6 +333,7 @@ public class OS extends ComponentDefinition {
 	/**
 	 * Updates transfer table and compute bandwidth for remaining transfers
 	 */
+    // DONE
 	Handler<TransferringFinished> transferringFinishedHandler = new Handler<TransferringFinished>() {
 		@Override
 		public void handle(TransferringFinished event) {
@@ -371,6 +378,7 @@ public class OS extends ComponentDefinition {
 	 * This means that the block is read from the disk into memory. Now we can transfer
 	 * it into the network
 	 */
+    // DONE
 	Handler<ReadDiskFinished> readDiskFinishedHandler = new Handler<ReadDiskFinished>() {
 		@Override
 		public void handle(ReadDiskFinished event) {
@@ -384,6 +392,7 @@ public class OS extends ComponentDefinition {
 	/**
 	 * This handler is executed if the system has not yet started until it starts successfully with all the hardware components
 	 */
+    // DONE
 	Handler<WaitTimeout> waitTimeoutHandler = new Handler<WaitTimeout>() {
 		@Override
 		public void handle(WaitTimeout event) {
@@ -676,6 +685,7 @@ public class OS extends ComponentDefinition {
 		trigger(st, timer);		
 	}
 
+    // DONE
 	private void readFromDiskIntoMemory(BlockResponse response) {
 		Process process = response.getProcess();
 		Block block = response.getBlock();

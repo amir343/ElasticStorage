@@ -128,9 +128,9 @@ class CPUActor extends Actor with ActorLogging {
     scheduler ! Schedule(LOAD_CALC_INTERVAL, self, LoadCalculationTimeout())
   }
 
-  private def endProcess(process: Process) {
+  private def endProcess(pid: String) {
     if (enabled) {
-      pt.remove(process.getPid)
+      pt.remove(pid)
       tasks decrementAndGet ()
     }
   }

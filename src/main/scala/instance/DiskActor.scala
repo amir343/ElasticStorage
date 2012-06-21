@@ -36,10 +36,11 @@ class DiskActor extends Actor with ActorLogging {
   private var instance: ActorRef = _
 
   def receive = {
-    case DiskInit(nodeConfig)   ⇒ initialize(nodeConfig)
-    case LoadBlock(blks)        ⇒ loadBlocks(blks)
-    case RestartSignal()        ⇒ restart()
-    case ReadBlock(id, process) ⇒ readBlock(id, process)
+    case DiskInit(nodeConfig)        ⇒ initialize(nodeConfig)
+    case LoadBlock(blks)             ⇒ loadBlocks(blks)
+    case RestartSignal()             ⇒ restart()
+    case ReadBlock(blockId, process) ⇒ readBlock(blockId, process)
+    case z @ _                       ⇒ log.debug("Unrecognized message: %s".format(z))
   }
 
   private def initialize(nodeConfig: NodeConfiguration) {
@@ -64,13 +65,13 @@ class DiskActor extends Actor with ActorLogging {
     log.debug("Disk received SHUTDOWN signal")
   }
 
-  private def readBlock(id: String, process: Process) {
-    _blocks.find(_.getName == id) match {
+  private def readBlock(blockId: String, process: Process) {
+    _blocks.find(_.getName == blockId) match {
       case Some(block) ⇒
-        log.debug("Block %s is read".format(id))
+        log.debug("Block %s is read".format(blockId))
         instance ! BlockResponse(block, process)
 
-      case None ⇒ log.error("Block %s does not exist on the disk".format(id))
+      case None ⇒ log.error("Block %s does not exist on the disk".format(blockId))
     }
   }
 }

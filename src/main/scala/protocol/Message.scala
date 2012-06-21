@@ -47,6 +47,8 @@ case class PropagateCPULoad() extends InstanceMessage
 case class MyCPULoadAndBandwidth(cpuLoad: Double, bandwidth: Long) extends InstanceMessage
 case class CalculateCost() extends InstanceMessage
 case class InstanceCost(totalCostString: String, periodicCostString: String) extends InstanceMessage
+case class ReadDiskFinished(pid: String) extends InstanceMessage
+case class BlockTransferred() extends InstanceMessage
 
 // CPU Messages
 case class CPUInit(nodeConfiguration: NodeConfiguration) extends InstanceMessage
@@ -57,7 +59,7 @@ case class LoadCalculationTimeout() extends InstanceMessage
 case class CPULoad(load: Double) extends InstanceMessage
 case class Restart() extends InstanceMessage
 case class StartProcess(process: Process) extends InstanceMessage
-case class EndProcess(process: Process) extends InstanceMessage
+case class EndProcess(pid: String) extends InstanceMessage
 case class AbstractOperation(operation: AOperation) extends InstanceMessage
 case class OperationFinishedTimeout(pid: String) extends InstanceMessage
 case class SnapshotRequest(chart: JFreeChart = null) extends InstanceMessage
@@ -68,7 +70,7 @@ case class CPULoadDiagram(chart: JFreeChart) extends InstanceMessage
 case class DiskInit(nodeConfig: NodeConfiguration) extends InstanceMessage
 case class DiskReady() extends InstanceMessage
 case class LoadBlock(blocks: List[Block]) extends InstanceMessage
-case class ReadBlock(id: String, process: Process) extends InstanceMessage
+case class ReadBlock(blockId: String, process: Process) extends InstanceMessage
 case class BlockResponse(block: Block, process: Process) extends InstanceMessage
 
 // Memory Messages
@@ -86,3 +88,6 @@ case class MemoryStart() extends InstanceMessage
 case class KernelInit(cpuSpeed: Long) extends InstanceMessage
 case class KernelLog(msg: String) extends InstanceMessage
 case class KernelLoaded() extends InstanceMessage
+
+// ELB
+case class RequestMessage(request: Request) extends InstanceMessage
