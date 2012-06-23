@@ -359,10 +359,12 @@ public class OS extends ComponentDefinition {
 			}
 		}
 
+        // DONE
 		private synchronized void updateTransferredBandwidth(Process process) {
 			megaBytesDownloadedSoFar += (process.getBlockSize()/(1024*1024));
 		}
 
+        // DONE
 		private void informDownloader(TransferringFinished event, Process process, Request request) {
 			if (request.getDestinationNode() != null) {
 				logger.info("Rebalancing finished for " + event.getPid());
@@ -409,6 +411,7 @@ public class OS extends ComponentDefinition {
 	/**
 	 * This handler is triggered upon receiving a shutDown request from cloudProvider
 	 */
+    // DONE
 	Handler<ShutDown> shutDownHandler = new Handler<ShutDown>() {
 		@Override
 		public void handle(ShutDown event) {
@@ -431,6 +434,7 @@ public class OS extends ComponentDefinition {
     /**
      * This handler is triggered by dying instance to clean up open streams that can block accepting further requests
      */
+    // DONE
     Handler<CloseMyStream> closeMyStreamHandler = new Handler<CloseMyStream>(){
         @Override
         public void handle(CloseMyStream event) {
@@ -441,6 +445,7 @@ public class OS extends ComponentDefinition {
         }
     };
 
+    // DONE
     private synchronized void removeProcessesBelongTo(CloseMyStream event) {
         for (String processId : pt.keySet()) {
             if (pt.get(processId).getRequest().getDestinationNode() != null &&
@@ -453,6 +458,7 @@ public class OS extends ComponentDefinition {
 	 * This is for scheduling a complete shut down if the CloudProvider
 	 * was not able to shut down this instance completely (because of port binding)
 	 */
+    // DONE
 	Handler<Death> deathHandler = new Handler<Death>() {
 		@Override
 		public void handle(Death event) {
@@ -463,6 +469,7 @@ public class OS extends ComponentDefinition {
 	/**
 	 * This handler is triggered when receives a heatBeat message from HealthChecker
 	 */
+    // DONE
 	Handler<HeartbeatMessage> heartbeatMessageHandler = new Handler<HeartbeatMessage>() {
 		@Override
 		public void handle(HeartbeatMessage event) {
@@ -475,6 +482,7 @@ public class OS extends ComponentDefinition {
 	/**
 	 * This handler is triggered by CPU
 	 */
+    // DONE
 	Handler<CPULoad> cpuLoadHandler = new Handler<CPULoad>() {
 		@Override
 		public void handle(CPULoad event) {
@@ -488,6 +496,7 @@ public class OS extends ComponentDefinition {
 	 * Upon every tick of CPU_LOAD_PROPAGATION_INTERVAL, this handler sends
 	 * the current cpu load to cloud provider
 	 */
+    // DONE
 	Handler<PropagateCPULoad> propagateCPULoadHandler = new Handler<PropagateCPULoad>() {
 		@Override
 		public void handle(PropagateCPULoad event) {
@@ -502,6 +511,7 @@ public class OS extends ComponentDefinition {
 	/**
 	 * This handler is for getting CPU Load chart from CPU
 	 */
+    // DONE
 	Handler<SnapshotRequest> snapshotRequestHandler = new Handler<SnapshotRequest>() {
 		@Override
 		public void handle(SnapshotRequest event) {
@@ -530,6 +540,7 @@ public class OS extends ComponentDefinition {
 	/**
 	 * This handler is triggered by Cloud Provider
 	 */
+    // DONE
 	Handler<RestartInstance> restartInstanceHandler = new Handler<RestartInstance>() {
 		@Override
 		public void handle(RestartInstance event) {
@@ -583,6 +594,7 @@ public class OS extends ComponentDefinition {
 	/**
 	 * This handler is triggered when the transfer from another instance node is finished
 	 */
+    // DONE
 	Handler<BlockTransferred> blockTransferredHandler = new Handler<BlockTransferred>() {
 		@Override
 		public void handle(BlockTransferred event) {
@@ -603,6 +615,7 @@ public class OS extends ComponentDefinition {
             }
         }
 
+        // DONE
 		private void calculateNewBandwidth() {
 			if (pt.size() == 0 ) {
 				currentBandwidth = BANDWIDTH;
@@ -615,6 +628,7 @@ public class OS extends ComponentDefinition {
 	/**
 	 * This handler is triggered to calculate the current cost for this instance from its start up time
 	 */
+    // DONE
 	Handler<CalculateCost> calculateCostHandler = new Handler<CalculateCost>() {
 		@Override
 		public void handle(CalculateCost event) {
@@ -629,6 +643,7 @@ public class OS extends ComponentDefinition {
 		}
 	};
 
+    // DONE
 	private void osStarted() {
 		logger.debug("OS with kernel " + uname_r + " started");
 		gui.decorateSystemStarted();
@@ -641,6 +656,7 @@ public class OS extends ComponentDefinition {
 		trigger(st, timer);		
 	}
 
+    // DONE
 	protected Block findRequestedBlock(String blockId) {
 		for (Block block : blocks) {
 			if (block.getName().equals(blockId))
@@ -657,6 +673,7 @@ public class OS extends ComponentDefinition {
 		gui.createBandwidthDiagram(getBandwidthChart());
 	}
 
+    // DONE
 	protected void scheduleProcessingRequestQueue() {
 		ScheduleTimeout st = new ScheduleTimeout(REQUEST_QUEUE_PROCESSING_INTERVAL);
 		st.setTimeoutEvent(new ProcessRequestQueue(st));
@@ -672,6 +689,7 @@ public class OS extends ComponentDefinition {
 		enabled = true;
 	}
 
+    // DONE
 	protected void scheduleDeath() {
 		ScheduleTimeout st = new ScheduleTimeout(1000);
 		st.setTimeoutEvent(new Death(st));
@@ -847,6 +865,7 @@ public class OS extends ComponentDefinition {
         return numberOfDevices == numberOfDevicesLoaded && enabled;
     }
 
+    // DONE
     public void restartInstance() {
         trigger(new RestartSignal(), cpu);
         trigger(new RestartSignal(), memory);

@@ -48,7 +48,13 @@ case class MyCPULoadAndBandwidth(cpuLoad: Double, bandwidth: Long) extends Insta
 case class CalculateCost() extends InstanceMessage
 case class InstanceCost(totalCostString: String, periodicCostString: String) extends InstanceMessage
 case class ReadDiskFinished(pid: String) extends InstanceMessage
-case class BlockTransferred() extends InstanceMessage
+case class BlockTransferred(blockID: String, blockSize: Long) extends InstanceMessage
+case class Shutdown() extends InstanceMessage
+case class CloseMyStream() extends InstanceMessage
+case class ShutdownAck() extends InstanceMessage
+case class Death() extends InstanceMessage
+case class RestartInstance() extends InstanceMessage
+case class ActivateBlock(block: Block) extends InstanceMessage
 
 // CPU Messages
 case class CPUInit(nodeConfiguration: NodeConfiguration) extends InstanceMessage
@@ -91,3 +97,7 @@ case class KernelLoaded() extends InstanceMessage
 
 // ELB
 case class RequestMessage(request: Request) extends InstanceMessage
+
+// EPFD
+case class HeartBeatMessage() extends InstanceMessage
+case class Alive() extends InstanceMessage

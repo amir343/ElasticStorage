@@ -2,7 +2,7 @@ package instance
 
 import akka.actor.{ ActorLogging, ActorRef, Actor }
 import cpu.OperationDuration
-import protocol.{ KernelLoaded, KernelInit, KernelLog }
+import protocol.{ Shutdown, KernelLoaded, KernelInit, KernelLog }
 import akka.util.duration._
 
 /**
@@ -31,6 +31,7 @@ class KernelActor extends Actor with ActorLogging {
 
   def receive = {
     case KernelInit(speed) ⇒ initialize(speed)
+    case Shutdown()        ⇒ shutDown()
   }
 
   private def initialize(speed: Long) {

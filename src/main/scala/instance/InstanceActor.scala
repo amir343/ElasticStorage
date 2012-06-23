@@ -6,36 +6,13 @@ import common._
 import cpu.{ OperationDuration, CPU }
 import gui.{ HeadLessGUI, GenericInstanceGUI, InstanceGUI }
 import cloud.common.NodeConfiguration
-import os.{ InstanceCost, CostService, Kernel, Process }
+import os._
 import protocol._
 import akka.util.duration._
 import org.jfree.data.xy.{ XYSeries, XYSeriesCollection }
 import collection.mutable
 import java.util.concurrent.ConcurrentHashMap
-import java.util.UUID
 import scala.collection.JavaConversions._
-import protocol.DiskReady
-import protocol.CPUInit
-import protocol.CPULoadDiagram
-import protocol.MemoryInit
-import protocol.MemoryInfoLabel
-import protocol.MemoryLog
-import protocol.LoadBlock
-import protocol.BlockResponse
-import protocol.RebalanceRequest
-import protocol.CPULoad
-import protocol.DiskInit
-import protocol.UpdateCPUInfoLabel
-import protocol.KernelLog
-import scala.Some
-import protocol.WaitTimeout
-import protocol.MemoryReady
-import protocol.ProcessRequestQueue
-import protocol.InstanceStart
-import protocol.AbstractOperation
-import protocol.KernelInit
-import protocol.CPUReady
-import protocol.CPULog
 import scheduler.SchedulerActor
 import cloud.CloudProviderActor
 import org.jfree.chart.{ ChartFactory, JFreeChart }
@@ -44,6 +21,57 @@ import org.jfree.chart.renderer.xy.XYItemRenderer
 import java.awt.Color
 import java.text.DecimalFormat
 import logger.{ LoggerFactory, Logger }
+import protocol.DiskReady
+import protocol.CPUInit
+import protocol.Rejected
+import protocol.HeartBeatMessage
+import protocol.ReadBlock
+import protocol.CPULoadDiagram
+import protocol.MemoryInit
+import protocol.Shutdown
+import protocol.MemoryInfoLabel
+import protocol.MemoryLog
+import protocol.LoadBlock
+import protocol.MyCPULoadAndBandwidth
+import protocol.RequestMessage
+import protocol.CalculateCost
+import protocol.CancellableSchedule
+import protocol.BlockResponse
+import protocol.DownloadStarted
+import protocol.RebalanceRequest
+import protocol.CPULoad
+import protocol.DiskInit
+import protocol.ShutdownAck
+import protocol.RequestBlock
+import protocol.UpdateCPUInfoLabel
+import protocol.Schedule
+import protocol.Death
+import protocol.EndProcess
+import protocol.InstanceStarted
+import protocol.KernelLog
+import scala.Some
+import protocol.WaitTimeout
+import protocol.SnapshotRequest
+import protocol.MemoryReady
+import protocol.AckBlock
+import protocol.StartProcess
+import protocol.Alive
+import protocol.CloseMyStream
+import protocol.ProcessRequestQueue
+import protocol.NackBlock
+import protocol.WriteBlockIntoMemory
+import protocol.BlockTransferred
+import protocol.KernelLoaded
+import protocol.InstanceStart
+import protocol.AbstractOperation
+import protocol.ReadDiskFinished
+import protocol.CancelProcess
+import protocol.PropagateCPULoad
+import protocol.KernelInit
+import protocol.BlocksAck
+import protocol.CPUReady
+import protocol.CPULog
+import protocol.TransferringFinished
 
 /**
  * Copyright 2012 Amir Moulavi (amir.moulavi@gmail.com)
@@ -114,39 +142,46 @@ class InstanceActor extends Actor with ActorLogging {
     cancellableHandler orElse
     uncategorizedHandler
 
-  def genericHandler: Receive = {
-    case InstanceStart(nodeConfig) ⇒ initialize(nodeConfig)
-    case WaitTimeout()             ⇒ handleWaitTimeout()
-    case ProcessRequestQueue()     ⇒ processRequestQueue()
-    case PropagateCPULoad()        ⇒ propagateCPULoad()
-    case CalculateCost()           ⇒ calculateCost()
-    case ReadDiskFinished(pid)     ⇒ handleReadDiskFinished(pid)
-    case TransferringFinished(pid) ⇒ handleTransferringFinished(pid)
+  private def genericHandler: Receive = {
+    case InstanceStart(nodeConfig)       ⇒ initialize(nodeConfig)
+    case WaitTimeout()                   ⇒ handleWaitTimeout()
+    case ProcessRequestQueue()           ⇒ processRequestQueue()
+    case PropagateCPULoad()              ⇒ propagateCPULoad()
+    case CalculateCost()                 ⇒ calculateCost()
+    case ReadDiskFinished(pid)           ⇒ handleReadDiskFinished(pid)
+    case TransferringFinished(pid)       ⇒ handleTransferringFinished(pid)
+    case Shutdown()                      ⇒ handleShutdown()
+    case Death()                         ⇒ stopActor()
+    case CloseMyStream()                 ⇒ handleCloseMyStreamRequest()
+    case BlockTransferred(blockId, size) ⇒ handleBlockTransferred(blockId, size)
   }
 
-  def cloudHandler: Receive = {
+  private def cloudHandler: Receive = {
     case RequestMessage(request) ⇒ handleRequest(request)
+    case RestartInstance()       ⇒ handleRestart()
+    case HeartBeatMessage()      ⇒ sender ! Alive()
   }
 
-  def kernelHandler: Receive = {
+  private def kernelHandler: Receive = {
     case KernelLog(msg) ⇒ gui.log(msg)
     case KernelLoaded() ⇒ osStarted()
   }
 
-  def cpuHandler: Receive = {
+  private def cpuHandler: Receive = {
     case CPUReady()                ⇒ handleCPUReady()
     case CPULog(msg)               ⇒ gui.log(msg)
     case UpdateCPUInfoLabel(label) ⇒ gui.updateCPUInfoLabel(label)
     case CPULoadDiagram(chart)     ⇒ gui.createCPULoadDiagram(chart)
-    case CPULoad(load)             ⇒ gui.cpuLoad(load)
+    case CPULoad(load)             ⇒ handleCPULoad(load)
+    case SnapshotRequest(chart)    ⇒ handleSnapshotRequest(chart)
   }
 
-  def diskHandler: Receive = {
+  private def diskHandler: Receive = {
     case DiskReady()                   ⇒ handleDiskReady()
     case BlockResponse(block, process) ⇒ handleBlockResponse(block, process)
   }
 
-  def memoryHandler: Receive = {
+  private def memoryHandler: Receive = {
     case AckBlock(process)      ⇒ handleAckBlock(process)
     case NackBlock(process)     ⇒ handleNackBlock(process)
     case MemoryInfoLabel(label) ⇒ gui.updateMemoryInfoLabel(label)
@@ -154,11 +189,11 @@ class InstanceActor extends Actor with ActorLogging {
     case MemoryLog(msg)         ⇒ gui.log(msg)
   }
 
-  def cancellableHandler: Receive = {
+  private def cancellableHandler: Receive = {
     case CancelProcess(pid, cancellable) ⇒ currentTransfers.put(pid, cancellable)
   }
 
-  def uncategorizedHandler: Receive = {
+  private def uncategorizedHandler: Receive = {
     case z @ _ ⇒ log.warning("Unrecognized or unhandled message: %s".format(z))
   }
 
@@ -174,7 +209,6 @@ class InstanceActor extends Actor with ActorLogging {
           cloudProvider ! Rejected(request)
       }
     }
-
   }
 
   private def handleBlockResponse(block: Block, process: Process) {
@@ -231,6 +265,45 @@ class InstanceActor extends Actor with ActorLogging {
     if (instanceRunning) {
       guiLogger.debug("Block %s does not exists in the memory".format(process.getRequest.getBlockId))
       disk ! ReadBlock(process.getRequest.getBlockId, process)
+    }
+  }
+
+  private def handleRestart() {
+    if (instanceRunning) {
+      cpu ! RestartSignal()
+      memory ! RestartSignal()
+      disk ! RestartSignal()
+      gui.systemRestart()
+
+      guiLogger.warn("System restarting...")
+      numberOfDevicesLoaded = 0
+      pt.clear()
+      cancelAllPreviousTimers()
+      currentTransfers.clear()
+      requestQueue.clear()
+      xySeries.clear()
+      scheduleCPULoadPropagationToCloudProvider()
+      kernel ! Shutdown()
+      gui.decorateWhileSystemStartUp()
+
+      memory ! MemoryInit(_nodeConfiguration)
+      disk ! DiskInit(_nodeConfiguration)
+      loadKernel()
+      scheduleCPULoadPropagationToCloudProvider()
+      scheduler ! Schedule(REQUEST_QUEUE_PROCESSING_INTERVAL, self, ProcessRequestQueue())
+
+      gui.decorateSystemStarted()
+
+    }
+  }
+
+  private def handleSnapshotRequest(chart: JFreeChart) {
+    if (instanceRunning) {
+      val snapshot = new InstanceSnapshot(lastSnapshotID)
+      lastSnapshotID += 1
+      snapshot.addCPULoadChart(chart)
+      snapshot.addBandwidthChart(getBandwidthChart)
+      gui.addSnapshot(snapshot)
     }
   }
 
@@ -453,8 +526,7 @@ class InstanceActor extends Actor with ActorLogging {
           }
           gui.decreaseNrDownloadersFor(request.getBlockId)
           gui.updateCurrentTransfers(currentTransfers.size())
-          //TODO
-          //informDownloader(process, request)
+          informDownloader(process, request)
           pt -= pid
           cpu ! EndProcess(pid)
           if (currentTransfers.size() != 0) {
@@ -466,13 +538,15 @@ class InstanceActor extends Actor with ActorLogging {
     }
   }
 
-  /*
-  private def informDownloader(process:Process, request:Request) {
-    logger.info("Rebalancing finished for " + event.getPid());
- 		trigger(new BlockTransferred(self, request.getDestinationNode(), process.getBlockSize(), process.getRequest().getBlockId()), network);
-		logger.debug("Transferring finished for " + event.getPid() );
+  private def informDownloader(process: Process, request: Request) {
+    request.getDestNode match {
+      case null ⇒
+        guiLogger.debug("Transferring finished for %s".format(process.getPid))
+      case z if z != null ⇒
+        guiLogger.info("Rebalancing finished for %s".format(process.getPid))
+        z ! BlockTransferred(request.getId, process.getBlockSize)
+    }
   }
-*/
 
   private def updateTransferredBandwidth(process: Process) {
     // TODO: Should it be synchronized?
@@ -493,6 +567,53 @@ class InstanceActor extends Actor with ActorLogging {
       scheduleCPULoadPropagationToCloudProvider()
     }
   }
+
+  private def handleShutdown() {
+    sender match {
+      case `cloudProvider` ⇒
+        guiLogger.debug("Time to die forever :(")
+        if (!headless) gui.asInstanceOf[InstanceGUI].dispose()
+        dataBlocks.foreach(_._2 ! CloseMyStream())
+        cloudProvider ! ShutdownAck()
+        scheduler ! Schedule(1000, self, Death())
+      case _ ⇒ guiLogger.warn("Oh oh! Someone is trying to kill me, help!")
+    }
+  }
+
+  private def handleBlockTransferred(blockId: String, size: Long) {
+    pt.find((en) ⇒ en._2.getRequest.getBlockId == blockId) match {
+      case Some((pid, process)) ⇒
+        pt -= pid
+        val block = new Block(blockId, size)
+        cloudProvider ! ActivateBlock(block)
+        cpu ! EndProcess(pid)
+        cpu ! AbstractOperation(new DiskWriteOperation(size))
+        currentBandwidth = pt.size match {
+          case 0 ⇒ BANDWIDTH
+          case _ ⇒ BANDWIDTH / pt.size
+        }
+        addToBandwidthDiagram(currentBandwidth)
+        if (blocks.size == dataBlocks.size) {
+          guiLogger.info("Starting with %s block(s) in hand".format(blocks.size()))
+          disk ! LoadBlock(blocks)
+          gui.initializeDataBlocks(blocks)
+        }
+      case None ⇒ //NOP
+    }
+  }
+
+  private def handleCloseMyStreamRequest() {
+    val removableEntries = pt.filter((kv) ⇒ kv._2.getRequest.getDestNode != null && kv._2.getRequest.getDestNode == sender).keys
+    pt --= removableEntries
+  }
+
+  private def handleCPULoad(load: Double) {
+    if (instanceRunning) {
+      gui.cpuLoad(load)
+      currentCpuLoad = load
+    }
+  }
+
 }
 
 object InstanceActorApp {

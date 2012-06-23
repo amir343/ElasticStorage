@@ -15,6 +15,7 @@
  */
 package instance.common;
 
+import akka.actor.ActorRef;
 import se.sics.kompics.Event;
 import se.sics.kompics.address.Address;
 
@@ -32,7 +33,10 @@ public class Request extends Event implements Serializable {
 	private static final long serialVersionUID = 8315923390829741468L;
 	private String id;
 	private String blockId;
+    @Deprecated
 	private Address destinationNode;
+
+    private ActorRef destNode;
 	
 	public Request(String id, String blockID) {
 		this.id = id;
@@ -46,6 +50,12 @@ public class Request extends Event implements Serializable {
 		this.destinationNode = destinationNode;
 	}
 
+	public Request(String id, String blockID, ActorRef destNode) {
+		this.id = id;
+		this.blockId = blockID;
+		this.destNode = destNode;
+	}
+
 	public String getId() {
 		return id;
 	}
@@ -57,6 +67,11 @@ public class Request extends Event implements Serializable {
 	public Address getDestinationNode() {
 		return destinationNode;
 	}
+
+    public ActorRef getDestNode() {
+        return destNode;
+    }
+
 
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
