@@ -42,7 +42,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public abstract class AbstractGUI extends JFrame implements GUI {
 	
-	private static final long serialVersionUID = 8057900512324630299L;
+	private final long serialVersionUID = 8057900512324630299L;
 	private LogTextAreaMouseListener logTextAreaMouseListener = new LogTextAreaMouseListener(this);
 	protected JTextArea logTextArea;
 	protected JPanel logPanel;

@@ -5,6 +5,7 @@ import instance.os.Process
 import instance.common.{ AbstractOperation ⇒ AOperation, Request, Block }
 import org.jfree.chart.JFreeChart
 import akka.actor.{ Cancellable, ActorRef }
+import instance.InstanceGroupConfiguration
 
 /**
  * Copyright 2012 Amir Moulavi (amir.moulavi@gmail.com)
@@ -31,9 +32,11 @@ case class CancelProcess(pid: String, cancellable: Cancellable = null) extends C
 case class Schedule(delay: Long, actor: ActorRef, message: Message) extends Message
 case class CancellableSchedule(delay: Long, actor: ActorRef, message: Message, cancellableMessage: CancellableMessage) extends Message
 
+case class InstanceGroupStart(conf: InstanceGroupConfiguration) extends Message
+
 trait InstanceMessage extends Message
 // Instance Messages
-case class InstanceStart(nodeConfiguration: NodeConfiguration) extends InstanceMessage
+case class InstanceStart(nodeConfiguration: NodeConfiguration, nodeName: String) extends InstanceMessage
 case class RestartSignal() extends InstanceMessage
 case class BlocksAck() extends InstanceMessage
 case class RebalanceRequest(blockId: String) extends InstanceMessage
@@ -57,6 +60,7 @@ case class Death() extends InstanceMessage
 case class RestartInstance() extends InstanceMessage
 case class ActivateBlock(block: Block) extends InstanceMessage
 case class PostRebalancingActivities() extends InstanceMessage
+case class Stopped() extends InstanceMessage
 
 // CPU Messages
 case class CPUInit(nodeConfiguration: NodeConfiguration) extends InstanceMessage

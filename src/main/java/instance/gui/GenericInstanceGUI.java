@@ -15,6 +15,7 @@
  */
 package instance.gui;
 
+import common.GUI;
 import instance.InstanceActor;
 import instance.common.Block;
 import instance.os.InstanceSnapshot;
@@ -29,7 +30,7 @@ import java.util.List;
  * @author Amir Moulavi
  * @date 2011-07-14
  */
-public interface GenericInstanceGUI {
+public interface GenericInstanceGUI extends GUI {
 
     void cpuLoad(double load);
     void initializeDataBlocks(List<Block> blocks);

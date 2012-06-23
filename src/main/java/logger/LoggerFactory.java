@@ -27,7 +27,7 @@ import java.util.Map;
  * @date 2011-03-25
  *
  */
-
+@Deprecated
 public class LoggerFactory {
 
 	private static Long start = null;

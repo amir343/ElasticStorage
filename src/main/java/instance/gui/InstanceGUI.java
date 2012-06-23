@@ -48,12 +48,11 @@ import java.util.List;
 
 public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
 	
-	private static InstanceGUI instance = new InstanceGUI();
 	private Logger logger = LoggerFactory.getLogger(InstanceGUI.class, this);
     private InstanceActor instanceActor;
 
     public static InstanceGUI getInstance() {
-		return instance;
+        return new InstanceGUI();
 	}
 
 	private static final long serialVersionUID = -444747445088218621L;
@@ -105,7 +104,9 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
     }
 
 	public InstanceGUI() {
+/*
         setUIManager();
+*/
 		createMenuBar();
 		createTabs();
 		addWindowListener();
@@ -167,7 +168,7 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
 	private void createSnapshotTable() {
 		snapshotModel = new DefaultTableModel(new String[][]{}, snapshotTableColumns);
 		snapshotTable = new JTable(snapshotModel){
-			private static final long serialVersionUID = 6454534842446167244L;
+			private final long serialVersionUID = 6454534842446167244L;
 			public boolean isCellEditable(int rowIndex, int colIndex) {
 		          return false;
 	        }
@@ -275,27 +276,31 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
     private void createCPUPanel() {
 		cpuLoadPanel = new JPanel();
 		cpuLoadPanel.setBorder(BorderFactory.createTitledBorder("Current CPU Load"));
-		
-		cpuDialMeter = new Radial();
-		cpuDialMeter.init(70, 70);
-		cpuDialMeter.setTitle("CPU Load");
-		cpuDialMeter.setUnitString("");
-		cpuDialMeter.setMaximumSize(new Dimension(40, 40));
-		cpuDialMeter.setCustomTickmarkLabelsEnabled(false);
-		cpuDialMeter.setMinValue(0.0);
-		cpuDialMeter.setMaxValue(200);
-		cpuDialMeter.setValue(5);
-		cpuDialMeter.setThreshold(70.0);
-		cpuDialMeter.setFrameDesign(FrameDesign.CHROME);
-		cpuDialMeter.setBackgroundColor(BackgroundColor.BEIGE);
-		cpuDialMeter.setLcdDecimals(1);
-		cpuLoadPanel.add(cpuDialMeter);
+
+        try {
+            cpuDialMeter = new Radial();
+            cpuDialMeter.init(70, 70);
+            cpuDialMeter.setTitle("CPU Load");
+            cpuDialMeter.setUnitString("");
+            cpuDialMeter.setMaximumSize(new Dimension(40, 40));
+            cpuDialMeter.setCustomTickmarkLabelsEnabled(false);
+            cpuDialMeter.setMinValue(0.0);
+            cpuDialMeter.setMaxValue(200);
+            cpuDialMeter.setValue(5);
+            cpuDialMeter.setThreshold(70.0);
+            cpuDialMeter.setFrameDesign(FrameDesign.CHROME);
+            cpuDialMeter.setBackgroundColor(BackgroundColor.BEIGE);
+            cpuDialMeter.setLcdDecimals(1);
+            cpuLoadPanel.add(cpuDialMeter);
+        } catch(Exception e) {
+            System.out.println(e.getMessage());
+        }
 	}
 
 	private void createDataBlockTable(JPanel dataSec) {
 		model = new DefaultTableModel(new String[][]{}, dataTableColumns );
 		dataTable = new JTable(model){
-			private static final long serialVersionUID = 6454534842446167244L;
+			private final long serialVersionUID = 6454534842446167244L;
 			public boolean isCellEditable(int rowIndex, int colIndex) {
 		          return false;
 	        }

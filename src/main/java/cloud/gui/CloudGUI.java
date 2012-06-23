@@ -115,7 +115,9 @@ public class CloudGUI extends AbstractGUI {
 	private JTree elbTree;
 	
 	public CloudGUI() {
+/*
         setUIManager();
+*/
 		createTabs();
 		createMenuBar();
 		addWindowListener();

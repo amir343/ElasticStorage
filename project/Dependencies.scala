@@ -38,7 +38,8 @@ object Dependencies {
     val commonsMath = "org.apache.commons" % "commons-math" % "2.0"
     val xstream = "com.thoughtworks.xstream" % "xstream" % "1.2.2"
     val trident = "org.pushing-pixels" % "trident" % "1.2"
-    val steelSeries = "eu.hansolo" % "SteelSeries" % "3.8"
+    val steelSeries = "eu.hansolo" % "SteelSeries" % "3.9"
+    val jfxtras = "org.jfxtras" % "jfxtras-labs" % "0.1"
     val jFreeChart = "jfree" % "jfreechart" % "1.0.9"
     val scalaTest = "org.scalatest" %% "scalatest" % "1.8"
 
@@ -57,6 +58,7 @@ object Dependencies {
       xstream,
       trident,
       steelSeries,
+      jfxtras,
       jFreeChart,
       scalaTest
     )

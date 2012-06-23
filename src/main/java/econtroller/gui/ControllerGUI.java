@@ -131,7 +131,9 @@ public class ControllerGUI extends AbstractGUI {
 
 	
 	public ControllerGUI() {
+/*
         setUIManager();
+*/
 		createMenuBar();
 		createTabs();
 		addWindowListener();

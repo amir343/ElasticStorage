@@ -13,14 +13,12 @@ import org.jfree.data.xy.{ XYSeries, XYSeriesCollection }
 import collection.mutable
 import java.util.concurrent.ConcurrentHashMap
 import scala.collection.JavaConversions._
-import scheduler.SchedulerActor
-import cloud.CloudProviderActor
 import org.jfree.chart.{ ChartFactory, JFreeChart }
 import org.jfree.chart.plot.{ XYPlot, PlotOrientation }
 import org.jfree.chart.renderer.xy.XYItemRenderer
 import java.awt.Color
 import java.text.DecimalFormat
-import logger.{ LoggerFactory, Logger }
+import logger.{ GUILogger, LoggerFactory, Logger }
 import protocol.DiskReady
 import protocol.CPUInit
 import protocol.Rejected
@@ -99,8 +97,10 @@ class InstanceActor extends Actor with ActorLogging {
   private val memory = context.actorOf(Props[MemoryActor])
   private val kernel = context.actorOf(Props[KernelActor])
 
-  private val scheduler = context.actorFor("../scheduler")
-  private val cloudProvider = context.actorFor("../cloudProvider")
+  private val scheduler = context.actorFor("/user/scheduler")
+  private val cloudProvider = context.actorFor("/user/cloudProvider")
+
+  private val instanceGroup = context.actorFor("/user/instanceGroup")
 
   private val uname_r = "2.2-2"
   private val numberOfDevices = 3
@@ -131,8 +131,8 @@ class InstanceActor extends Actor with ActorLogging {
   private var headless = false
   private var dataBlocks = mutable.Map.empty[String, ActorRef]
   private var kernelLoaded = false
-  //TODO: should not use the old logger, instead call directly gui.log
-  private var guiLogger: Logger = _
+  private var guiLogger: GUILogger = _
+  private var nodeName: String = _
 
   def receive = genericHandler orElse
     cloudHandler orElse
@@ -144,7 +144,7 @@ class InstanceActor extends Actor with ActorLogging {
     uncategorizedHandler
 
   private def genericHandler: Receive = {
-    case InstanceStart(nodeConfig)       ⇒ initialize(nodeConfig)
+    case InstanceStart(nodeConfig, name) ⇒ initialize(nodeConfig, name)
     case WaitTimeout()                   ⇒ handleWaitTimeout()
     case ProcessRequestQueue()           ⇒ processRequestQueue()
     case PropagateCPULoad()              ⇒ propagateCPULoad()
@@ -340,7 +340,8 @@ class InstanceActor extends Actor with ActorLogging {
     }
   }
 
-  private def initialize(nodeConfig: NodeConfiguration) {
+  private def initialize(nodeConfig: NodeConfiguration, name: String) {
+    nodeName = name
     retrieveInitParameters(nodeConfig)
     cpu ! CPUInit(nodeConfig)
     disk ! DiskInit(nodeConfig)
@@ -355,6 +356,7 @@ class InstanceActor extends Actor with ActorLogging {
 
   def stopActor() {
     log.info("Getting ready to die!")
+    instanceGroup ! Stopped()
     context.system.stop(self)
   }
 
@@ -366,10 +368,10 @@ class InstanceActor extends Actor with ActorLogging {
     headless match {
       case true ⇒
         gui = new HeadLessGUI()
-        guiLogger = LoggerFactory.getLogger(classOf[InstanceActor], gui)
+        guiLogger = new GUILogger(gui, classOf[InstanceActor])
       case false ⇒
-        gui = InstanceGUI.getInstance()
-        guiLogger = LoggerFactory.getLogger(classOf[InstanceActor], gui)
+        gui = new InstanceGUI()
+        guiLogger = new GUILogger(gui, classOf[InstanceActor])
     }
     log.info("NodeConfigurations:\n%s".format(nodeConfig.toString()))
     gui.updateSimultaneousDownloads(String.valueOf(simultaneousDownloads))
@@ -398,7 +400,8 @@ class InstanceActor extends Actor with ActorLogging {
   }
 
   private def loadKernel() {
-    gui.updateTitle(context.self.path.address.toString)
+    val address = context.self.path.address
+    gui.updateTitle("%s://%s@%s".format(address.protocol, nodeName, address.system))
     gui.decorateWhileSystemStartUp()
     kernel ! KernelInit(_nodeConfiguration.getCpuConfiguration().getCpuSpeedInstructionPerSecond)
   }
@@ -651,16 +654,4 @@ class InstanceActor extends Actor with ActorLogging {
     cpu ! SnapshotRequest()
   }
 
-}
-
-object InstanceActorApp {
-  def main(args: Array[String]) {
-    val system = ActorSystem("testsystem")
-    val scheduler = system.actorOf(Props[SchedulerActor], "scheduler")
-    val cloudProvider = system.actorOf(Props[CloudProviderActor], "cloudProvider")
-    val instance = system.actorOf(Props[InstanceActor], "instance")
-    val nodeConfig = new NodeConfiguration(2.0, 5.0, 4, 20)
-    nodeConfig.setHeadLess(false)
-    instance ! InstanceStart(nodeConfig)
-  }
 }

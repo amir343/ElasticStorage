@@ -37,7 +37,7 @@ import org.jfree.chart.plot.PlotOrientation
  */
 class CPUActor extends Actor with ActorLogging {
 
-  private val scheduler = context.actorFor("../../scheduler")
+  private val scheduler = context.actorFor("/user/scheduler")
 
   private var CPU_CLOCK: Long = 2000000000L
   private val LOAD_CALC_INTERVAL: Long = 5000
