@@ -554,6 +554,7 @@ public class OS extends ComponentDefinition {
 	 * This handler sends a request to another instance asking for the recommended blocks that it received 
 	 * from cloud provider.
 	 */
+    // DONE
 	Handler<RebalanceRequest> rebalanceRequestHandler = new Handler<RebalanceRequest>() {
 		@Override
 		public void handle(RebalanceRequest event) {
@@ -570,6 +571,7 @@ public class OS extends ComponentDefinition {
 	/**
 	 * This handler is a response from the other instance with the data blocks 
 	 */
+    // DONE
 	Handler<RebalanceResponse> rebalanceResponseHandler = new Handler<RebalanceResponse>() {
 		@Override
 		public void handle(RebalanceResponse event) {
@@ -808,7 +810,8 @@ public class OS extends ComponentDefinition {
 	private void addToProcessTable(Process p) {
 		pt.put(p.getPid(), p);		
 	}
-	
+
+    // DONE
 	private void removeFromProcessTable(String pid) {
 		pt.remove(pid);		
 	}
@@ -818,7 +821,8 @@ public class OS extends ComponentDefinition {
 		StartProcess process = new StartProcess(p);
 		trigger(process, cpu);		
 	}
-	
+
+    // DONE
 	private void endProcessOnCPU(String pid) {
 		EndProcess process = new EndProcess(pid);
 		trigger(process, cpu);		
@@ -849,6 +853,7 @@ public class OS extends ComponentDefinition {
 		xySeries.add(System.currentTimeMillis() - startTime, bandWidth);		
 	}
 
+    // DONE
 	private JFreeChart getBandwidthChart() {
 		JFreeChart chart = ChartFactory.createXYLineChart("Bandwidth per download", "Time (ms)", "Bandwidth (B/s)", dataSet, PlotOrientation.VERTICAL, true, true, false);
 		XYPlot plot = chart.getXYPlot();
@@ -857,10 +862,12 @@ public class OS extends ComponentDefinition {
 		return chart;
 	}
 
+    // DONE
 	public void takeSnapshot() {
 		trigger(new SnapshotRequest(), cpu);		
 	}
 
+    // DONE
 	private boolean instanceRunning() {
         return numberOfDevices == numberOfDevicesLoaded && enabled;
     }

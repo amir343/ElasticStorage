@@ -425,7 +425,7 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
 
     @Override
 	public void takeSnapshot() {
-		os.takeSnapshot();
+		instanceActor.takeSnapshot();
 	}
 
     @Override
@@ -488,12 +488,12 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
 
     @Override
 	public void systemRestart() {
-		resetNrDownloaders();		
+		resetNrDownloaders();
 	}
 
     @Override
 	public void restartOS() {
-		os.restartInstance();		
+		instanceActor.restartInstance();
 		cpuDialMeter.setValueAnimated(0.0);
 	}
 	
@@ -509,6 +509,7 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
 		tabbedPane.setEnabledAt(2, false);
 		toolMenu.setEnabled(false);
 		fileMenu.setEnabled(false);
+        tabbedPane.setSelectedComponent(logPanel);
 	}
 
     @Override

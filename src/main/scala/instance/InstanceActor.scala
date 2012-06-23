@@ -72,6 +72,7 @@ import protocol.BlocksAck
 import protocol.CPUReady
 import protocol.CPULog
 import protocol.TransferringFinished
+import java.util
 
 /**
  * Copyright 2012 Amir Moulavi (amir.moulavi@gmail.com)
@@ -154,11 +155,14 @@ class InstanceActor extends Actor with ActorLogging {
     case Death()                         ⇒ stopActor()
     case CloseMyStream()                 ⇒ handleCloseMyStreamRequest()
     case BlockTransferred(blockId, size) ⇒ handleBlockTransferred(blockId, size)
+    case RebalanceRequest(blockId)       ⇒ handleRebalanceRequest(blockId)
+    case RebalanceResponse(block)        ⇒ handleRebalanceResponse(block)
+    case PostRebalancingActivities()     ⇒ handlePostRebalancingActivities()
   }
 
   private def cloudHandler: Receive = {
     case RequestMessage(request) ⇒ handleRequest(request)
-    case RestartInstance()       ⇒ handleRestart()
+    case RestartInstance()       ⇒ restartInstance()
     case HeartBeatMessage()      ⇒ sender ! Alive()
   }
 
@@ -235,6 +239,35 @@ class InstanceActor extends Actor with ActorLogging {
     }
   }
 
+  private def handleRebalanceRequest(blockId: String) {
+    blocks.find(_.getName == blockId) match {
+      case Some(block) ⇒
+        sender ! RebalanceResponse(block)
+        val req = new Request(util.UUID.randomUUID().toString, block.getName, sender)
+        startProcessForRequest(req)
+      case None ⇒ log.error("Received rebalance request for %s that I don't have!".format(blockId))
+    }
+  }
+
+  private def handleRebalanceResponse(block: Block) {
+    blocks = blocks ::: List(block)
+    guiLogger.debug("Rebalancing is started from %s for block %s".format(sender, block.getName))
+    scheduler ! Schedule(1000, self, PostRebalancingActivities())
+  }
+
+  private def handlePostRebalancingActivities() {
+    instanceRunning match {
+      case true ⇒
+        val p = Process.createAbstractProcess()
+        pt.put(p.getPid, p)
+        cpu ! StartProcess(p)
+        currentBandwidth = BANDWIDTH / blocks.size()
+        addToBandwidthDiagram(currentBandwidth)
+      case false ⇒
+        scheduler ! Schedule(1000, self, PostRebalancingActivities())
+    }
+  }
+
   private def handleCPUReady() {
     numberOfDevicesLoaded += 1
     for (i ← 1 to 10)
@@ -256,6 +289,7 @@ class InstanceActor extends Actor with ActorLogging {
   }
 
   private def osStarted() {
+    enabled = true
     kernelLoaded = true
     guiLogger.debug("OS with kernel %s started".format(uname_r))
     gui.decorateSystemStarted()
@@ -268,8 +302,9 @@ class InstanceActor extends Actor with ActorLogging {
     }
   }
 
-  private def handleRestart() {
+  def restartInstance() {
     if (instanceRunning) {
+      kernelLoaded = false
       cpu ! RestartSignal()
       memory ! RestartSignal()
       disk ! RestartSignal()
@@ -291,8 +326,6 @@ class InstanceActor extends Actor with ActorLogging {
       loadKernel()
       scheduleCPULoadPropagationToCloudProvider()
       scheduler ! Schedule(REQUEST_QUEUE_PROCESSING_INTERVAL, self, ProcessRequestQueue())
-
-      gui.decorateSystemStarted()
 
     }
   }
@@ -468,7 +501,6 @@ class InstanceActor extends Actor with ActorLogging {
   }
 
   private def cancelAllPreviousTimers() {
-    //TODO
     val ctClone = currentTransfers.clone()
     currentTransfers.clear()
     ctClone.values.foreach { c ⇒
@@ -552,6 +584,7 @@ class InstanceActor extends Actor with ActorLogging {
     // TODO: Should it be synchronized?
     megaBytesDownloadedSoFar += (process.getBlockSize / (1024 * 1024)).asInstanceOf[Int]
   }
+
   private def getBandwidthChart: JFreeChart = {
     val chart: JFreeChart = ChartFactory.createXYLineChart("Bandwidth per download", "Time (ms)", "Bandwidth (B/s)", dataSet, PlotOrientation.VERTICAL, true, true, false)
     val plot: XYPlot = chart.getXYPlot
@@ -612,6 +645,10 @@ class InstanceActor extends Actor with ActorLogging {
       gui.cpuLoad(load)
       currentCpuLoad = load
     }
+  }
+
+  def takeSnapshot() {
+    cpu ! SnapshotRequest()
   }
 
 }

@@ -48,7 +48,6 @@ class KernelActor extends Actor with ActorLogging {
   private def kernelLoaded() {
     val delay = OperationDuration.getExecutionOperation(cpuSpeed, 2000L)
     currentAccumulatedDelay += delay
-    log.debug("Kernel loaded: " + currentAccumulatedDelay)
     context.system.scheduler.scheduleOnce(currentAccumulatedDelay milliseconds, instance, KernelLoaded())
   }
 
@@ -321,6 +320,7 @@ class KernelActor extends Actor with ActorLogging {
   }
 
   def shutDown() {
+    currentAccumulatedDelay = 0
     schedule(2000L,
       sb.append("\n")
         .append("*************************************\n")

@@ -37,6 +37,7 @@ case class InstanceStart(nodeConfiguration: NodeConfiguration) extends InstanceM
 case class RestartSignal() extends InstanceMessage
 case class BlocksAck() extends InstanceMessage
 case class RebalanceRequest(blockId: String) extends InstanceMessage
+case class RebalanceResponse(block: Block) extends InstanceMessage
 case class InstanceStarted() extends InstanceMessage
 case class WaitTimeout() extends InstanceMessage
 case class ProcessRequestQueue() extends InstanceMessage
@@ -55,6 +56,7 @@ case class ShutdownAck() extends InstanceMessage
 case class Death() extends InstanceMessage
 case class RestartInstance() extends InstanceMessage
 case class ActivateBlock(block: Block) extends InstanceMessage
+case class PostRebalancingActivities() extends InstanceMessage
 
 // CPU Messages
 case class CPUInit(nodeConfiguration: NodeConfiguration) extends InstanceMessage
