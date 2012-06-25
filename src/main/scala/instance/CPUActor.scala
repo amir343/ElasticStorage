@@ -139,9 +139,9 @@ class CPUActor extends Actor with ActorLogging {
     if (enabled) {
       tasks incrementAndGet ()
       for (i ← 1 until operation.getNumberOfOperations()) {
-        val p = Process.createAbstractProcess()
-        pt.put(p.getPid, p)
-        scheduler ! Schedule(operation.getDuration(CPU_CLOCK), self, OperationFinishedTimeout(p.getPid))
+        val p = Process()
+        pt.put(p.pid, p)
+        scheduler ! Schedule(operation.getDuration(CPU_CLOCK), self, OperationFinishedTimeout(p.pid))
       }
     }
   }
@@ -162,7 +162,7 @@ class CPUActor extends Actor with ActorLogging {
 
   private def startProcess(process: Process) {
     if (enabled) {
-      pt.put(process.getPid, process)
+      pt.put(process.pid, process)
       tasks incrementAndGet ()
     }
   }

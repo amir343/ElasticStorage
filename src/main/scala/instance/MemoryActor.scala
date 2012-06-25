@@ -60,13 +60,10 @@ class MemoryActor extends Actor with ActorLogging {
 
   private def requestBlock(process: Process) {
     if (enabled) {
-      log.debug("Received request for data block %s".format(process.getRequest.getBlockId))
-      blocks.get(process.getRequest.getBlockId) match {
-        case Some(block) ⇒
-          process.setBlockSize(block.getSize)
-          instance ! AckBlock(process)
-
-        case None ⇒ instance ! NackBlock(process)
+      log.debug("Received request for data block %s".format(process.request.getBlockId))
+      blocks.get(process.request.getBlockId) match {
+        case Some(block) ⇒ instance ! AckBlock(process.copy(blockSize = block.getSize))
+        case None        ⇒ instance ! NackBlock(process)
       }
     }
   }

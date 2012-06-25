@@ -225,9 +225,11 @@ class InstanceActor extends Actor with ActorLogging {
   }
 
   private def readFromDiskIntoMemory(block: Block, process: Process) {
-    process.setBlockSize(block.getSize)
-    scheduler ! Schedule(OperationDuration.getDiskReadDuration(CPU.CPU_CLOCK, block.getSize), self, ReadDiskFinished(process.getPid))
+    updateProcess(process.copy(blockSize = block.getSize))
+    scheduler ! Schedule(OperationDuration.getDiskReadDuration(CPU.CPU_CLOCK, block.getSize), self, ReadDiskFinished(process.pid))
   }
+
+  private def updateProcess(process: Process) = pt.put(process.pid, process)
 
   private def handleReadDiskFinished(pid: String) {
     if (instanceRunning) {
@@ -258,8 +260,8 @@ class InstanceActor extends Actor with ActorLogging {
   private def handlePostRebalancingActivities() {
     instanceRunning match {
       case true ⇒
-        val p = Process.createAbstractProcess()
-        pt.put(p.getPid, p)
+        val p = Process()
+        updateProcess(p)
         cpu ! StartProcess(p)
         currentBandwidth = BANDWIDTH / blocks.size()
         addToBandwidthDiagram(currentBandwidth)
@@ -297,8 +299,8 @@ class InstanceActor extends Actor with ActorLogging {
 
   private def handleNackBlock(process: Process) {
     if (instanceRunning) {
-      guiLogger.debug("Block %s does not exists in the memory".format(process.getRequest.getBlockId))
-      disk ! ReadBlock(process.getRequest.getBlockId, process)
+      guiLogger.debug("Block %s does not exists in the memory".format(process.request.getBlockId))
+      disk ! ReadBlock(process.request.getBlockId, process)
     }
   }
 
@@ -468,9 +470,9 @@ class InstanceActor extends Actor with ActorLogging {
   }
 
   private def startProcessForRequest(req: Request) {
-    val process = new Process(req)
+    val process = Process(request = req)
     cpu ! StartProcess(process)
-    pt.put(process.getPid, process)
+    updateProcess(process)
     memory ! RequestBlock(process)
     gui.increaseNrDownloadersFor(req.getBlockId)
     gui.updateCurrentTransfers(currentTransfers.size())
@@ -478,9 +480,9 @@ class InstanceActor extends Actor with ActorLogging {
 
   private def handleAckBlock(process: Process) {
     if (instanceRunning) {
-      guiLogger.debug("Block %s exists in the memory".format(process.getRequest.getBlockId))
+      guiLogger.debug("Block %s exists in the memory".format(process.request.getBlockId))
       scheduleTransferForBlock(process)
-      cpu ! AbstractOperation(new MemoryReadOperation(process.getBlockSize))
+      cpu ! AbstractOperation(new MemoryReadOperation(process.blockSize))
     }
   }
 
@@ -500,7 +502,7 @@ class InstanceActor extends Actor with ActorLogging {
         guiLogger.debug("Transfer started %s".format(process))
         scheduleTimeoutFor(process, newBandwidth)
     }
-    cloudProvider ! DownloadStarted(process.getRequest.getId)
+    cloudProvider ! DownloadStarted(process.request.getId)
   }
 
   private def cancelAllPreviousTimers() {
@@ -524,14 +526,13 @@ class InstanceActor extends Actor with ActorLogging {
       cpu ! AbstractOperation(new MemoryCheckOperation())
       pt.get(c._1) match {
         case Some(p) ⇒
-          p.setRemainingBlockSize(p.getRemainingBlockSize - (now - p.getSnapshot) * p.getCurrentBandwidth / 1000)
-          if (p.getRemainingBlockSize < 0) p.setRemainingBlockSize(0)
-          p.setCurrentBandwidth(newBandwidth)
-          p.setTimeout(p.getRemainingBlockSize / p.getCurrentBandwidth)
-          p.setSnapshot(now)
-          pt.put(p.getPid, p)
-          val duration: Long = 1000 * p.getRemainingBlockSize / p.getCurrentBandwidth
-          scheduler ! CancellableSchedule(duration, self, TransferringFinished(p.getPid), CancelProcess(p.getPid))
+          var newRemainingBlockSize = p.remainingBlockSize - (now - p.snapshot) * p.currentBandwidth / 1000
+          val newTimeout = p.remainingBlockSize / p.currentBandwidth
+          if (newRemainingBlockSize < 0) newRemainingBlockSize = 0
+          val newProcess = p.copy(currentBandwidth = newBandwidth, timeout = newTimeout, snapshot = now)
+          updateProcess(newProcess)
+          val duration: Long = 1000 * newProcess.remainingBlockSize / newProcess.currentBandwidth
+          scheduler ! CancellableSchedule(duration, self, TransferringFinished(p.pid), CancelProcess(p.pid))
         case None ⇒ //TODO:What should we do?
       }
     }
@@ -539,19 +540,19 @@ class InstanceActor extends Actor with ActorLogging {
 
   private def scheduleTimeoutFor(process: Process, bandwidth: Long) {
     cpu ! AbstractOperation(new MemoryCheckOperation())
-    val transferDelay = 1000 * process.getBlockSize / bandwidth
-    val pid = process.getPid
-    val duration: Long = 1000L * process.getBlockSize / bandwidth
+    val transferDelay = 1000 * process.blockSize / bandwidth
+    val pid = process.pid
+    val duration: Long = 1000L * process.blockSize / bandwidth
     scheduler ! CancellableSchedule(duration, self, TransferringFinished(pid), CancelProcess(pid))
-    process.setCurrentBandwidth(bandwidth).setRemainingBlockSize(process.getBlockSize).setSnapshot(System.currentTimeMillis()).setTimeout(transferDelay)
-    pt.put(pid, process)
+    val newProcess = process.copy(currentBandwidth = bandwidth, remainingBlockSize = process.blockSize, snapshot = System.currentTimeMillis(), timeout = transferDelay)
+    updateProcess(newProcess)
   }
 
   private def handleTransferringFinished(pid: String) {
     if (instanceRunning) {
       pt.get(pid) match {
         case Some(process) ⇒
-          val request = process.getRequest
+          val request = process.request
           updateTransferredBandwidth(process)
           currentTransfers.get(pid) match {
             case Some(c) ⇒
@@ -576,16 +577,16 @@ class InstanceActor extends Actor with ActorLogging {
   private def informDownloader(process: Process, request: Request) {
     request.getDestNode match {
       case null ⇒
-        guiLogger.debug("Transferring finished for %s".format(process.getPid))
+        guiLogger.debug("Transferring finished for %s".format(process.pid))
       case z if z != null ⇒
-        guiLogger.info("Rebalancing finished for %s".format(process.getPid))
-        z ! BlockTransferred(request.getId, process.getBlockSize)
+        guiLogger.info("Rebalancing finished for %s".format(process.pid))
+        z ! BlockTransferred(request.getId, process.blockSize)
     }
   }
 
   private def updateTransferredBandwidth(process: Process) {
     // TODO: Should it be synchronized?
-    megaBytesDownloadedSoFar += (process.getBlockSize / (1024 * 1024)).asInstanceOf[Int]
+    megaBytesDownloadedSoFar += (process.blockSize / (1024 * 1024)).asInstanceOf[Int]
   }
 
   private def getBandwidthChart: JFreeChart = {
@@ -617,7 +618,7 @@ class InstanceActor extends Actor with ActorLogging {
   }
 
   private def handleBlockTransferred(blockId: String, size: Long) {
-    pt.find((en) ⇒ en._2.getRequest.getBlockId == blockId) match {
+    pt.find((en) ⇒ en._2.request.getBlockId == blockId) match {
       case Some((pid, process)) ⇒
         pt -= pid
         val block = new Block(blockId, size)
@@ -639,7 +640,7 @@ class InstanceActor extends Actor with ActorLogging {
   }
 
   private def handleCloseMyStreamRequest() {
-    val removableEntries = pt.filter((kv) ⇒ kv._2.getRequest.getDestNode != null && kv._2.getRequest.getDestNode == sender).keys
+    val removableEntries = pt.filter((kv) ⇒ kv._2.request.getDestNode != null && kv._2.request.getDestNode == sender).keys
     pt --= removableEntries
   }
 

@@ -63,7 +63,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * 
@@ -288,11 +287,13 @@ public class OS extends ComponentDefinition {
 	Handler<AckBlock> ackBlockHandler = new Handler<AckBlock>() {
 		@Override
 		public void handle(AckBlock event) {
+/*
 			if (instanceRunning()) {
 				logger.debug("Block " + event.getProcess().getRequest().getBlockId() + " exists in the memory");
 				scheduleTransferForBlock(event.getProcess());
 				trigger(new MemoryReadOperation(event.getProcess().getBlockSize()), cpu);
 			}
+*/
 		}
 	};
 
@@ -304,12 +305,14 @@ public class OS extends ComponentDefinition {
 	Handler<NAckBlock> nackBlockHandler = new Handler<NAckBlock>() {
 		@Override
 		public void handle(NAckBlock event) {
+/*
 			if (instanceRunning()) {
 				logger.debug("Block " + event.getProcess().getRequest().getBlockId() + " does not exists in the memory");
 				ReadBlock read = new ReadBlock(event.getProcess().getRequest().getBlockId());
 				read.setProcess(event.getProcess());
 				trigger(read, disk);
 			}
+*/
 		}
 	};
 
@@ -337,11 +340,14 @@ public class OS extends ComponentDefinition {
 	Handler<TransferringFinished> transferringFinishedHandler = new Handler<TransferringFinished>() {
 		@Override
 		public void handle(TransferringFinished event) {
+/*
 			if (instanceRunning()) {
 				Process process = pt.get(event.getPid());
+*/
 /*
                 checkIfCanAcceptRequest();
-*/
+*//*
+
                 if (process != null) {
                     Request request = process.getRequest();
                     updateTransferredBandwidth(process);
@@ -357,21 +363,26 @@ public class OS extends ComponentDefinition {
                     }
                 }
 			}
+*/
 		}
 
         // DONE
 		private synchronized void updateTransferredBandwidth(Process process) {
+/*
 			megaBytesDownloadedSoFar += (process.getBlockSize()/(1024*1024));
+*/
 		}
 
         // DONE
 		private void informDownloader(TransferringFinished event, Process process, Request request) {
+/*
 			if (request.getDestinationNode() != null) {
 				logger.info("Rebalancing finished for " + event.getPid());
 				trigger(new BlockTransferred(self, request.getDestinationNode(), process.getBlockSize(), process.getRequest().getBlockId()), network);
 			} else {
 				logger.debug("Transferring finished for " + event.getPid() );
 			}
+*/
 		}
 
     };
@@ -447,11 +458,13 @@ public class OS extends ComponentDefinition {
 
     // DONE
     private synchronized void removeProcessesBelongTo(CloseMyStream event) {
+/*
         for (String processId : pt.keySet()) {
             if (pt.get(processId).getRequest().getDestinationNode() != null &&
                     pt.get(processId).getRequest().getDestinationNode().equals(event.getSource()))
                 pt.remove(processId);
         }
+*/
     }
 
     /**
@@ -584,9 +597,11 @@ public class OS extends ComponentDefinition {
 					logger.error(e.getMessage());
 				}
 			}
+/*
 			Process p = Process.createAbstractProcess();
 			addToProcessTable(p);
 			startTransferProcessOnCPU(p);
+*/
 
 			currentBandwidth = BANDWIDTH / blocks.size();
 			addToBandwidthDiagram(currentBandwidth);
@@ -709,10 +724,14 @@ public class OS extends ComponentDefinition {
 	private void readFromDiskIntoMemory(BlockResponse response) {
 		Process process = response.getProcess();
 		Block block = response.getBlock();
+/*
 		process.setBlockSize(block.getSize());
+*/
 		ScheduleTimeout st = new ScheduleTimeout(OperationDuration.getDiskReadDuration(CPU.CPU_CLOCK, response.getBlock().getSize()));
 		ReadDiskFinished rd = new ReadDiskFinished(st);
+/*
 		rd.setPid(process.getPid());
+*/
 		st.setTimeoutEvent(rd);
 		trigger(st, timer);		
 	}
@@ -733,7 +752,9 @@ public class OS extends ComponentDefinition {
 			logger.debug("Transfer started " + process);
 			scheduleTimeoutFor(process, newBandwidth);
 		}
+/*
 		trigger(new DownloadStarted(self, cloudProvider, process.getRequest().getId()), network);
+*/
 	}
 
     // DONE
@@ -743,6 +764,7 @@ public class OS extends ComponentDefinition {
 		currentBandwidth = newBandwidth;
 		ConcurrentMap<UUID, String> ct = new ConcurrentHashMap<UUID, String>();
 		
+/*
 		for (Entry<UUID, String> en : currentTransfers.entrySet()) {
 			trigger(new MemoryCheckOperation(), cpu);
 			Process p = pt.get(en.getValue());
@@ -760,13 +782,15 @@ public class OS extends ComponentDefinition {
 			ct.put(st.getTimeoutEvent().getTimeoutId(), p.getPid());
 			trigger(st, timer);
 		}
-		
+*/
+
 		currentTransfers.clear();
 		currentTransfers.putAll(ct);
 	}
 
 	// DONE
     private void scheduleTimeoutFor(Process process, long bandwidth) {
+/*
 		trigger(new MemoryCheckOperation(), cpu);
 		long transferDelay = 1000 * process.getBlockSize() / bandwidth ;
 		ScheduleTimeout st = new ScheduleTimeout(1000 * process.getBlockSize() / bandwidth );
@@ -778,6 +802,7 @@ public class OS extends ComponentDefinition {
 		process.setCurrentBandwidth(bandwidth).setRemainingBlockSize(process.getBlockSize()).setSnapshot(System.currentTimeMillis()).setTimeout(transferDelay);
 		pt.put(process.getPid(), process);
 		trigger(st, timer);
+*/
 	}
 
     // DONE
@@ -791,12 +816,14 @@ public class OS extends ComponentDefinition {
 
     // DONE
 	protected void startProcessForRequest(Request event) {
+/*
 		Process p = new Process(event);
 		startTransferProcessOnCPU(p);
 		addToProcessTable(p);
 		checkMemory(p);		
 		gui.increaseNrDownloadersFor(event.getBlockId());
         gui.updateCurrentTransfers(currentTransfers.size());
+*/
 	}
 
     // DONE
@@ -808,7 +835,9 @@ public class OS extends ComponentDefinition {
 
     // DONE
 	private void addToProcessTable(Process p) {
-		pt.put(p.getPid(), p);		
+/*
+		pt.put(p.getPid(), p);
+*/
 	}
 
     // DONE

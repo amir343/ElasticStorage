@@ -269,13 +269,15 @@ public class CPU extends ComponentDefinition {
 	}
 
 	protected void scheduleTimerForOperation(long DURATION) {
+/*
 		Process p = Process.createAbstractProcess();
-		pt.put(p.getPid(), p);
+		pt.put(p.pid(), p);
 		ScheduleTimeout st = new ScheduleTimeout(DURATION);
 		OperationFinishedTimeout op = new OperationFinishedTimeout(st);
 		op.setPid(p.getPid());
 		st.setTimeoutEvent(op);
 		trigger(st, timer);
+*/
 	}
 
 	protected void scheduleLoadCalculation() {
@@ -291,7 +293,9 @@ public class CPU extends ComponentDefinition {
 	}
 
 	protected void addToProcessTable(Process process) {
+/*
 		pt.put(process.getPid(), process);
+*/
 	}
 
 	protected void removeFromProcessTable(String pid) {

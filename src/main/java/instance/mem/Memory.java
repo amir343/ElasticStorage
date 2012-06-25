@@ -117,6 +117,7 @@ public class Memory extends ComponentDefinition {
 	Handler<RequestBlock> requestBlockHandler = new Handler<RequestBlock>() {
 		@Override
 		public void handle(RequestBlock event) {
+/*
 			if (enabled) {
 				logger.debug("Received request for data block " + event.getProcess().getRequest().getBlockId());
 				if (blockExist(event.getProcess().getRequest().getBlockId())) {
@@ -128,6 +129,7 @@ public class Memory extends ComponentDefinition {
 					trigger(nack, memory);
 				}
 			}
+*/
 		}
 	};
 	
