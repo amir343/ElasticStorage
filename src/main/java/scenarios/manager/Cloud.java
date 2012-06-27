@@ -69,7 +69,7 @@ public abstract class Cloud {
 			throw new RuntimeException("Data block with name '" + name + "' already exists -> data(\"" + name+ "\", " + size +", Size." + sizeInBytes +");");
 		}
 		blockNames.add(name);
-		Block block = new Block(name, size*sizeInBytes.getSize());
+		Block block = new Block(name, size*sizeInBytes.getSize(), 0, 0);
 		blocks.add(block);
 	}
 

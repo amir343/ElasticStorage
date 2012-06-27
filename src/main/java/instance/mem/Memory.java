@@ -141,7 +141,7 @@ public class Memory extends ComponentDefinition {
 		public void handle(WriteBlockIntoMemory event) {
 			if (enabled) {
 				Block block = event.getBlock();
-				if (blocks.get(block.getName()) == null) logger.debug("Block " + event.getBlock().getName() + " is now in memory");
+				if (blocks.get(block.name()) == null) logger.debug("Block " + event.getBlock().name() + " is now in memory");
 				loadIntoMemory(event.getBlock());
 			}
 		}
@@ -152,16 +152,22 @@ public class Memory extends ComponentDefinition {
 	 * @param block
 	 */
 	protected void loadIntoMemory(Block block) {
-		while (currentSize + block.getSize() > capacity) {
+		while (currentSize + block.size() > capacity) {
+/*
 			Block min = Collections.min(blocks.values(), new Block.FrequencyComparator());
 			blocks.remove(min.getName());
 			currentSize -= min.getSize();
+*/
+/*
 			logger.debug("Block " + min + " removed");
-		} 
+*/
+		}
 		block.accessed();
+/*
 		block.setTimeEnteredInMemory(System.currentTimeMillis());
 		blocks.put(block.getName(), block);
-		currentSize += block.getSize();
+*/
+		currentSize += block.size();
 	}
 
 	protected void sendReadySignal() {

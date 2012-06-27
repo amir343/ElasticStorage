@@ -329,8 +329,8 @@ public class OS extends ComponentDefinition {
 			if (instanceRunning()) {
 				readFromDiskIntoMemory(event);
 				WriteBlockIntoMemory write = new WriteBlockIntoMemory(event.getBlock());
-				trigger(new DiskReadOperation(event.getBlock().getSize()), cpu);
-				trigger(new MemoryWriteOperation(event.getBlock().getSize()), cpu);
+				trigger(new DiskReadOperation(event.getBlock().size()), cpu);
+				trigger(new MemoryWriteOperation(event.getBlock().size()), cpu);
 				trigger(write, memory);
 			}
 		}
@@ -594,7 +594,7 @@ public class OS extends ComponentDefinition {
 		@Override
 		public void handle(RebalanceResponse event) {
 			blocks.add(event.getBlock());
-			logger.debug("Rebalancing is started from " + event.getSource() + " for block " + event.getBlock().getName());
+			logger.debug("Rebalancing is started from " + event.getSource() + " for block " + event.getBlock().name());
 			while(!instanceRunning()) {
 				try {
 					Thread.sleep(1000);
@@ -622,7 +622,7 @@ public class OS extends ComponentDefinition {
 		public void handle(BlockTransferred event) {
 			String process = pt.keySet().iterator().next();
 			pt.remove(process);
-			Block block = new Block (event.getBlockName(), event.getBlockSize());
+			Block block = new Block (event.blockName(), event.blockSize(), 0, 0);
 			ActivateBlock activateBlock = new ActivateBlock(self, cloudProvider, node, block);
 			trigger(activateBlock, network);
 			endProcessOnCPU(process);
@@ -681,7 +681,7 @@ public class OS extends ComponentDefinition {
     // DONE
 	protected Block findRequestedBlock(String blockId) {
 		for (Block block : blocks) {
-			if (block.getName().equals(blockId))
+			if (block.name().equals(blockId))
 				return block;
 		}
 		return null;
@@ -732,9 +732,9 @@ public class OS extends ComponentDefinition {
 /*
 		process.setBlockSize(block.getSize());
 */
-		ScheduleTimeout st = new ScheduleTimeout(OperationDuration.getDiskReadDuration(CPU.CPU_CLOCK, response.getBlock().getSize()));
+		ScheduleTimeout st = new ScheduleTimeout(OperationDuration.getDiskReadDuration(CPU.CPU_CLOCK, response.getBlock().size()));
 		ReadDiskFinished rd = new ReadDiskFinished(st);
-/*
+/*                                                                                     \
 		rd.setPid(process.getPid());
 */
 		st.setTimeoutEvent(rd);

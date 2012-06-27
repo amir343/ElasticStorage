@@ -319,8 +319,8 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
 	public void initializeDataBlocks(List<Block> blocks) {
 		if (blocks != null & model.getRowCount() == 0) {
             for (Block block : blocks) {
-				if (StringUtils.isNotEmpty(block.getName())) {
-					model.insertRow(model.getRowCount(), new Object[]{block.getName(), Size.getSizeString(block.getSize()), 0, 0});
+				if (StringUtils.isNotEmpty(block.name())) {
+					model.insertRow(model.getRowCount(), new Object[]{block.name(), Size.getSizeString(block.size()), 0, 0});
 				} else {
 					logger.error("Block name can not be null");
 				}

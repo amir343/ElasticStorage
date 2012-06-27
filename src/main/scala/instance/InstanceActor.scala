@@ -218,15 +218,15 @@ class InstanceActor extends Actor with ActorLogging {
   private def handleBlockResponse(block: Block, process: Process) {
     if (instanceRunning) {
       readFromDiskIntoMemory(block, process)
-      cpu ! AbstractOperation(new DiskReadOperation(block.getSize))
-      cpu ! AbstractOperation(new MemoryWriteOperation(block.getSize))
+      cpu ! AbstractOperation(new DiskReadOperation(block.size))
+      cpu ! AbstractOperation(new MemoryWriteOperation(block.size))
       memory ! WriteBlockIntoMemory(block)
     }
   }
 
   private def readFromDiskIntoMemory(block: Block, process: Process) {
-    updateProcess(process.copy(blockSize = block.getSize))
-    scheduler ! Schedule(OperationDuration.getDiskReadDuration(CPU.CPU_CLOCK, block.getSize), self, ReadDiskFinished(process.pid))
+    updateProcess(process.copy(blockSize = block.size))
+    scheduler ! Schedule(OperationDuration.getDiskReadDuration(CPU.CPU_CLOCK, block.size), self, ReadDiskFinished(process.pid))
   }
 
   private def updateProcess(process: Process) = pt.put(process.pid, process)
@@ -242,7 +242,7 @@ class InstanceActor extends Actor with ActorLogging {
   }
 
   private def handleRebalanceRequest(blockID: String) {
-    blocks.find(_.getName == blockID) match {
+    blocks.find(_.name == blockID) match {
       case Some(block) ⇒
         sender ! RebalanceResponse(block)
         val req = new Request(blockId = blockID, destNode = Some(sender))
@@ -253,7 +253,7 @@ class InstanceActor extends Actor with ActorLogging {
 
   private def handleRebalanceResponse(block: Block) {
     blocks = blocks ::: List(block)
-    guiLogger.debug("Rebalancing is started from %s for block %s".format(sender, block.getName))
+    guiLogger.debug("Rebalancing is started from %s for block %s".format(sender, block.name))
     scheduler ! Schedule(1000, self, PostRebalancingActivities())
   }
 

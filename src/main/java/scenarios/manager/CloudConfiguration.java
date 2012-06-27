@@ -22,7 +22,6 @@ import instance.common.Block;
 import org.apache.commons.lang.StringUtils;
 import se.sics.kompics.address.Address;
 
-import javax.swing.plaf.synth.SynthLookAndFeel;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;

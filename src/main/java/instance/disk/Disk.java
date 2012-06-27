@@ -131,7 +131,7 @@ public class Disk extends ComponentDefinition {
 
 	protected Block findBlock(String id) {
 		for (Block block : blocks) {
-			if (block.getName().equals(id)) {
+			if (block.name().equals(id)) {
 				return block;
 			}
 		}

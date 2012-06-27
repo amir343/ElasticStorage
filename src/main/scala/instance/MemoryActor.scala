@@ -62,7 +62,7 @@ class MemoryActor extends Actor with ActorLogging {
     if (enabled) {
       log.debug("Received request for data block %s".format(process.request.blockId))
       blocks.get(process.request.blockId) match {
-        case Some(block) ⇒ instance ! AckBlock(process.copy(blockSize = block.getSize))
+        case Some(block) ⇒ instance ! AckBlock(process.copy(blockSize = block.size))
         case None        ⇒ instance ! NackBlock(process)
       }
     }
@@ -70,8 +70,8 @@ class MemoryActor extends Actor with ActorLogging {
 
   private def writeBlockIntoMemory(block: Block) {
     if (enabled) {
-      blocks.get(block.getName) match {
-        case Some(blk) ⇒ log.debug("Block %s is now in memory".format(blk.getName))
+      blocks.get(block.name) match {
+        case Some(blk) ⇒ log.debug("Block %s is now in memory".format(blk.name))
         case None      ⇒ loadIntoMemory(block)
       }
     }
@@ -81,28 +81,25 @@ class MemoryActor extends Actor with ActorLogging {
    * Implements LFU (Least Frequently Used) algorithm
    */
   private def loadIntoMemory(block: Block) {
-    (currentSize + block.getSize > capacity) match {
+    (currentSize + block.size > capacity) match {
       case true ⇒
         val sorted = blocks.values.toList.sortWith(compareBlocks)
         var accumulatedSize = 0L
         val removableBlocks = sorted.takeWhile { b ⇒
-          accumulatedSize += b.getSize
-          accumulatedSize < block.getSize
+          accumulatedSize += b.size
+          accumulatedSize < block.size
         }
-        removableBlocks.foreach(b ⇒ blocks.remove(b.getName))
-        currentSize -= removableBlocks.map(_.getSize).sum
+        removableBlocks.foreach(b ⇒ blocks.remove(b.name))
+        currentSize -= removableBlocks.map(_.size).sum
     }
-    block accessed ()
-    block.setTimeEnteredInMemory(System.currentTimeMillis())
-    blocks.put(block.getName, block)
-    currentSize += block.getSize
+    val newBlock = block.access
+    blocks.put(newBlock.name, newBlock)
+    currentSize += newBlock.size
   }
 
-  private def compareBlocks(a: Block, b: Block): Boolean = {
-    if (a.getNrOfAccessedTimes == b.getNrOfAccessedTimes)
-      a.getTimeEnteredInMemory.compare(b.getTimeEnteredInMemory) < 0
-    else
-      a.getNrOfAccessedTimes.compare(b.getNrOfAccessedTimes) < 0
+  private def compareBlocks(a: Block, b: Block): Boolean = (a.accessed == b.accessed) match {
+    case true  ⇒ a.timeEnteredInMemory.compare(b.timeEnteredInMemory) < 0
+    case false ⇒ a.accessed.compare(b.accessed) < 0
   }
 
   private def restart() {

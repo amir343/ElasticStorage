@@ -63,8 +63,7 @@ public class ELBEntry {
 	}
 	
 	public Block getBlock() {
-		Block block = new Block(name, size);
-		return block;
+		return new Block(name, size, 0, 0);
 	}
 
 	public void suspect(Node node) {

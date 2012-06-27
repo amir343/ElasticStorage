@@ -17,13 +17,11 @@ package cloud.api;
 
 import cloud.common.NodeConfiguration;
 import instance.Node;
-import instance.common.Block;
 import se.sics.kompics.address.Address;
 
 import java.io.*;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.List;
 
 /**
  * 

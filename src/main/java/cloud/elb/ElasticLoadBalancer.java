@@ -25,7 +25,6 @@ import instance.Node;
 import instance.common.Block;
 import instance.common.BlocksAck;
 import instance.common.Rejected;
-import instance.common.Request;
 import logger.Logger;
 import logger.LoggerFactory;
 import scenarios.manager.SLA;
@@ -243,7 +242,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
                Map<String, Address> dataBlocksMap = new HashMap<String, Address>();
           for (ELBEntry entry : elbTable.getEntries()) {
                Node node = loadBalancerAlgorithm.getNextNodeFrom(entry.getReplicas());
-               dataBlocksMap.put(entry.getBlock().getName(), node.getAddress());
+               dataBlocksMap.put(entry.getBlock().name(), node.getAddress());
                }
           NodeConfiguration nodeConfig = event.getNodeConfiguration();
           nodeConfig.setDataBlocksMap(dataBlocksMap);
@@ -362,7 +361,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 	protected void startELBTable(ELBInit event) {
 		elbTable = new ELBTable(event.replicationDegree());
 		for (Block block : event.blocks()) {
-			ELBEntry entry = new ELBEntry(block.getName(), block.getSize());
+			ELBEntry entry = new ELBEntry(block.name(), block.size());
 			elbTable.addEntry(entry);
 		}
 	}
