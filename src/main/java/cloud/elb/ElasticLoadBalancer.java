@@ -38,7 +38,6 @@ import se.sics.kompics.network.Network;
 import se.sics.kompics.timer.ScheduleTimeout;
 import se.sics.kompics.timer.Timer;
 
-import javax.swing.plaf.synth.SynthLookAndFeel;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -80,7 +79,9 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 		subscribe(sendRawDataHandler, elb);
         subscribe(selectNodesToRemoveHandler, elb);
 		
+/*
 		subscribe(requestHandler, generator);
+*/
 		subscribe(responseTimeHandler, generator);
 
 		subscribe(blocksAckHandler, network);
@@ -183,6 +184,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 	 * This handler is triggered by Request Generator and it is responsible for sending
 	 * request to the chosen node with respect to LoadBalancerAlgorithm
 	 */
+/*
 	Handler<Request> requestHandler = new Handler<Request>() {
 		@Override
 		public void handle(Request event) {
@@ -195,6 +197,7 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 				logger.error("No node found to send the next request in elbTable");
 		}
 	};
+*/
 
 	/**
 	 * This handler is triggered when a transfer starts

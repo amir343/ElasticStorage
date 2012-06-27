@@ -206,10 +206,10 @@ class InstanceActor extends Actor with ActorLogging {
       guiLogger.debug("Received request for block %s".format(request))
       (simultaneousDownloads > currentTransfers.size()) match {
         case true ⇒
-          guiLogger.debug("Admitted Request for block '%s'".format(request.getBlockId))
+          guiLogger.debug("Admitted Request for block '%s'".format(request.blockId))
           requestQueue.enqueue(request)
         case false ⇒
-          guiLogger.warn("Rejected Request for download block %s. No free slot. {simDown: %s, currentTrans: %s}".format(request.getBlockId, simultaneousDownloads, currentTransfers.size))
+          guiLogger.warn("Rejected Request for download block %s. No free slot. {simDown: %s, currentTrans: %s}".format(request.blockId, simultaneousDownloads, currentTransfers.size))
           cloudProvider ! Rejected(request)
       }
     }
@@ -241,13 +241,13 @@ class InstanceActor extends Actor with ActorLogging {
     }
   }
 
-  private def handleRebalanceRequest(blockId: String) {
-    blocks.find(_.getName == blockId) match {
+  private def handleRebalanceRequest(blockID: String) {
+    blocks.find(_.getName == blockID) match {
       case Some(block) ⇒
         sender ! RebalanceResponse(block)
-        val req = new Request(util.UUID.randomUUID().toString, block.getName, sender)
+        val req = new Request(blockId = blockID, destNode = Some(sender))
         startProcessForRequest(req)
-      case None ⇒ log.error("Received rebalance request for %s that I don't have!".format(blockId))
+      case None ⇒ log.error("Received rebalance request for %s that I don't have!".format(blockID))
     }
   }
 
@@ -299,8 +299,8 @@ class InstanceActor extends Actor with ActorLogging {
 
   private def handleNackBlock(process: Process) {
     if (instanceRunning) {
-      guiLogger.debug("Block %s does not exists in the memory".format(process.request.getBlockId))
-      disk ! ReadBlock(process.request.getBlockId, process)
+      guiLogger.debug("Block %s does not exists in the memory".format(process.request.blockId))
+      disk ! ReadBlock(process.request.blockId, process)
     }
   }
 
@@ -474,13 +474,13 @@ class InstanceActor extends Actor with ActorLogging {
     cpu ! StartProcess(process)
     updateProcess(process)
     memory ! RequestBlock(process)
-    gui.increaseNrDownloadersFor(req.getBlockId)
+    gui.increaseNrDownloadersFor(req.blockId)
     gui.updateCurrentTransfers(currentTransfers.size())
   }
 
   private def handleAckBlock(process: Process) {
     if (instanceRunning) {
-      guiLogger.debug("Block %s exists in the memory".format(process.request.getBlockId))
+      guiLogger.debug("Block %s exists in the memory".format(process.request.blockId))
       scheduleTransferForBlock(process)
       cpu ! AbstractOperation(new MemoryReadOperation(process.blockSize))
     }
@@ -502,7 +502,7 @@ class InstanceActor extends Actor with ActorLogging {
         guiLogger.debug("Transfer started %s".format(process))
         scheduleTimeoutFor(process, newBandwidth)
     }
-    cloudProvider ! DownloadStarted(process.request.getId)
+    cloudProvider ! DownloadStarted(process.request.id)
   }
 
   private def cancelAllPreviousTimers() {
@@ -560,7 +560,7 @@ class InstanceActor extends Actor with ActorLogging {
               currentTransfers -= pid
             case None ⇒ //NOP
           }
-          gui.decreaseNrDownloadersFor(request.getBlockId)
+          gui.decreaseNrDownloadersFor(request.blockId)
           gui.updateCurrentTransfers(currentTransfers.size())
           informDownloader(process, request)
           pt -= pid
@@ -575,12 +575,12 @@ class InstanceActor extends Actor with ActorLogging {
   }
 
   private def informDownloader(process: Process, request: Request) {
-    request.getDestNode match {
-      case null ⇒
+    request.destNode match {
+      case None ⇒
         guiLogger.debug("Transferring finished for %s".format(process.pid))
-      case z if z != null ⇒
+      case Some(node) ⇒
         guiLogger.info("Rebalancing finished for %s".format(process.pid))
-        z ! BlockTransferred(request.getId, process.blockSize)
+        node ! BlockTransferred(request.id, process.blockSize)
     }
   }
 
@@ -617,11 +617,11 @@ class InstanceActor extends Actor with ActorLogging {
     }
   }
 
-  private def handleBlockTransferred(blockId: String, size: Long) {
-    pt.find((en) ⇒ en._2.request.getBlockId == blockId) match {
+  private def handleBlockTransferred(blockID: String, size: Long) {
+    pt.find((en) ⇒ en._2.request.blockId == blockID) match {
       case Some((pid, process)) ⇒
         pt -= pid
-        val block = new Block(blockId, size)
+        val block = new Block(blockID, size)
         cloudProvider ! ActivateBlock(block)
         cpu ! EndProcess(pid)
         cpu ! AbstractOperation(new DiskWriteOperation(size))
@@ -640,7 +640,7 @@ class InstanceActor extends Actor with ActorLogging {
   }
 
   private def handleCloseMyStreamRequest() {
-    val removableEntries = pt.filter((kv) ⇒ kv._2.request.getDestNode != null && kv._2.request.getDestNode == sender).keys
+    val removableEntries = pt.filter((kv) ⇒ kv._2.request.destNode != None && kv._2.request.destNode == Some(sender)).keys
     pt --= removableEntries
   }
 

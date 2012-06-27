@@ -348,7 +348,7 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
 				}
 			}
 		} else {
-			logger.error("blockId can not be null");
+			logger.error("blockID can not be null");
 		}
 	}
 
@@ -365,7 +365,7 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
 				}
 			}
 		} else {
-			logger.error("blockId can not be null");
+			logger.error("blockID can not be null");
 		}
 	}
 

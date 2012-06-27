@@ -33,6 +33,8 @@ class Generator extends PortType {
   negative(classOf[SendRawData])
   negative(classOf[BlocksActivated])
   positive(classOf[SendRawData])
+  /*
   positive(classOf[Request])
+*/
 
 }

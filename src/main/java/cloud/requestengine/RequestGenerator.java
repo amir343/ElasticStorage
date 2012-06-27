@@ -22,7 +22,6 @@ import cloud.common.SendRawData;
 import cloud.elb.BlocksActivated;
 import cloud.gui.CloudGUI;
 import instance.common.Block;
-import instance.common.Request;
 import logger.Logger;
 import logger.LoggerFactory;
 import se.sics.kompics.ComponentDefinition;
@@ -96,11 +95,13 @@ public class RequestGenerator extends ComponentDefinition {
 				timerIds.remove(event.getTimeoutId());
 			}
 			for (Block block : blocks) {
+/*
 				Request request = new Request(UUID.randomUUID().toString(), block.getName());
 				RequestStatistic stat = new RequestStatistic();
 				stat.setStart(System.currentTimeMillis());
 				currentRequests.put(request.getId(), stat);
 				trigger(request, generator);
+*/
 			}
 			if (running) scheduleRequestGeneratorEngine();			
 		}
@@ -123,8 +124,10 @@ public class RequestGenerator extends ComponentDefinition {
     Handler<DownloadRejected> downloadRejectedHandler = new Handler<DownloadRejected>() {
         @Override
         public void handle(DownloadRejected event) {
+/*
             String id = event.getRequest().getId();
             updateDownloadStatus(id);
+*/
         }
     };
 

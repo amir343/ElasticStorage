@@ -22,7 +22,6 @@ import cloud.common.NodeConfiguration;
 import cloud.common.RequestMessage;
 import cloud.elb.ActivateBlock;
 import cloud.elb.MyCPULoadAndBandwidth;
-import cloud.requestengine.DownloadStarted;
 import econtroller.sensor.Monitor;
 import instance.Node;
 import instance.common.*;
@@ -205,11 +204,15 @@ public class OS extends ComponentDefinition {
 				Request req = event.request();
                 logger.debug("Received request for block " + req);
                 if (simultaneousDownloads > currentTransfers.size()) {
+/*
                     logger.debug("Admitted Request for block '" + req.getBlockId() + "'");
+*/
                     requestQueue.add(req);
                 }
                 else {
+/*
                     logger.warn("Rejected Request for download block " + req.getBlockId() + ". No free slot. {simDown: " + simultaneousDownloads + ", currenTrans: " + currentTransfers.size() + "}");
+*/
                     Rejected rejected = new Rejected(self, cloudProvider, event.request());
                     trigger(rejected, network);
                 }
@@ -576,8 +579,10 @@ public class OS extends ComponentDefinition {
 /*
 			acceptRequest = false;
 */
+/*
 			Request req = new Request(UUID.randomUUID().toString(), block.getName(), event.getSource());
 			startProcessForRequest(req);
+*/
 		}
 	};
 	

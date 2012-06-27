@@ -1,5 +1,10 @@
+package instance.common
+
+import akka.actor.ActorRef
+import java.util
+
 /**
- * Copyright 2011 Amir Moulavi (amir.moulavi@gmail.com)
+ * Copyright 2012 Amir Moulavi (amir.moulavi@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -12,18 +17,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
-package instance.common
-
-import se.sics.kompics.PortType
-
-/**
- * @author Amir Moulavi
- * @date 2011-07-16
  *
+ * @author Amir Moulavi
  */
-class OSPort extends PortType {
-  /*
-  negative(classOf[Request])
-*/
-}
+
+case class Request(id: String = util.UUID.randomUUID().toString, blockId: String, destNode: Option[ActorRef] = None)
