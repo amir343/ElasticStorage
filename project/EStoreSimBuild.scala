@@ -35,7 +35,7 @@ object EStoreSimBuild extends Build {
    */
   lazy val eStoreSim = Project("ess", file("."))
     .settings(basicSettings: _*)
-    .aggregate(core, instance)
+    .aggregate(core, instance, cloud, examples)
 
 
   /**
@@ -54,6 +54,26 @@ object EStoreSimBuild extends Build {
     .settings(resolversSettings: _*)
     .settings(formatSettings: _*)
     .settings(libraryDependencies ++= Compile.allDependencies)
+    .dependsOn(core, cloud)
+
+  /**
+   * ess-cloud module
+   */
+  lazy val cloud = Project("ess-cloud", file("ess-cloud"))
+    .settings(resolversSettings: _*)
+    .settings(formatSettings: _*)
+    .settings(libraryDependencies ++= Compile.allDependencies)
     .dependsOn(core)
+
+  /**
+   * ess-examples module
+   */
+  lazy val examples = Project("ess-examples", file("ess-examples"))
+    .settings(resolversSettings: _*)
+    .settings(formatSettings: _*)
+    .settings(libraryDependencies ++= Compile.allDependencies)
+    .dependsOn(instance, cloud)
+
+
 
 }

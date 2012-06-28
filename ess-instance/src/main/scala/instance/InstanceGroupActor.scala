@@ -2,13 +2,9 @@ package instance
 
 import akka.actor._
 import scala.collection.mutable
-import protocol._
 import protocol.InstanceGroupStart
 import protocol.Stopped
 import protocol.InstanceStart
-import scheduler.SchedulerActor
-import cloud.CloudProviderActor
-import cloud.common.NodeConfiguration
 
 /**
  * Copyright 2012 Amir Moulavi (amir.moulavi@gmail.com)
@@ -55,16 +51,4 @@ class InstanceGroupActor extends Actor with ActorLogging {
     }
   }
 
-}
-
-object InstanceActorApp {
-  def main(args: Array[String]) {
-    val system = ActorSystem("testsystem")
-    val scheduler = system.actorOf(Props[SchedulerActor], "scheduler")
-    val cloudProvider = system.actorOf(Props[CloudProviderActor], "cloudProvider")
-    val instanceGroup = system.actorOf(Props[InstanceGroupActor], "instanceGroup")
-    val nodeConfig = new NodeConfiguration(2.0, 5.0, 4, 20)
-    nodeConfig.setHeadLess(false)
-    instanceGroup ! InstanceGroupStart(InstanceGroupConfiguration(List(nodeConfig)))
-  }
 }
