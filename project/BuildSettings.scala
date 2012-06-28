@@ -39,6 +39,13 @@ object BuildSettings {
                      )
   )
 
+  lazy val resolversSettings = Seq[Setting[_]](
+    resolvers     := Seq(
+      "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
+      "SICS Snapshot Repository" at "http://kompics.sics.se/maven/snapshotrepository"
+    )
+  )
+
   lazy val noPublishing = Seq(
     publish := (),
     publishLocal := ()

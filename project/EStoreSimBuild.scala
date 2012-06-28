@@ -29,12 +29,31 @@ object EStoreSimBuild extends Build {
     shellPrompt := { s => Project.extract(s).currentProject.id + " > " }
   }
 
-  lazy val eStoreSim = Project("EStoreSim", file("."))
+
+  /**
+   * eStoreSim project
+   */
+  lazy val eStoreSim = Project("ess", file("."))
+    .settings(basicSettings: _*)
+    .aggregate(core, instance)
+
+
+  /**
+   * ess-core module
+   */
+  lazy val core = Project("ess-core", file("ess-core"))
     .settings(basicSettings: _*)
     .settings(formatSettings: _*)
     .settings(libraryDependencies ++= Compile.allDependencies)
-/*
-    .settings(com.github.retronym.SbtOneJar.oneJarSettings: _*)
-*/
+
+
+  /**
+   * ess-instance module
+   */
+  lazy val instance = Project("ess-instance", file("ess-instance"))
+    .settings(resolversSettings: _*)
+    .settings(formatSettings: _*)
+    .settings(libraryDependencies ++= Compile.allDependencies)
+    .dependsOn(core)
 
 }

@@ -12,4 +12,6 @@ si/*
 .idea_modules/
 project/project/
 project/target/
+ess-core/target/
+ess-instance/target/
 
