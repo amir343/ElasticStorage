@@ -1,7 +1,15 @@
 package cloud
 
-import akka.actor.{ ActorLogging, Actor }
-import protocol.{ InstanceCost, MyCPULoadAndBandwidth, InstanceStarted, BlocksAck }
+import scala.collection.JavaConversions._
+import akka.actor.{ ActorRef, ActorLogging, Actor }
+import gui.CloudGUI
+import protocol._
+import collection.mutable
+import java.util.concurrent.ConcurrentHashMap
+import protocol.MyCPULoadAndBandwidth
+import protocol.InstanceStarted
+import protocol.InstanceCost
+import protocol.BlocksAck
 
 /**
  * Copyright 2012 Amir Moulavi (amir.moulavi@gmail.com)
@@ -23,6 +31,18 @@ import protocol.{ InstanceCost, MyCPULoadAndBandwidth, InstanceStarted, BlocksAc
 class CloudProviderActor extends Actor with ActorLogging {
 
   log.info("CloudProvider is initialized.")
+
+  private var controllerRef: ActorRef = context.system.actorFor("/user/controller")
+
+  private var lastCreatedSnapshotId = 1
+  private var headLess: Boolean = false
+  private var gui: CloudGUI = _
+  //    private int lastCreatedElasticStorageNode = 1;
+  private var _cloudConfiguration: CloudConfiguration = _
+  private var connectedToController: Boolean = false
+  //    private List<Node> currentNodes = new ArrayList<Node>();
+  private val costTable: mutable.ConcurrentMap[String, Double] = new ConcurrentHashMap[String, Double]()
+  private val periodicCostTable: mutable.ConcurrentMap[String, Double] = new ConcurrentHashMap[String, Double]()
 
   def receive = genericHandler orElse
     uncategorizedMessagesHandler
