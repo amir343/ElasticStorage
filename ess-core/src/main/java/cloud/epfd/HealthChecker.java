@@ -16,7 +16,6 @@
 package cloud.epfd;
 
 import cloud.common.*;
-import cloud.gui.CloudGUI;
 import com.google.common.collect.Sets;
 import logger.Logger;
 import logger.LoggerFactory;
@@ -56,8 +55,10 @@ public class HealthChecker extends ComponentDefinition {
 	private long PERIOD = 5000;
 	private long DELTA = 1000;
 	protected Address self;
+/*
 	private Logger logger;
-	
+*/
+
 	public HealthChecker() {
 		subscribe(initHandler, epfd);
 		subscribe(considerInstanceHandler, epfd);
@@ -71,10 +72,12 @@ public class HealthChecker extends ComponentDefinition {
 	Handler<HealthCheckerInit> initHandler = new Handler<HealthCheckerInit>() {
 		@Override
 		public void handle(HealthCheckerInit event) {
+/*
 			logger = LoggerFactory.getLogger(HealthChecker.class, CloudGUI.getInstance());
+*/
 			PERIOD = event.period() == 0 ? PERIOD : event.period();
 			DELTA = event.delta() == 0 ? DELTA : event.delta();
-			logger.info("HealthChecker started with Period=" + PERIOD + " and Delta=" + DELTA);
+/*			logger.info("HealthChecker started with Period=" + PERIOD + " and Delta=" + DELTA);*/
 			self = event.self();
             startPeriodicHeartbeatTimer();
 		}
@@ -94,12 +97,14 @@ public class HealthChecker extends ComponentDefinition {
 						if (!killedInstances.contains(node)) {
 							suspect.add(node);
 							trigger(new Suspect(node), epfd);
-							logger.info("Node " + node + " is suspected");
+/*							logger.info("Node " + node + " is suspected");*/
 						}
 					} else if ( alive.contains(node) && suspect.contains(node)) {
 						suspect.remove(node);
 						trigger(new Restore(node), epfd);
+/*
 						logger.info("Node " + node + " is restored");
+*/
 					}
 					trigger(new HeartbeatMessage(self, node), network);
 				}
@@ -127,7 +132,7 @@ public class HealthChecker extends ComponentDefinition {
 		@Override
 		public void handle(ConsiderInstance event) {
 			trigger(new HeartbeatMessage(self, event.getAddress()), network);
-			logger.debug("I will consider the health for " + event.getNode());
+/*			logger.debug("I will consider the health for " + event.getNode());*/
 		}
 	};
 	
@@ -141,7 +146,7 @@ public class HealthChecker extends ComponentDefinition {
 			availableInstances.remove(event.getAddress());
 			alive.remove(event.getAddress());
 			killedInstances.add(event.getAddress());
-			logger.debug("I will not consider the health for " + event.node());
+/*			logger.debug("I will not consider the health for " + event.node());*/
 		}
 	};
 

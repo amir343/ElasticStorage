@@ -15,11 +15,8 @@
  */
 package cloud.elb;
 
-import cloud.gui.CloudGUI;
 import instance.Node;
 import instance.common.Block;
-import logger.Logger;
-import logger.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,8 +31,10 @@ import java.util.List;
 
 public class ELBTable {
 
+/*
 	private Logger logger = LoggerFactory.getLogger(ElasticLoadBalancer.class, CloudGUI.getInstance());
-	
+*/
+
 	private int desireReplicateDegree;
 	private List<ELBEntry> entries = new ArrayList<ELBEntry>();
 	
@@ -74,30 +73,40 @@ public class ELBTable {
 	public void suspectEntriesForNode(Node node) {
 		for (ELBEntry entry : entries) {
 			entry.suspect(node);
+/*
 			logger.warn("Replica " + entry.getBlock().toString() + " for node " + node + " is suspected");
-		}		
+*/
+		}
 	}
 	
 	public void restoreEntriesForNode(Node node) {
 		for (ELBEntry entry : entries) {
 			entry.restore(node);
+/*
 			logger.warn("Replica " + entry.getBlock().toString() + " for node " + node + " is restored");
-		}		
+*/
+		}
 	}
 
 	public void removeReplicasForNode(Node node) {
 		for (ELBEntry entry : entries) {
 			entry.removeFor(node);
+/*
 			logger.warn("Replica " + entry.getBlock().toString() + " for node " + node + " is removed");
-		}	
+*/
+		}
 	}
 
 	public void activeBlocksForNode(Node node) {
 		for (ELBEntry entry : entries) {
 			if (!entry.isActive())
+/*
 				logger.debug("Block " + entry.getBlock().toString() + " is activated");
+*/
 			entry.activateFor(node);
+/*
 			logger.debug("Number of replicas for block " + entry.getName() + ": " + entry.getNrOfReplicas());
+*/
 		}
 	}
 	
@@ -105,7 +114,9 @@ public class ELBTable {
 		for (ELBEntry entry : entries) {
 			if (entry.getBlock().equals(block)) {
 				entry.activateFor(node);
+/*
 				logger.debug("Block " + entry.getBlock().toString() + " is activated");
+*/
 				return;
 			}
 		}
@@ -124,7 +135,9 @@ public class ELBTable {
 		if (entry.isActive()) {
 			return entry.getNextNodeToSendRequest();
 		}
+/*
 		logger.warn("Entry " + entry + " is not yet activated!");
+*/
 		return null;
 	}
 

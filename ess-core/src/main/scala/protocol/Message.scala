@@ -6,6 +6,7 @@ import instance.common.{ AbstractOperation ⇒ AOperation, Request, Block }
 import org.jfree.chart.JFreeChart
 import akka.actor.{ Cancellable, ActorRef }
 import instance.InstanceGroupConfiguration
+import scenarios.manager.SLA
 
 /**
  * Copyright 2012 Amir Moulavi (amir.moulavi@gmail.com)
@@ -107,3 +108,14 @@ case class RequestMessage(request: Request) extends InstanceMessage
 // EPFD
 case class HeartBeatMessage() extends InstanceMessage
 case class Alive() extends InstanceMessage
+
+trait CloudMessage extends Message
+
+// Cloud Provider
+case class CloudStart(cloudConfig: CloudConfiguration, cloudName: String) extends CloudMessage
+
+// ELB
+case class ELBInit(cloudConfig: CloudConfiguration) extends CloudMessage
+
+// EPFD
+case class HealthCheckerInit(period: Long = 5000, delta: Long = 1000) extends CloudMessage

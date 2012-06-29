@@ -40,7 +40,9 @@ public class InstanceConfiguration implements Serializable {
 
 	public InstanceConfiguration(NodeConfiguration node, Address cloudProviderAddress) {
 		this.nodeConfiguration = node;
+/*
 		this.node = node.getNode();
+*/
 		this.cloudProviderAddress = cloudProviderAddress;
 	}
 

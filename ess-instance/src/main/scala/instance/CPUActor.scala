@@ -66,8 +66,8 @@ class CPUActor extends Actor with ActorLogging {
   private def initialize(nodeConfig: NodeConfiguration) {
     enabled = true
     _nodeConfig = nodeConfig
-    CPUUtil.CPU_CLOCK = nodeConfig.getCpuConfiguration.getCpuSpeedInstructionPerSecond
-    instance ! UpdateCPUInfoLabel("%s GHz".format(nodeConfig.getCpuConfiguration.getCpuSpeed))
+    CPUUtil.CPU_CLOCK = nodeConfig.cpuConfiguration.getCpuSpeedInstructionPerSecond
+    instance ! UpdateCPUInfoLabel("%s GHz".format(nodeConfig.cpuConfiguration.getCpuSpeed))
     dataSet.addSeries(xySeries)
     printCPULog()
     sendReadySignal()
@@ -80,7 +80,7 @@ class CPUActor extends Actor with ActorLogging {
   private def printCPULog() {
     val sb = new StringBuilder()
     sb.append(" CPU: Unsupported number of siblings 4\n")
-    sb.append("CPU Intel ").append(_nodeConfig.getCpuConfiguration().getCpuSpeed).append(" (GHz) core i7 started...")
+    sb.append("CPU Intel ").append(_nodeConfig.cpuConfiguration.getCpuSpeed).append(" (GHz) core i7 started...")
     instance ! CPULog(sb.toString())
   }
 

@@ -15,7 +15,6 @@
  */
 package cloud.api;
 
-import cloud.gui.CloudGUI;
 import instance.Node;
 import logger.Logger;
 import logger.LoggerFactory;
@@ -34,8 +33,10 @@ import java.util.Map;
 
 public class DNSService {
 
+/*
 	private Logger logger = LoggerFactory.getLogger(DNSService.class, CloudGUI.getInstance());
-	
+*/
+
 	private Map<Address, Node> addressSpace = new HashMap<Address, Node>();
 	private Map<Node, Address> nodeSpace = new HashMap<Node, Address>();
 	
@@ -52,7 +53,7 @@ public class DNSService {
 	public Address getAddressForNode(Node node) {
 		Address address = nodeSpace.get(node);
 		if (address == null) {
-			logger.error("Coud not find any DNS entry for node " + node);
+			/*logger.error("Coud not find any DNS entry for node " + node);*/
 		}
 		return address;
 	}
@@ -60,7 +61,9 @@ public class DNSService {
 	public Node getNodeForAddress(Address address) {
 		Node node = addressSpace.get(address);
 		if (node == null) {
+/*
 			logger.error("Coud not find any DNS entry for address " + address);
+*/
 		}
 		return node;
 	}

@@ -20,10 +20,7 @@ import cloud.common.Generator;
 import cloud.common.RequestEngineTimeout;
 import cloud.common.SendRawData;
 import cloud.elb.BlocksActivated;
-import cloud.gui.CloudGUI;
 import instance.common.Block;
-import logger.Logger;
-import logger.LoggerFactory;
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
 import se.sics.kompics.Negative;
@@ -44,8 +41,12 @@ import java.util.*;
 
 public class RequestGenerator extends ComponentDefinition {
 	
+/*
 	private CloudGUI gui = CloudGUI.getInstance();
+*/
+/*
 	private Logger logger = LoggerFactory.getLogger(RequestGenerator.class, gui);
+*/
 	private Distribution distribution;
 	
 	// Ports
@@ -81,7 +82,7 @@ public class RequestGenerator extends ComponentDefinition {
 		@Override
 		public void handle(RequestGeneratorInit event) {
 			setupGUIConnection();
-			logger.info("Request Engine started...");
+/*			logger.info("Request Engine started...");*/
 		}
 	};
 	
@@ -140,7 +141,7 @@ public class RequestGenerator extends ComponentDefinition {
 			if (completedRequest.size() != 0) {
 				responseTimeService.add(completedRequest);
 				completedRequest.clear();
-				gui.updateResponseTime();
+/*				gui.updateResponseTime();*/
 			}
 			scheduleResponseTimeCollector();
 		}
@@ -179,7 +180,7 @@ public class RequestGenerator extends ComponentDefinition {
             completedRequestClone.add(currentRequests.get(id));
             currentRequests.remove(id);
         } else {
-            logger.error("Download started for a request that does not exist: " + id);
+/*            logger.error("Download started for a request that does not exist: " + id);*/
         }
     }
 
@@ -228,7 +229,7 @@ public class RequestGenerator extends ComponentDefinition {
 	}
 
 	protected void setupGUIConnection() {
-		gui.setRequestGenerator(reqGen);		
+/*		gui.setRequestGenerator(reqGen);*/
 	}
 
 	public void updateDistribution(Distribution currentDistribution) {

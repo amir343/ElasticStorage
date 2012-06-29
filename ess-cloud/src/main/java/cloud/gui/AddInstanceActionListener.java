@@ -62,8 +62,7 @@ public class AddInstanceActionListener implements ActionListener {
 			valid = false;
 		}
 		if (valid) {
-			NodeConfiguration nodeConfiguration = new NodeConfiguration(cpu, bandwidth, memory, sDownloads);
-			return nodeConfiguration;
+			return new NodeConfiguration(cpu, bandwidth, memory, sDownloads, false);
 		} else {
 			showErrorDialog();
 			return null;

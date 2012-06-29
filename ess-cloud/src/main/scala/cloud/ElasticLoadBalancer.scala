@@ -1,7 +1,7 @@
-package protocol
+package cloud
 
-import instance.common.Block
-import scenarios.manager.SLA
+import akka.actor.{ ActorLogging, Actor }
+import protocol.ELBInit
 
 /**
  * Copyright 2012 Amir Moulavi (amir.moulavi@gmail.com)
@@ -21,7 +21,17 @@ import scenarios.manager.SLA
  * @author Amir Moulavi
  */
 
-case class CloudConfiguration(blocks: List[Block],
-                              replicationDegree: Int = 1,
-                              headless: Boolean = false,
-                              sla: SLA = SLA())
+class ElasticLoadBalancer extends Actor with ActorLogging {
+
+  def receive = genericHandler orElse
+    uncategorizedHandler
+
+  def genericHandler: Receive = {
+    case ELBInit(cloudConfig) ⇒ //TODO
+  }
+
+  def uncategorizedHandler: Receive = {
+    case z @ _ ⇒ log.debug("Received uncategorized message %s".format(z))
+  }
+
+}

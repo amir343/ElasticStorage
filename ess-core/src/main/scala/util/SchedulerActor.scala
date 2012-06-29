@@ -1,7 +1,4 @@
-package protocol
-
-import instance.common.Block
-import scenarios.manager.SLA
+package util
 
 /**
  * Copyright 2012 Amir Moulavi (amir.moulavi@gmail.com)
@@ -21,7 +18,14 @@ import scenarios.manager.SLA
  * @author Amir Moulavi
  */
 
-case class CloudConfiguration(blocks: List[Block],
-                              replicationDegree: Int = 1,
-                              headless: Boolean = false,
-                              sla: SLA = SLA())
+object SchedulerActor {
+  val name = "scheduler"
+}
+
+object InstanceGroupActor {
+  val name = "instanceGroup"
+}
+
+object CloudProviderActor {
+  val name = "cloudProvider"
+}

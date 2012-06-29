@@ -15,6 +15,7 @@
  */
 package cloud.gui;
 
+import cloud.CloudProviderActor;
 import cloud.api.CloudSnapshot;
 import cloud.elb.ELBEntry;
 import cloud.elb.ELBTable;
@@ -51,11 +52,7 @@ import java.util.List;
 
 public class CloudGUI extends AbstractGUI {
 
-	private static CloudGUI instance = new CloudGUI();
 	private Logger logger = LoggerFactory.getLogger(CloudGUI.class, this);
-    public static CloudGUI getInstance() {
-		return instance;
-	}
 
 	private static final long serialVersionUID = -5915547650186857743L;
 
@@ -111,8 +108,9 @@ public class CloudGUI extends AbstractGUI {
 	private String[] instanceTableColumn = new String[]{"Name", "Address", "Status", "Cost ($)", "CPU"};
 	private JPanel elbTab;
 	private JTree elbTree;
-	
-	public CloudGUI() {
+    private CloudProviderActor cloudProvider;
+
+    public CloudGUI() {
 /*
         setUIManager();
 */
@@ -141,7 +139,7 @@ public class CloudGUI extends AbstractGUI {
                     instances.getSelectionModel().setSelectionInterval(0, 0);
                     killSelectedInstances();
                 }
-				System.exit(0); //
+				cloudProvider.stopActor();
 			}
 		});
 	}
@@ -780,6 +778,10 @@ TODO
     public void updateTotalCost(double totalCost) {
         totalCostValueLbl.setText("$ " + String.valueOf(totalCost));
         totalCostValueLbl.revalidate();
+    }
+
+    public void setCloudProvider(CloudProviderActor provider) {
+        cloudProvider = provider;
     }
 
 

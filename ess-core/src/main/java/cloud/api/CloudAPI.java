@@ -334,6 +334,7 @@
 //		currentNodes.remove(node);
 //	}
 //
+//  // DONE
 //	protected void startElasticLoadBalancer() {
 //		trigger(new ELBInit(cloudConfiguration.getBlocks(), cloudConfiguration.getReplicationDegree(), self, cloudConfiguration.getSla()), elb);
 //	}
@@ -362,6 +363,7 @@
 //		return node;
 //	}
 //
+//  // DONE
 //	private void setupHealthChecker(CloudAPIInit event) {
 //		HealthCheckerInit init = new HealthCheckerInit(event.getPeriod(), event.getDelta(), self);
 //		trigger(init, epfd);

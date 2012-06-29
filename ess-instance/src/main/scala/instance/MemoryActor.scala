@@ -51,7 +51,7 @@ class MemoryActor extends Actor with ActorLogging {
   private def initialize(nodeConfig: NodeConfiguration) {
     enabled = true
     instance = sender
-    capacity = nodeConfig.getMemory() * Size.GB.getSize
+    capacity = nodeConfig.memory * Size.GB.getSize
     instance ! MemoryInfoLabel(Size.getSizeString(capacity))
     instance ! MemoryLog(initLog)
     instance ! MemoryReady()

@@ -18,15 +18,12 @@ package cloud.elb;
 import cloud.api.RebalanceDataBlocks;
 import cloud.api.RebalanceResponseMap;
 import cloud.common.*;
-import cloud.gui.CloudGUI;
 import cloud.requestengine.DownloadStarted;
 import cloud.requestengine.RequestGeneratorInit;
 import instance.Node;
 import instance.common.Block;
 import instance.common.BlocksAck;
 import instance.common.Rejected;
-import logger.Logger;
-import logger.LoggerFactory;
 import scenarios.manager.SLA;
 import se.sics.kompics.ComponentDefinition;
 import se.sics.kompics.Handler;
@@ -51,8 +48,10 @@ import java.util.Map;
 public class ElasticLoadBalancer extends ComponentDefinition {
 
 
+/*
 	private Logger logger = LoggerFactory.getLogger(ElasticLoadBalancer.class, CloudGUI.getInstance());
-	
+*/
+
 	// Ports
 	Negative<ELB> elb = provides(ELB.class);
 	Positive<Generator> generator = requires(Generator.class);
@@ -98,7 +97,9 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 			startELBTable(event);
 			self = event.self();
 			trigger(new RequestGeneratorInit(), generator);
+/*
 			logger.info("Elastic Load Balancer is started...");
+*/
             getSLA(event);
 			scheduleUpdateELBTree();
 		}
@@ -110,15 +111,19 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 	Handler<GetReplicas> getReplicasHandler = new Handler<GetReplicas>() {
 		@Override
 		public void handle(GetReplicas event) {
+/*
 			logger.debug("Preparing Replicas....");
-			List<Block> blocks = elbTable.prepareBlocksForNode(event.nodeConfiguration().getNode());
+*/
+/*			List<Block> blocks = elbTable.prepareBlocksForNode(event.nodeConfiguration().getNode());*/
 			NodeConfiguration nodeConfiguration = event.nodeConfiguration();
             //TODO:This should be fixed when migrated
 /*
 			nodeConfiguration.setBlocks(blocks);
 */
 			trigger(new Replicas(nodeConfiguration), elb);
+/*
 			logger.debug(nodeConfiguration.getBlocks().size() + " Replicas created! ");
+*/
 		}
 	};
 
@@ -228,7 +233,9 @@ public class ElasticLoadBalancer extends ComponentDefinition {
                loadBalancerAlgorithm.updateCPULoadFor(event.node(), event.cpuLoad());
           cpuLoads.put(event.getSource(), event.cpuLoad());
           bandwidths.put(event.getSource(), event.currentBandwidth());
+/*
           CloudGUI.getInstance().updateCPULoadForNode(event.node(), event.cpuLoad());
+*/
           }
           };
 
@@ -245,7 +252,9 @@ public class ElasticLoadBalancer extends ComponentDefinition {
                dataBlocksMap.put(entry.getBlock().name(), node.getAddress());
                }
           NodeConfiguration nodeConfig = event.getNodeConfiguration();
+/*
           nodeConfig.setDataBlocksMap(dataBlocksMap);
+*/
           trigger(new RebalanceResponseMap(nodeConfig), elb);
           }
           };
@@ -300,7 +309,9 @@ public class ElasticLoadBalancer extends ComponentDefinition {
 	Handler<UpdateELBTree> elbTreeUpdateHandler = new Handler<UpdateELBTree>() {
 		@Override
 		public void handle(UpdateELBTree event) {
+/*
 			CloudGUI.getInstance().updateTree(elbTable);
+*/
 			scheduleUpdateELBTree();
 		}
 	};
@@ -370,15 +381,17 @@ public class ElasticLoadBalancer extends ComponentDefinition {
         if (event.sla() != null) {
             slaEnabled = true;
             sla = event.sla();
+/*
             logger.info("SLA requirements: " + sla);
+*/
         }
     }
 
     private void setSLAViolations(SLAViolation obj, SLA sla, SendRawData event) {
         event.updateSLA(sla);
-        obj.setCpuLoadViolation(sla.getCpuLoadViolation());
-        obj.setResponseTimeViolation(sla.getResponseTimeViolation());
-        obj.setBandwidthViolation(sla.getBandwidthViolation());
+        obj.setCpuLoadViolation(sla.cpuLoadViolation());
+        obj.setResponseTimeViolation(sla.responseTimeViolation());
+        obj.setBandwidthViolation(sla.bandwidthViolation());
     }
 
 

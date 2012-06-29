@@ -42,8 +42,8 @@ public class CostService {
 	}
 	
 	public void init(NodeConfiguration nodeConfiguration) {
-		this.bandwidthCost = nodeConfiguration.getBandwidthConfiguration().getCost();
-		this.cpuCost = nodeConfiguration.getCpuConfiguration().getCost();
+		this.bandwidthCost = nodeConfiguration.bandwidthConfiguration().cost();
+		this.cpuCost = nodeConfiguration.cpuConfiguration().cost();
 	}
 	
 	public double computeCostSoFar(int megaBytesDownloadedSoFar) {

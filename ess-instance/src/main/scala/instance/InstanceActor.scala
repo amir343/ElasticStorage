@@ -364,9 +364,9 @@ class InstanceActor extends Actor with ActorLogging {
 
   private def retrieveInitParameters(nodeConfig: NodeConfiguration) {
     _nodeConfiguration = nodeConfig
-    BANDWIDTH = nodeConfig.getBandwidthConfiguration.getBandwidthMegaBytePerSecond
-    simultaneousDownloads = nodeConfig.getSimultaneousDownloads()
-    headless = nodeConfig.getHeadLess
+    BANDWIDTH = nodeConfig.bandwidthConfiguration.getBandwidthMegaBytePerSecond
+    simultaneousDownloads = nodeConfig.simultaneousDownloads
+    headless = nodeConfig.headLess
     headless match {
       case true ⇒
         gui = new HeadLessGUI()
@@ -381,15 +381,15 @@ class InstanceActor extends Actor with ActorLogging {
   }
 
   private def loadBlocksToDisk() {
-    if (_nodeConfiguration.getBlocks() != null) {
-      blocks = _nodeConfiguration.getBlocks()
+    if (_nodeConfiguration.blocks != null) {
+      blocks = _nodeConfiguration.blocks
       guiLogger.info("Starting with %s block(s) in hand".format(blocks.size))
       disk ! LoadBlock(blocks)
       cloudProvider ! BlocksAck()
       gui.initializeDataBlocks(blocks)
     } else {
-      guiLogger.warn("I should get blocks from %s other instance(s)".format(_nodeConfiguration.getDataBlocksMap().size()))
-      dataBlocks = _nodeConfiguration.getBlocksMap()
+      guiLogger.warn("I should get blocks from %s other instance(s)".format(_nodeConfiguration.blocksMap.size))
+      dataBlocks = _nodeConfiguration.blocksMap
       dataBlocks.keySet.foreach {
         b ⇒
           dataBlocks.get(b) match {
@@ -406,7 +406,7 @@ class InstanceActor extends Actor with ActorLogging {
     val address = context.self.path.address
     gui.updateTitle("%s://%s@%s".format(address.protocol, nodeName, address.system))
     gui.decorateWhileSystemStartUp()
-    kernel ! KernelInit(_nodeConfiguration.getCpuConfiguration().getCpuSpeedInstructionPerSecond)
+    kernel ! KernelInit(_nodeConfiguration.cpuConfiguration.getCpuSpeedInstructionPerSecond)
   }
 
   private def addToBandwidthDiagram(bandWidth: Long) {

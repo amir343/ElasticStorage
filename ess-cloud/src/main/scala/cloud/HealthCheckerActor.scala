@@ -1,7 +1,7 @@
-package protocol
+package cloud
 
-import instance.common.Block
-import scenarios.manager.SLA
+import akka.actor.{ ActorLogging, Actor }
+import protocol.HealthCheckerInit
 
 /**
  * Copyright 2012 Amir Moulavi (amir.moulavi@gmail.com)
@@ -21,7 +21,10 @@ import scenarios.manager.SLA
  * @author Amir Moulavi
  */
 
-case class CloudConfiguration(blocks: List[Block],
-                              replicationDegree: Int = 1,
-                              headless: Boolean = false,
-                              sla: SLA = SLA())
+class HealthCheckerActor extends Actor with ActorLogging {
+
+  def receive = {
+    case HealthCheckerInit(period, delta) ⇒ //TODO
+  }
+
+}

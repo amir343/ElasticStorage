@@ -15,10 +15,7 @@
  */
 package cloud.api.address;
 
-import cloud.gui.CloudGUI;
 import com.thoughtworks.xstream.XStream;
-import logger.Logger;
-import logger.LoggerFactory;
 import se.sics.kompics.address.Address;
 
 import java.io.FileInputStream;
@@ -36,7 +33,9 @@ import java.util.*;
 
 public class AddressManager {
 	
+/*
 	private Logger logger = LoggerFactory.getLogger(AddressManager.class, CloudGUI.getInstance());
+*/
 	private AddressPoll addressPoll;
 	private final Set<Address> availableAddressSpace = new HashSet<Address>();
 	private List<Address> busyAddresses = new ArrayList<Address>();
@@ -58,7 +57,7 @@ public class AddressManager {
 
 	private void calculateAddressSpace() {
 		if (addressPoll == null) {
-			logger.error("There is something wrong with 'addresses.xml' file. Please check that out");
+/*			logger.error("There is something wrong with 'addresses.xml' file. Please check that out");*/
 			throw new RuntimeException("There is something wrong with 'addresses' file. Please check that out");
 		}
 		for (AddressRange range : addressPoll.getAddresses()) {
@@ -84,7 +83,7 @@ public class AddressManager {
 			try {
 				scanner = new Scanner(new FileInputStream(path));
 			} catch (FileNotFoundException e) {
-				logger.error("File 'addresses.xml' not found");
+/*				logger.error("File 'addresses.xml' not found");*/
 				e.printStackTrace();
 			}
 		    try {
@@ -98,7 +97,9 @@ public class AddressManager {
 		    }
 		    addressPoll = (AddressPoll) xstream.fromXML(xml.toString());
 		} else {
+/*
 			logger.error("File 'addresses.xml' was not found!");
+*/
 			throw new RuntimeException("File 'addresses' was not found!");
 		}
 	}
