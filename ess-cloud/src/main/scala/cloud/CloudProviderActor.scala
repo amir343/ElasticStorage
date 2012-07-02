@@ -33,7 +33,7 @@ import protocol.CloudConfiguration
  */
 class CloudProviderActor extends Actor with ActorLogging {
 
-  log.info("CloudProvider is initialized.")
+  log.info("CloudProvider is initialized: %s".format(self.path))
 
   // components
   private lazy val elb = context.system.actorOf(Props[ElasticLoadBalancer])
@@ -54,18 +54,32 @@ class CloudProviderActor extends Actor with ActorLogging {
   private lazy val periodicCostTable: mutable.ConcurrentMap[String, Double] = new ConcurrentHashMap[String, Double]()
 
   def receive = genericHandler orElse
+    instanceHandler orElse
+    healthCheckerHandler orElse
     uncategorizedMessagesHandler
 
   def genericHandler: Receive = {
     case CloudStart(cloudConfig, name)             ⇒ initialize(cloudConfig, name)
     case BlocksAck()                               ⇒ //TODO:
-    case InstanceStarted()                         ⇒ //TODO:
     case MyCPULoadAndBandwidth(cpuLoad, bandwidth) ⇒ //TODO
     case InstanceCost(totalCost, periodicCost)     ⇒ //TODO
   }
 
+  def instanceHandler: Receive = {
+    case InstanceStarted() ⇒ handleInstanceStarted()
+  }
+
+  def healthCheckerHandler: Receive = {
+    case Suspect(instance) ⇒ suspectNode(instance)
+    case Restore(instance) ⇒ restoreNode(instance)
+  }
+
   def uncategorizedMessagesHandler: Receive = {
     case z @ _ ⇒ log.debug("Unrecognized message: %s".format(z))
+  }
+
+  override def postStop() {
+    gui.disposeGUI()
   }
 
   private def initialize(cloudConfig: CloudConfiguration, name: String) {
@@ -77,10 +91,30 @@ class CloudProviderActor extends Actor with ActorLogging {
     healthChecker ! HealthCheckerInit()
   }
 
+  private def handleInstanceStarted() {
+    val instanceName = sender.path.toString
+    gui.instanceStarted(instanceName)
+    gui.instanceAdded()
+    //			currentNodes.add(event.getNode());
+    log.info("Node %s initialized   [ok]".format(instanceName))
+    healthChecker ! ConsiderInstance(sender)
+    if (connectedToController)
+      controllerRef ! NewNodeToMonitor(sender)
+  }
+
+  private def suspectNode(node: ActorRef) {
+    elb ! Suspect(node)
+    gui.suspectInstance(node.path.toString)
+  }
+
+  private def restoreNode(node: ActorRef) {
+    elb ! Restore(node)
+    gui.restoreInstance(node.path.toString)
+  }
+
   private def setupGui() {
     gui = new CloudGUI()
-    val address = context.self.path.address
-    gui.setTitle("%s://%s@%s".format(address.protocol, _name, address.system))
+    gui.setTitle(self.path.toString)
     gui.setCloudProvider(this)
   }
 

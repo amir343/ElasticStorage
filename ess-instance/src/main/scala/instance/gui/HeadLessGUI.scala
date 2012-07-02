@@ -94,4 +94,6 @@ class HeadLessGUI extends GenericInstanceGUI with GUI {
   def unlockLogText() {}
 
   def setInstanceReference(actor: InstanceActor) {}
+
+  def disposeGUI() {}
 }

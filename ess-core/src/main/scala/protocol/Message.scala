@@ -108,14 +108,16 @@ case class RequestMessage(request: Request) extends InstanceMessage
 // EPFD
 case class HeartBeatMessage() extends InstanceMessage
 case class Alive() extends InstanceMessage
+case class HealthCheckerInit(period: Long = 5000, delta: Long = 1000) extends CloudMessage
+case class ConsiderInstance(instance: ActorRef) extends CloudMessage
+case class Suspect(node: ActorRef) extends CloudMessage
+case class Restore(node: ActorRef) extends CloudMessage
 
 trait CloudMessage extends Message
 
 // Cloud Provider
 case class CloudStart(cloudConfig: CloudConfiguration, cloudName: String) extends CloudMessage
+case class NewNodeToMonitor(instance: ActorRef) extends CloudMessage
 
 // ELB
 case class ELBInit(cloudConfig: CloudConfiguration) extends CloudMessage
-
-// EPFD
-case class HealthCheckerInit(period: Long = 5000, delta: Long = 1000) extends CloudMessage

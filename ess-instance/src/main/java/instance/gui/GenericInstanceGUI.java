@@ -56,4 +56,5 @@ public interface GenericInstanceGUI extends GUI {
     void updateCurrentTransfers(int size);
     void updateRequestQueue(int n);
     void setInstanceReference(InstanceActor actor);
+    void disposeGUI();
 }

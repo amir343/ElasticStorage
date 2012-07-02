@@ -101,6 +101,16 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
         this.instanceActor = actor;
     }
 
+    @Override
+    public void disposeGUI() {
+        try {
+        cpuDialMeter.stopPeakTimer();
+        this.dispose();
+        } catch(Exception e) {
+
+        }
+    }
+
 	public InstanceGUI() {
 /*
         setUIManager();

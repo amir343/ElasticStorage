@@ -100,12 +100,12 @@ public class CloudGUI extends AbstractGUI {
 	private JPanel statisticsPanel;
 	private JPanel snapshotPanel;
 	private DefaultTableModel snapshotModel;
-	private DefaultTableModel model;
-	private JTable snapshotTable;
-	private String[] snapshotTableColumns = new String[]{"Snapshot ID", "Date"};
-	private SnapshotPopupListener snapshotPopupListener = new SnapshotPopupListener(this);
-	private List<CloudSnapshot> snapshots = new ArrayList<CloudSnapshot>();
-	private String[] instanceTableColumn = new String[]{"Name", "Address", "Status", "Cost ($)", "CPU"};
+    private String[] instanceTableColumn = new String[]{"Instance Name", "Status", "Cost ($)", "CPU"};
+    private final DefaultTableModel model = new DefaultTableModel(new String[][]{}, instanceTableColumn);
+    private JTable snapshotTable;
+    private String[] snapshotTableColumns = new String[]{"Snapshot ID", "Date"};
+    private SnapshotPopupListener snapshotPopupListener = new SnapshotPopupListener(this);
+    private List<CloudSnapshot> snapshots = new ArrayList<CloudSnapshot>();
 	private JPanel elbTab;
 	private JTree elbTree;
     private CloudProviderActor cloudProvider;
@@ -123,6 +123,10 @@ public class CloudGUI extends AbstractGUI {
 		setVisible(true);
 	}
 
+    public void disposeGUI() {
+        this.dispose();
+    }
+
     private void setupLocation() {
 		this.setLocation(400, 0);		
 	}
@@ -135,10 +139,12 @@ public class CloudGUI extends AbstractGUI {
 	private void addWindowListener() {
 		addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
+/*
                 while(model.getRowCount() != 0) {
                     instances.getSelectionModel().setSelectionInterval(0, 0);
                     killSelectedInstances();
                 }
+*/
 				cloudProvider.stopActor();
 			}
 		});
@@ -335,7 +341,6 @@ public class CloudGUI extends AbstractGUI {
     }
 
     private void createInstanceTable(Box currentInstancesPanel) {
-	    model = new DefaultTableModel(new String[][]{}, instanceTableColumn);
 		instances = new JTable(model){
 			private static final long serialVersionUID = 8374219580041789497L;
 			public boolean isCellEditable(int rowIndex, int colIndex) {
@@ -403,27 +408,29 @@ public class CloudGUI extends AbstractGUI {
 		return addInstancePanel;
 	}
 	
-	public synchronized void addNewInstance(Node instance) {
+	public synchronized void addNewInstance(String instance) {
         nn++;
         numberOfNodesLbl.setText(String.valueOf(nn));
 		if (null != instance) {
-			model.insertRow(instances.getRowCount(), new String[]{instance.getNodeName(), instance.getIP()+":"+instance.getPort(), "Launching...", "0.0", "0.0"});
+			model.insertRow(instances.getRowCount(), new String[]{instance, "Launching...", "0.0", "0.0"});
 		} else {
 			logger.error("instance can not be null");
 		}
 	}
 
-    public synchronized void instanceStarted(Node node) {
+    public synchronized void instanceStarted(String node) {
         synchronized (model) {
             if ( null != node) {
                 for (int i=0; i<model.getRowCount(); i++) {
-                    if ( ((String)(model.getValueAt(i, 0))).equals(node.getNodeName()) &&
-                            ((String)(model.getValueAt(i, 1))).equals(node.getIP()+":"+node.getPort())) {
-                        model.setValueAt("Healthy", i, 2);
+                    if ( ((String)(model.getValueAt(i, 0))).equals(node)) {
+                        model.setValueAt("Healthy", i, 1);
                         return;
                     }
                 }
-            } else {
+                nn++;
+                numberOfNodesLbl.setText(String.valueOf(nn));
+                model.insertRow(instances.getRowCount(), new String[]{node, "Healthy", "0.0", "0.0"});
+                } else {
                 logger.error("node can not be null");
             }
         }
@@ -473,12 +480,11 @@ TODO
 	}
 	
 	
-	public void suspectInstance(Node node) {
+	public void suspectInstance(String node) {
 		if ( null != node) {
 			for (int i=0; i<model.getRowCount(); i++) {
-				if ( ((String)(model.getValueAt(i, 0))).equals(node.getNodeName()) && 
-						((String)(model.getValueAt(i, 1))).equals(node.getIP()+":"+node.getPort())) {
-					model.setValueAt("Unhealthy", i, 2);
+				if ( ((String)(model.getValueAt(i, 0))).equals(node)) {
+					model.setValueAt("Unhealthy", i, 1);
 					return;
 				}
 			}
@@ -487,12 +493,11 @@ TODO
 		}
 	}
 
-	public void restoreInstance(Node node) {
+	public void restoreInstance(String node) {
 		if ( null != node ) {
 			for (int i=0; i<model.getRowCount(); i++) {
-				if ( ((String)(model.getValueAt(i, 0))).equals(node.getNodeName()) && 
-						((String)(model.getValueAt(i, 1))).equals(node.getIP()+":"+node.getPort())) {
-					model.setValueAt("Healthy", i, 2);
+				if ( ((String)(model.getValueAt(i, 0))).equals(node)) {
+					model.setValueAt("Healthy", i, 1);
 					return;
 				}
 			}

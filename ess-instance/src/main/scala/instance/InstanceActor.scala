@@ -102,6 +102,7 @@ class InstanceActor extends Actor with ActorLogging {
 
   private val instanceGroup = context.actorFor("/user/instanceGroup")
 
+  private var _name: String = "Orphan-Instance"
   private val uname_r = "2.2-2"
   private val numberOfDevices = 3
   private var numberOfDevicesLoaded = 0
@@ -201,6 +202,8 @@ class InstanceActor extends Actor with ActorLogging {
     case z @ _ ⇒ log.warning("Unrecognized or unhandled message: %s".format(z))
   }
 
+  override def postStop() { gui.disposeGUI() }
+
   private def handleRequest(request: Request) {
     if (instanceRunning) {
       guiLogger.debug("Received request for block %s".format(request))
@@ -295,6 +298,7 @@ class InstanceActor extends Actor with ActorLogging {
     kernelLoaded = true
     guiLogger.debug("OS with kernel %s started".format(uname_r))
     gui.decorateSystemStarted()
+    loadBlocksToDisk()
   }
 
   private def handleNackBlock(process: Process) {
@@ -349,7 +353,6 @@ class InstanceActor extends Actor with ActorLogging {
     disk ! DiskInit(nodeConfig)
     memory ! MemoryInit(nodeConfig)
     loadKernel()
-    loadBlocksToDisk()
     dataSet.addSeries(xySeries)
     waitForSystemStartUp()
     costService.init(nodeConfig)
@@ -403,8 +406,7 @@ class InstanceActor extends Actor with ActorLogging {
   }
 
   private def loadKernel() {
-    val address = context.self.path.address
-    gui.updateTitle("%s://%s@%s".format(address.protocol, nodeName, address.system))
+    gui.updateTitle("%s@%s".format(nodeName, self.path))
     gui.decorateWhileSystemStartUp()
     kernel ! KernelInit(_nodeConfiguration.cpuConfiguration.getCpuSpeedInstructionPerSecond)
   }

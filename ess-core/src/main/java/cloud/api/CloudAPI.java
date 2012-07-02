@@ -96,7 +96,7 @@
 //		subscribe(requestSensingData, network);
 //		subscribe(removeNodeHandler, network);
 //	}
-//
+//    // DONE
 //    Handler<CloudAPIInit> initHandler = new Handler<CloudAPIInit>() {
 //		@Override
 //		public void handle(CloudAPIInit event) {
@@ -114,6 +114,7 @@
 //	/**
 //	 * This handler is triggered when the new instance sends back that is ready to be considered in the instance group
 //	 */
+//  // DONE
 //	Handler<InstanceStarted> instanceStartedHandler = new Handler<InstanceStarted>() {
 //		@Override
 //		public void handle(InstanceStarted event) {
@@ -129,6 +130,7 @@
 //	/**
 //	 * This handler informs ELB for a suspected node
 //	 */
+//  // DONE
 //	Handler<Suspect> suspectHandler = new Handler<Suspect>() {
 //		@Override
 //		public void handle(Suspect event) {
@@ -143,6 +145,7 @@
 //	/**
 //	 * This handler informs ELB for a restored node
 //	 */
+//  // DONE
 //	Handler<Restore> restoreHandler = new Handler<Restore>() {
 //		@Override
 //		public void handle(Restore event) {

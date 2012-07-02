@@ -2,7 +2,7 @@ package ess.examples
 
 import _root_.util.{ InstanceGroupActor, CloudProviderActor, SchedulerActor }
 import akka.actor.{ Props, ActorSystem }
-import protocol.InstanceGroupStart
+import protocol.{ CloudConfiguration, CloudStart, InstanceGroupStart }
 import scheduler.SchedulerActor
 import cloud.CloudProviderActor
 import cloud.common.NodeConfiguration
@@ -32,8 +32,10 @@ import instance.InstanceGroupActor
 object SampleApp {
   def main(args: Array[String]) {
     val system = ActorSystem("testsystem")
+    val config = CloudConfiguration(List())
     val scheduler = system.actorOf(Props[SchedulerActor], SchedulerActor.name)
     val cloudProvider = system.actorOf(Props[CloudProviderActor], CloudProviderActor.name)
+    cloudProvider ! CloudStart(config, "cloudProvider")
     val instanceGroup = system.actorOf(Props[InstanceGroupActor], InstanceGroupActor.name)
     val nodeConfig = new NodeConfiguration()
     instanceGroup ! InstanceGroupStart(InstanceGroupConfiguration(List(nodeConfig)))
