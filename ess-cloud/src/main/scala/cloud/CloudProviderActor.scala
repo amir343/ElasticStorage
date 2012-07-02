@@ -1,5 +1,6 @@
 package cloud
 
+import common.NodeConfiguration
 import util.InstanceGroupActor.{ name ⇒ instanceGroupName }
 import gui.CloudGUI
 import scala.collection.JavaConversions._
@@ -80,6 +81,24 @@ class CloudProviderActor extends Actor with ActorLogging {
 
   override def postStop() {
     gui.disposeGUI()
+  }
+
+  // TODO
+  def initialize(nodeConfig: NodeConfiguration) {
+    instanceGroup ! LaunchInstance(NodeConfiguration())
+    //		if (!alreadyDefined) {
+    //			Node node = getNewNodeInfo();
+    //            gui.addNewInstance(node);
+    //            numberOfInstances++;
+    //			nodeConfiguration.setNodeInfo(node);
+    //		}
+    //		if (currentNodes.size() != 0) {
+    //			trigger(new RebalanceDataBlocks(nodeConfiguration), elb);
+    //		} else {
+    //			trigger(new GetReplicas(nodeConfiguration), elb);
+    //			logger.debug("Requesting replicas from ELB...");
+    //			dnsService.addDNSEntry(nodeConfiguration.getNode());
+    //		}
   }
 
   private def initialize(cloudConfig: CloudConfiguration, name: String) {

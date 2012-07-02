@@ -2,9 +2,8 @@ package instance
 
 import akka.actor._
 import scala.collection.mutable
-import protocol.InstanceGroupStart
-import protocol.Stopped
-import protocol.InstanceStart
+import protocol.{ LaunchInstance, InstanceGroupStart, Stopped, InstanceStart }
+import cloud.common.NodeConfiguration
 
 /**
  * Copyright 2012 Amir Moulavi (amir.moulavi@gmail.com)
@@ -27,9 +26,11 @@ class InstanceGroupActor extends Actor with ActorLogging {
 
   private val currentNodes = mutable.ListBuffer[ActorRef]()
   private val NODE_PREFIX = "instance%s"
+  private var currentIndex = 0
 
   def receive = {
     case InstanceGroupStart(conf) ⇒ startInstances(conf)
+    case LaunchInstance(conf)     ⇒ startInstance(conf)
     case Stopped()                ⇒ handleStop()
   }
 
@@ -41,6 +42,15 @@ class InstanceGroupActor extends Actor with ActorLogging {
       node ! InstanceStart(pair._1, NODE_PREFIX.format(pair._2.toString))
       currentNodes += node
     }
+    currentIndex = indices.last + 1
+  }
+
+  private def startInstance(nodeConfig: NodeConfiguration) {
+    log.info("Launching new intance...")
+    val node = context.actorOf(Props[InstanceActor])
+    node ! InstanceStart(nodeConfig, NODE_PREFIX.format(currentIndex.toString))
+    currentNodes += node
+    currentIndex += 1
   }
 
   private def handleStop() {

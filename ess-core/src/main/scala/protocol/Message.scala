@@ -118,6 +118,7 @@ trait CloudMessage extends Message
 // Cloud Provider
 case class CloudStart(cloudConfig: CloudConfiguration, cloudName: String) extends CloudMessage
 case class NewNodeToMonitor(instance: ActorRef) extends CloudMessage
+case class LaunchInstance(nodeConfig: NodeConfiguration) extends CloudMessage
 
 // ELB
 case class ELBInit(cloudConfig: CloudConfiguration) extends CloudMessage

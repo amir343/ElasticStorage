@@ -39,6 +39,7 @@ public class AddInstanceActionListener implements ActionListener {
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
+        gui.launchInstance(getNodeConfiguration());
 /*
 		if (gui.getCloudAPI() != null) {
 			NodeConfiguration nodeConfiguration = getNodeConfiguration();

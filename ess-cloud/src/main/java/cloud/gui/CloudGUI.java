@@ -17,6 +17,7 @@ package cloud.gui;
 
 import cloud.CloudProviderActor;
 import cloud.api.CloudSnapshot;
+import cloud.common.NodeConfiguration;
 import cloud.elb.ELBEntry;
 import cloud.elb.ELBTable;
 import cloud.requestengine.RequestGenerator;
@@ -478,7 +479,10 @@ TODO
             }
         }
 	}
-	
+
+    public void launchInstance(NodeConfiguration nodeConfig) {
+        cloudProvider.initialize(nodeConfig);
+    }
 	
 	public void suspectInstance(String node) {
 		if ( null != node) {
