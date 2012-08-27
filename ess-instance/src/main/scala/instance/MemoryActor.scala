@@ -1,7 +1,7 @@
 package instance
 
 import akka.actor.{ ActorRef, ActorLogging, Actor }
-import common.{ Size, Block }
+import common.Block
 import protocol._
 import cloud.common.NodeConfiguration
 import protocol.MemoryInit
@@ -51,8 +51,8 @@ class MemoryActor extends Actor with ActorLogging {
   private def initialize(nodeConfig: NodeConfiguration) {
     enabled = true
     instance = sender
-    capacity = nodeConfig.memory * Size.GB.getSize
-    instance ! MemoryInfoLabel(Size.getSizeString(capacity))
+    capacity = nodeConfig.memory * GB.size
+    instance ! MemoryInfoLabel(Size.sizeString(capacity))
     instance ! MemoryLog(initLog)
     instance ! MemoryReady()
     log.debug("Memory is initialized.")
@@ -117,7 +117,7 @@ class MemoryActor extends Actor with ActorLogging {
   private def initLog = {
     val sb = new StringBuilder
     sb.append(" Initializing HighMem for node 0 (00000000:00000000)\n")
-      .append(" Memory: %s available (2759k kernel code, 13900k reserved, 1287k data, 408k init, 0k highmem)\n".format(Size.getSizeString(capacity)))
+      .append(" Memory: %s available (2759k kernel code, 13900k reserved, 1287k data, 408k init, 0k highmem)\n".format(Size.sizeString(capacity)))
       .append(" virtual kernel memory layout:\n")
       .append("     fixmap  : 0xf5716000 - 0xf57ff000   ( 932 kB)\n")
       .append("     pkmap   : 0xf5400000 - 0xf5600000   (2048 kB)\n")

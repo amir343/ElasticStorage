@@ -17,14 +17,33 @@ package instance.os
 
 import scala.reflect.BeanProperty
 import java.util.{ Calendar, Date ⇒ JDate }
+import org.jfree.chart.JFreeChart
 
 /**
  * @author Amir Moulavi
  * @date 2011-07-16
  *
  */
-class Snapshot(@BeanProperty var id: Int) {
+class Snapshot(val id: Int, @BeanProperty val date: JDate = Calendar.getInstance().getTime)
 
-  @BeanProperty var date: JDate = Calendar.getInstance().getTime
+class CloudSnapshot(override val id: Int) extends Snapshot(id) {
+  @BeanProperty
+  var chart: JFreeChart = _
+  @BeanProperty
+  var logText: String = _
+
+  def getId: Int = id
+
+}
+
+class InstanceSnapshot(override val id: Int) extends Snapshot(id) {
+  @BeanProperty
+  var cpuChart: JFreeChart = _
+  @BeanProperty
+  var bandwidthChart: JFreeChart = _
+  @BeanProperty
+  var log: String = _
+
+  def getId: Int = id
 
 }

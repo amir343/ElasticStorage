@@ -75,12 +75,12 @@ public class CostService {
 	}
 
 	private double computeDataTransferCost(int megaBytesDownloadedSoFar) {
-        return (bandwidthCost.getCostPerGB()/1000)*megaBytesDownloadedSoFar;
+        return (bandwidthCost.cost()/1000)*megaBytesDownloadedSoFar;
 	}
 
 	private double computeCpuCost() {
 		long runningTimeInSeconds = (System.currentTimeMillis() - start)/1000;
-        return (cpuCost.getPerhour()/3600)*runningTimeInSeconds;
+        return (cpuCost.perhour()/3600)*runningTimeInSeconds;
 	}
 	
 }

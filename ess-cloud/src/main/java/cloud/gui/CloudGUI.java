@@ -16,14 +16,14 @@
 package cloud.gui;
 
 import cloud.CloudProviderActor;
-import cloud.api.CloudSnapshot;
+import cloud.ResponseTimeService;
 import cloud.common.NodeConfiguration;
-import cloud.elb.ELBEntry;
-import cloud.elb.ELBTable;
-import cloud.requestengine.RequestGenerator;
-import cloud.requestengine.ResponseTimeService;
-import common.AbstractGUI;
+//import cloud.elb.ELBEntry;
+//import cloud.elb.ELBTable;
+//import cloud.requestengine.RequestGenerator;
 import instance.Node;
+import instance.os.CloudSnapshot;
+import common.AbstractGUI;
 import logger.Logger;
 import logger.LoggerFactory;
 import org.jfree.chart.ChartPanel;
@@ -61,7 +61,6 @@ public class CloudGUI extends AbstractGUI {
 
     private int nn = 0;
 
-    private ResponseTimeService responseTimeService = ResponseTimeService.getInstance();
     private Distribution currentDistribution;
     public static final String INSTANCES_ITEM_DEFAULT = "Please select an instance";
     private String[] CPU_SPEEDS = new String[]{"1.2", "1.8", "2.0", "2.4", "2.8", "3.2", "3.8", "4.2"};
@@ -71,7 +70,7 @@ public class CloudGUI extends AbstractGUI {
     private JTable instances;
     private JButton addInstanceButton;
     private JButton removeInstanceButton;
-    private RequestGenerator reqGen;
+//    private RequestGenerator reqGen;
     private AddInstanceActionListener addInstanceActionListener = new AddInstanceActionListener(this);
     private RemoveInstanceActionListener removeInstanceActionListener = new RemoveInstanceActionListener(this);
     private DistributionSelectionActionListener distributionSelectionActionListener = new DistributionSelectionActionListener(this);
@@ -438,23 +437,19 @@ public class CloudGUI extends AbstractGUI {
     }
 	
 	public void killSelectedInstances() {
-/*
-TODO
-		if (api != null) {
+		if (cloudProvider != null) {
 			if (instances.getSelectedRows() == null) return;
 			int[] rows = instances.getSelectedRows();
 			for (int i=instances.getSelectedRows().length-1; i>=0; i--) {
 				String nodeName = (String) model.getValueAt(rows[i], 0);
-				String address = (String) model.getValueAt(rows[i], 1);
 				model.removeRow(rows[i]);
-				api.kill(Node.fromString(nodeName + "@" + address));
+				cloudProvider.kill(nodeName);
                 nn--;
                 numberOfNodesLbl.setText(String.valueOf(nn));
 			}
 		} else {
 			log("ERROR: CloudAPI component is not started or is dead");
 		}
-*/
 	}
 	
 	public synchronized void removeNodeFromCurrentInstances(Node node) {
@@ -510,12 +505,11 @@ TODO
 		}
 	}
 	
-	public synchronized void updateCostForNode(Node node, String cost) {
-		if ( null != node ) {
+	public synchronized void updateCostForNode(String nodeName, String cost) {
+		if ( null != nodeName ) {
 			for (int i=0; i<model.getRowCount(); i++) {
-				if ( ((String)(model.getValueAt(i, 0))).equals(node.getNodeName()) && 
-						((String)(model.getValueAt(i, 1))).equals(node.getIP()+":"+node.getPort())) {
-					model.setValueAt(cost, i, 3);
+				if ( ((String)(model.getValueAt(i, 0))).equals(nodeName) ) {
+					model.setValueAt(cost, i, 2);
 					return;
 				}
 			}
@@ -524,12 +518,11 @@ TODO
 		}
 	}
 
-	public synchronized void updateCPULoadForNode(Node node, double load) {
+	public synchronized void updateCPULoadForNode(String node, double load) {
 		if ( null != node ) {
 			for (int i=0; i<model.getRowCount(); i++) {
-				if ( ((String)(model.getValueAt(i, 0))).equals(node.getNodeName()) &&
-						((String)(model.getValueAt(i, 1))).equals(node.getIP()+":"+node.getPort())) {
-					model.setValueAt(String.valueOf(load), i, 4);
+				if ( ((String)(model.getValueAt(i, 0))).equals(node) ) {
+					model.setValueAt(String.valueOf(load), i, 3);
 					return;
 				}
 			}
@@ -604,9 +597,9 @@ TODO
 		removeInstanceButton.setEnabled(false);
 	}
 	
-	public void setRequestGenerator(RequestGenerator reqGen) {
-		this.reqGen = reqGen;
-	}
+//	public void setRequestGenerator(RequestGenerator reqGen) {
+//		this.reqGen = reqGen;
+//	}
 	
 	public JTable getInstances() {
 		return instances;
@@ -654,7 +647,8 @@ TODO
 		parametersPanel.setEnabled(false);		
 		
 		currentDistribution.setParameters(parameter1.getText(), parameter2.getText(), parameter3.getText());
-		reqGen.updateDistribution(currentDistribution);		
+		//‌TODO
+//		reqGen.updateDistribution(currentDistribution);		
 	}
 	
 	public void stopDistributionBehaviour() {
@@ -669,19 +663,16 @@ TODO
 		disLbl.setEnabled(true);
 		startDistributionRequestButton.setEnabled(true);
 		parametersPanel.setEnabled(true);		
-		
-		reqGen.stopCurrentDistribution();
+		// TODO
+//		reqGen.stopCurrentDistribution();
 	}
 
 	public void updateResponseTime() {
-		createResponseTimePanel(responseTimeService.getChart());
+		createResponseTimePanel(ResponseTimeService.chart());
 	}
 
 	public void takeSnapshot() {
-/*
-TODO
-		api.takeSnapshot();
-*/
+		cloudProvider.takeSnapshot();
 	}
 
 	public void saveSelectedSnapshotTo(File selectedDir) {
@@ -704,13 +695,13 @@ TODO
 			snapshotDir.mkdir();
 		
 			writeResponseTimeDiagram(snapshot, snapshotDir);
-			saveLogTo(snapshotDir, snapshot.getLog());
+			saveLogTo(snapshotDir, snapshot.getLogText());
 		}
 	}
 	
 	private void writeResponseTimeDiagram(CloudSnapshot snapshot, File snapshotDir) {
-		if (snapshot.getChart() != null) {
-			BufferedImage cpuImage = snapshot.getChart().createBufferedImage(833, 500);
+		if (snapshot.chart() != null) {
+			BufferedImage cpuImage = snapshot.chart().createBufferedImage(833, 500);
 			File rtFile = new File(snapshotDir.getPath() + File.separatorChar + "ResponseTimeDiagram.png");
 			try {
 				ImageIO.write(cpuImage, "PNG", rtFile);
@@ -733,7 +724,7 @@ TODO
 	public void addSnapshot(CloudSnapshot cloudSnapshot) {
 		if (null != cloudSnapshot) {
 			snapshotModel.insertRow(snapshotModel.getRowCount(), new Object[]{cloudSnapshot.getId(), cloudSnapshot.getDate()});
-			cloudSnapshot.addLogText(logTextArea.getText());
+			cloudSnapshot.setLogText(logTextArea.getText());
 			snapshots.add(cloudSnapshot);
 		} else {
 			logger.error("cloudSnapshot can not be null");
@@ -761,28 +752,28 @@ TODO
 		// TODO Auto-generated method stub
 	}
 	
-	public void updateTree(ELBTable table) {
-		elbTab.remove(elbTree);
-		DefaultMutableTreeNode treeRoot = new DefaultMutableTreeNode("Elastic Load Balancer Table");
-		for (ELBEntry entry : table.getEntries()) {
-			DefaultMutableTreeNode replicas = new DefaultMutableTreeNode("Replicas (" + entry.getNrOfReplicas() + ")");
-			for (Node node : entry.getReplicas()) {
-				DefaultMutableTreeNode replica = new DefaultMutableTreeNode(node);
-				replicas.add(replica);
-			}
-			
-			DefaultMutableTreeNode block;
-			if (entry.isActive())
-				 block = new DefaultMutableTreeNode(entry.getName() + " (active)");
-			else
-				 block = new DefaultMutableTreeNode(entry.getName());
-			block.add(replicas);
-			treeRoot.add(block);
-		}
-		elbTree = new JTree(treeRoot);
-		elbTab.add(elbTree);
-		elbTab.revalidate();
-	}
+//	public void updateTree(ELBTable table) {
+//		elbTab.remove(elbTree);
+//		DefaultMutableTreeNode treeRoot = new DefaultMutableTreeNode("Elastic Load Balancer Table");
+//		for (ELBEntry entry : table.getEntries()) {
+//			DefaultMutableTreeNode replicas = new DefaultMutableTreeNode("Replicas (" + entry.getNrOfReplicas() + ")");
+//			for (Node node : entry.getReplicas()) {
+//				DefaultMutableTreeNode replica = new DefaultMutableTreeNode(node);
+//				replicas.add(replica);
+//			}
+//			
+//			DefaultMutableTreeNode block;
+//			if (entry.isActive())
+//				 block = new DefaultMutableTreeNode(entry.getName() + " (active)");
+//			else
+//				 block = new DefaultMutableTreeNode(entry.getName());
+//			block.add(replicas);
+//			treeRoot.add(block);
+//		}
+//		elbTree = new JTree(treeRoot);
+//		elbTab.add(elbTree);
+//		elbTab.revalidate();
+//	}
 
     public void updateTotalCost(double totalCost) {
         totalCostValueLbl.setText("$ " + String.valueOf(totalCost));

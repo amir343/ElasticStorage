@@ -16,7 +16,7 @@ package cloud.common
  * limitations under the License.
  */
 
-import instance.common.Size
+import instance.MB
 
 /**
  * @author Amir Moulavi
@@ -26,15 +26,15 @@ import instance.common.Size
 class BandwidthConfiguration(bandwidth: Double) extends Serializable {
 
   val cost: BandwidthCost = bandwidth match {
-    case m if (bandwidth < 1.0) ⇒ BandwidthCost.XLOW
-    case m if (bandwidth >= 1.0 && bandwidth < 2.0) ⇒ BandwidthCost.LOW
-    case m if (bandwidth >= 2.0 && bandwidth < 3.0) ⇒ BandwidthCost.MEDIUM
-    case m if (bandwidth >= 3.0 && bandwidth < 4.0) ⇒ BandwidthCost.HIGH
-    case m if (bandwidth >= 4.0 && bandwidth < 5.0) ⇒ BandwidthCost.XHIGH
-    case _ ⇒ BandwidthCost.XXHIGH
+    case m if (bandwidth < 1.0) ⇒ XLOW
+    case m if (bandwidth >= 1.0 && bandwidth < 2.0) ⇒ LOW
+    case m if (bandwidth >= 2.0 && bandwidth < 3.0) ⇒ MEDIUM
+    case m if (bandwidth >= 3.0 && bandwidth < 4.0) ⇒ HIGH
+    case m if (bandwidth >= 4.0 && bandwidth < 5.0) ⇒ XHIGH
+    case _ ⇒ XXHIGH
   }
 
-  def getBandwidthMegaBytePerSecond: Long = (((bandwidth * 10) * Size.MB.getSize).asInstanceOf[Long]) / 10
+  def getBandwidthMegaBytePerSecond: Long = (((bandwidth * 10) * MB.size).asInstanceOf[Long]) / 10
 
   def getBandwidth: Double = bandwidth
 
@@ -46,3 +46,12 @@ class BandwidthConfiguration(bandwidth: Double) extends Serializable {
     sb.toString
   }
 }
+
+sealed trait BandwidthCost { val cost: Double }
+case object XLOW extends BandwidthCost { override val cost: Double = 0.10 }
+case object LOW extends BandwidthCost { override val cost: Double = 0.15 }
+case object MEDIUM extends BandwidthCost { override val cost: Double = 0.20 }
+case object HIGH extends BandwidthCost { override val cost: Double = 0.25 }
+case object XHIGH extends BandwidthCost { override val cost: Double = 0.30 }
+case object XXHIGH extends BandwidthCost { override val cost: Double = 0.35 }
+

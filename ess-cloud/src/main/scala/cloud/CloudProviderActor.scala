@@ -2,7 +2,7 @@ package cloud
 
 import common.NodeConfiguration
 import util.InstanceGroupActor.{ name ⇒ instanceGroupName }
-import gui.CloudGUI
+import cloud.gui.CloudGUI
 import scala.collection.JavaConversions._
 import akka.actor._
 import protocol._
@@ -14,6 +14,8 @@ import protocol.CloudStart
 import protocol.InstanceCost
 import protocol.BlocksAck
 import protocol.CloudConfiguration
+import instance.os.CloudSnapshot
+import instance.os.CloudSnapshot
 
 /**
  * Copyright 2012 Amir Moulavi (amir.moulavi@gmail.com)
@@ -51,8 +53,8 @@ class CloudProviderActor extends Actor with ActorLogging {
   private var _cloudConfiguration: CloudConfiguration = _
   private var connectedToController: Boolean = false
   //    private List<Node> currentNodes = new ArrayList<Node>();
-  private lazy val costTable: mutable.ConcurrentMap[String, Double] = new ConcurrentHashMap[String, Double]()
-  private lazy val periodicCostTable: mutable.ConcurrentMap[String, Double] = new ConcurrentHashMap[String, Double]()
+  private lazy val costTable: mutable.ConcurrentMap[ActorRef, Double] = new ConcurrentHashMap[ActorRef, Double]()
+  private lazy val periodicCostTable: mutable.ConcurrentMap[ActorRef, Double] = new ConcurrentHashMap[ActorRef, Double]()
 
   def receive = genericHandler orElse
     instanceHandler orElse
@@ -62,8 +64,8 @@ class CloudProviderActor extends Actor with ActorLogging {
   def genericHandler: Receive = {
     case CloudStart(cloudConfig, name)             ⇒ initialize(cloudConfig, name)
     case BlocksAck()                               ⇒ //TODO:
-    case MyCPULoadAndBandwidth(cpuLoad, bandwidth) ⇒ //TODO
-    case InstanceCost(totalCost, periodicCost)     ⇒ //TODO
+    case MyCPULoadAndBandwidth(cpuLoad, bandwidth) ⇒ showCPULoad(cpuLoad, bandwidth)
+    case InstanceCost(totalCost, periodicCost)     ⇒ saveInstanceCost(totalCost, periodicCost)
   }
 
   def instanceHandler: Receive = {
@@ -101,6 +103,10 @@ class CloudProviderActor extends Actor with ActorLogging {
     //		}
   }
 
+  def kill(instanceName: String) {
+    instanceGroup ! KillInstance(instanceName)
+  }
+
   private def initialize(cloudConfig: CloudConfiguration, name: String) {
     _cloudConfiguration = cloudConfig
     _name = name
@@ -115,7 +121,7 @@ class CloudProviderActor extends Actor with ActorLogging {
     gui.instanceStarted(instanceName)
     gui.instanceAdded()
     //			currentNodes.add(event.getNode());
-    log.info("Node %s initialized   [ok]".format(instanceName))
+    log.info("Node %s initialized   [ok]" format instanceName)
     healthChecker ! ConsiderInstance(sender)
     if (connectedToController)
       controllerRef ! NewNodeToMonitor(sender)
@@ -137,9 +143,26 @@ class CloudProviderActor extends Actor with ActorLogging {
     gui.setCloudProvider(this)
   }
 
+  private def saveInstanceCost(totalCost: String, periodicCost: String) {
+    gui.updateCostForNode(sender.path.toString, totalCost)
+    costTable.put(sender, totalCost.toDouble)
+    periodicCostTable.put(sender, periodicCost.toDouble)
+  }
+
+  private def showCPULoad(cpuLoad: Double, bandwidth: Long) {
+    gui.updateCPULoadForNode(sender.path.toString, cpuLoad)
+  }
+
   def stopActor() {
-    log.info("CloudProvider %s is shutting down...".format(_name))
+    log.info("CloudProvider %s is shutting down..." format _name)
     context.system.shutdown()
+  }
+
+  def takeSnapshot() {
+    val cloudSnapshot = new CloudSnapshot(lastCreatedSnapshotId)
+    lastCreatedSnapshotId += 1
+    cloudSnapshot.chart = ResponseTimeService.chart
+    gui.addSnapshot(cloudSnapshot);
   }
 
 }

@@ -38,6 +38,6 @@ object SampleApp {
     cloudProvider ! CloudStart(config, "cloudProvider")
     val instanceGroup = system.actorOf(Props[InstanceGroupActor], InstanceGroupActor.name)
     val nodeConfig = new NodeConfiguration()
-    instanceGroup ! InstanceGroupStart(InstanceGroupConfiguration(List(nodeConfig)))
+    instanceGroup ! InstanceGroupStart(InstanceGroupConfiguration(List(nodeConfig, nodeConfig)))
   }
 }

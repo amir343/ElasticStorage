@@ -31,7 +31,7 @@ object BuildSettings {
     description   := "Key-Value Store Simulator",
     startYear     := Some(2012),
     licenses      := Seq("Apache 2" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt")),
-    scalaVersion  := "2.9.1",
+    scalaVersion  := "2.9.2",
     scalacOptions := Seq("-deprecation", "-encoding", "utf8"),
     resolvers     := Seq(
                       "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",

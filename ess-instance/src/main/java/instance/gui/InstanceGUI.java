@@ -20,8 +20,9 @@ import eu.hansolo.steelseries.gauges.Radial;
 import eu.hansolo.steelseries.tools.BackgroundColor;
 import eu.hansolo.steelseries.tools.FrameDesign;
 import instance.InstanceActor;
+import instance.KB;
+import instance.Size;
 import instance.common.Block;
-import instance.common.Size;
 import instance.os.InstanceSnapshot;
 import logger.Logger;
 import logger.LoggerFactory;
@@ -328,7 +329,7 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
 		if (blocks != null & model.getRowCount() == 0) {
             for (Block block : blocks) {
 				if (StringUtils.isNotEmpty(block.name())) {
-					model.insertRow(model.getRowCount(), new Object[]{block.name(), Size.getSizeString(block.size()), 0, 0});
+					model.insertRow(model.getRowCount(), new Object[]{block.name(), KB.sizeString(block.size()), 0, 0});
 				} else {
 					logger.error("Block name can not be null");
 				}
@@ -440,7 +441,7 @@ public class InstanceGUI extends AbstractGUI implements GenericInstanceGUI {
 	public void addSnapshot(InstanceSnapshot snapshot) {
 		if (null != snapshot) {
 			snapshotModel.insertRow(snapshotModel.getRowCount(), new Object[]{snapshot.getId(), snapshot.getDate()});
-			snapshot.addLogText(logTextArea.getText());
+			snapshot.setLog(logTextArea.getText());
 			snapshots.add(snapshot);
 		} else {
 			logger.error("snapshot can not be null");

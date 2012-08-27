@@ -325,6 +325,7 @@
 //		return cost;
 //	}
 //
+//  // DONE
 //	public void kill(Node node) {
 //		numberOfInstances--;
 //		logger.debug("Shutting down Node " + node);
@@ -371,7 +372,7 @@
 //		HealthCheckerInit init = new HealthCheckerInit(event.getPeriod(), event.getDelta(), self);
 //		trigger(init, epfd);
 //	}
-//
+//  // DONE
 //	private void setupServices(CloudAPIInit event) {
 //		addressManager = new AddressManager(cloudConfiguration.getAddressPollXmlFilename());
 //		logger.info(addressManager.getNrOfAvailableAddress() + " elastic IPs are available");
@@ -379,7 +380,7 @@
 //		for (NodeConfiguration nodeConfiguration : event.getCloudConfiguration().getNodeConfigurations())
 //			initialize(nodeConfiguration, true);
 //	}
-//
+//  // DONE
 //	private void setupGui(CloudAPIInit event) {
 //		gui = CloudGUI.getInstance();
 //		gui.setTitle("CloudProvider@" + event.getCloudConfiguration().getCloudProviderAddress() + ":" + event.getCloudConfiguration().getCloudProviderPort());

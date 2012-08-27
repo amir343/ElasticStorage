@@ -2,8 +2,9 @@ package instance
 
 import akka.actor._
 import scala.collection.mutable
-import protocol.{ LaunchInstance, InstanceGroupStart, Stopped, InstanceStart }
+import protocol.{ LaunchInstance, InstanceGroupStart, Stopped, InstanceStart, KillInstance }
 import cloud.common.NodeConfiguration
+import protocol.Death
 
 /**
  * Copyright 2012 Amir Moulavi (amir.moulavi@gmail.com)
@@ -29,9 +30,10 @@ class InstanceGroupActor extends Actor with ActorLogging {
   private var currentIndex = 0
 
   def receive = {
-    case InstanceGroupStart(conf) ⇒ startInstances(conf)
-    case LaunchInstance(conf)     ⇒ startInstance(conf)
-    case Stopped()                ⇒ handleStop()
+    case InstanceGroupStart(conf)   ⇒ startInstances(conf)
+    case LaunchInstance(conf)       ⇒ startInstance(conf)
+    case Stopped()                  ⇒ handleStop()
+    case KillInstance(instanceName) ⇒ killInstance(instanceName)
   }
 
   private def startInstances(conf: InstanceGroupConfiguration) {
@@ -39,7 +41,7 @@ class InstanceGroupActor extends Actor with ActorLogging {
     val indices = 1 to conf.nodes.size
     conf.nodes.zip(indices).foreach { pair ⇒
       val node = context.actorOf(Props[InstanceActor])
-      node ! InstanceStart(pair._1, NODE_PREFIX.format(pair._2.toString))
+      node ! InstanceStart(pair._1, NODE_PREFIX.format(pair._2))
       currentNodes += node
     }
     currentIndex = indices.last + 1
@@ -48,9 +50,16 @@ class InstanceGroupActor extends Actor with ActorLogging {
   private def startInstance(nodeConfig: NodeConfiguration) {
     log.info("Launching new intance...")
     val node = context.actorOf(Props[InstanceActor])
-    node ! InstanceStart(nodeConfig, NODE_PREFIX.format(currentIndex.toString))
+    node ! InstanceStart(nodeConfig, NODE_PREFIX.format(currentIndex))
     currentNodes += node
     currentIndex += 1
+  }
+
+  private def killInstance(instanceName: String) {
+    context.actorFor(instanceName) match {
+      case null ⇒ log.error("Could not find actor with path %s to kill!".format(instanceName))
+      case ref  ⇒ ref ! Death()
+    }
   }
 
   private def handleStop() {

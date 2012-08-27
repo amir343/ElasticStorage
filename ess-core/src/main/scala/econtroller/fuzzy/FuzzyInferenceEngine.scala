@@ -16,7 +16,7 @@
 package econtroller.fuzzy
 
 import logger.{ Logger, LoggerFactory }
-import econtroller.gui.ControllerGUI
+//import econtroller.gui.ControllerGUI
 
 /**
  * @author Amir Moulavi
@@ -25,7 +25,7 @@ import econtroller.gui.ControllerGUI
  */
 class FuzzyInferenceEngine {
 
-  private val logger: Logger = LoggerFactory.getLogger(classOf[FuzzyInferenceEngine], ControllerGUI.getInstance())
+  //  private val logger: Logger = LoggerFactory.getLogger(classOf[FuzzyInferenceEngine], ControllerGUI.getInstance())
 
   def act(scaleUp: Boolean, averageCpuSTD: Double): Boolean = (scaleUp, averageCpuSTD) match {
     case (false, std) if high(std) ⇒ false

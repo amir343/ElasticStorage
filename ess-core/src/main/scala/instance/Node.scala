@@ -15,7 +15,6 @@
  */
 package instance
 
-import se.sics.kompics.address.Address
 import java.net.{ UnknownHostException, InetAddress }
 import org.apache.commons.lang.builder.HashCodeBuilder
 
@@ -42,17 +41,17 @@ class Node(private val nodeName: String,
     sb.toString
   }
 
-  def getAddress: Address = {
-    var self: Address = null
-    try {
-      self = new Address(InetAddress.getByName(address), port, 1)
-    } catch {
-      case e: UnknownHostException ⇒ {
-        e.printStackTrace()
-      }
-    }
-    self
-  }
+  //  def getAddress: Address = {
+  //    var self: Address = null
+  //    try {
+  //      self = new Address(InetAddress.getByName(address), port, 1)
+  //    } catch {
+  //      case e: UnknownHostException ⇒ {
+  //        e.printStackTrace()
+  //      }
+  //    }
+  //    self
+  //  }
 
   override def equals(another: Any) = another match {
     case another: Node ⇒ another.getIP == this.getIP && another.getNodeName == this.getNodeName && another.getPort == this.getPort
@@ -76,17 +75,17 @@ object Node {
     new Node(tokens(0), add(0), Integer.parseInt(add(1)))
   }
 
-  def getAddressFromString(string: String): Address = {
-    var self: Address = null
-    var tokens: Array[String] = string.split(":")
-    try {
-      self = new Address(InetAddress.getByName(tokens(0)), Integer.parseInt(tokens(1)), 1)
-    } catch {
-      case e: UnknownHostException ⇒ {
-        e.printStackTrace()
-      }
-    }
-    self
-  }
+  //  def getAddressFromString(string: String): Address = {
+  //    var self: Address = null
+  //    var tokens: Array[String] = string.split(":")
+  //    try {
+  //      self = new Address(InetAddress.getByName(tokens(0)), Integer.parseInt(tokens(1)), 1)
+  //    } catch {
+  //      case e: UnknownHostException ⇒ {
+  //        e.printStackTrace()
+  //      }
+  //    }
+  //    self
+  //  }
 
 }

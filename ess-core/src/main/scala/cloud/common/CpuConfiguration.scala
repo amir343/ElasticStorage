@@ -15,7 +15,7 @@
  */
 package cloud.common
 
-import instance.common.Size
+import instance.GHertz
 
 /**
  * @author Amir Moulavi
@@ -25,18 +25,18 @@ import instance.common.Size
 class CpuConfiguration(cpuSpeed: Double) extends Serializable {
 
   val cost: CPUCost = cpuSpeed match {
-    case m if cpuSpeed < 1.8                      ⇒ CPUCost.MICRO
-    case m if (cpuSpeed >= 1.8 && cpuSpeed < 2.0) ⇒ CPUCost.XSMALL
-    case m if (cpuSpeed >= 2.0 && cpuSpeed < 2.4) ⇒ CPUCost.SMALL
-    case m if (cpuSpeed >= 2.4 && cpuSpeed < 2.8) ⇒ CPUCost.LARGE
-    case m if (cpuSpeed >= 2.8 && cpuSpeed < 3.2) ⇒ CPUCost.XLARGE
-    case m if (cpuSpeed >= 3.2 && cpuSpeed < 3.8) ⇒ CPUCost.XXLARGE
-    case _                                        ⇒ CPUCost.XXXLARGE
+    case m if cpuSpeed < 1.8                      ⇒ MICRO
+    case m if (cpuSpeed >= 1.8 && cpuSpeed < 2.0) ⇒ XSMALL
+    case m if (cpuSpeed >= 2.0 && cpuSpeed < 2.4) ⇒ SMALL
+    case m if (cpuSpeed >= 2.4 && cpuSpeed < 2.8) ⇒ LARGE
+    case m if (cpuSpeed >= 2.8 && cpuSpeed < 3.2) ⇒ XLARGE
+    case m if (cpuSpeed >= 3.2 && cpuSpeed < 3.8) ⇒ XXLARGE
+    case _                                        ⇒ XXXLARGE
   }
 
   def getCost: CPUCost = cost
 
-  def getCpuSpeedInstructionPerSecond: Long = (((cpuSpeed * 10) * Size.GHertz.getSize).asInstanceOf[Long]) / 10
+  def getCpuSpeedInstructionPerSecond: Long = (((cpuSpeed * 10) * GHertz.size).asInstanceOf[Long]) / 10
 
   def getCpuSpeed: Double = cpuSpeed
 
@@ -46,3 +46,14 @@ class CpuConfiguration(cpuSpeed: Double) extends Serializable {
     sb.toString
   }
 }
+
+sealed trait CPUCost {
+  val perhour: Double
+}
+case object MICRO extends CPUCost { override val perhour: Double = 0.025 }
+case object XSMALL extends CPUCost { override val perhour: Double = 0.056 }
+case object SMALL extends CPUCost { override val perhour: Double = 0.095 }
+case object LARGE extends CPUCost { override val perhour: Double = 0.38 }
+case object XLARGE extends CPUCost { override val perhour: Double = 0.76 }
+case object XXLARGE extends CPUCost { override val perhour: Double = 1.14 }
+case object XXXLARGE extends CPUCost { override val perhour: Double = 2.28 }

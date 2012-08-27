@@ -106,7 +106,7 @@ class InstanceActor extends Actor with ActorLogging {
   private val uname_r = "2.2-2"
   private val numberOfDevices = 3
   private var numberOfDevicesLoaded = 0
-  private var BANDWIDTH: Long = 2 * Size.MB.getSize
+  private var BANDWIDTH: Long = 2 * MB.size
   private val WAIT: Long = 1000
   private val REQUEST_QUEUE_PROCESSING_INTERVAL: Long = 1000
   private val CPU_LOAD_PROPAGATION_INTERVAL: Long = 5000
@@ -340,8 +340,8 @@ class InstanceActor extends Actor with ActorLogging {
     if (instanceRunning) {
       val snapshot = new InstanceSnapshot(lastSnapshotID)
       lastSnapshotID += 1
-      snapshot.addCPULoadChart(chart)
-      snapshot.addBandwidthChart(getBandwidthChart)
+      snapshot.setCpuChart(chart)
+      snapshot.setBandwidthChart(getBandwidthChart)
       gui.addSnapshot(snapshot)
     }
   }
@@ -356,7 +356,7 @@ class InstanceActor extends Actor with ActorLogging {
     dataSet.addSeries(xySeries)
     waitForSystemStartUp()
     costService.init(nodeConfig)
-    gui.updateBandwidthInfoLabel(Size.getSizeString(BANDWIDTH))
+    gui.updateBandwidthInfoLabel(Size.sizeString(BANDWIDTH))
   }
 
   def stopActor() {

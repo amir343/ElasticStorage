@@ -15,8 +15,6 @@
  */
 package cloud.common
 
-import instance.Node
-import se.sics.kompics.address.Address
 import instance.common.Block
 import reflect.BeanProperty
 import akka.actor.ActorRef

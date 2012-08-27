@@ -3,4 +3,4 @@ resolvers ++= Seq(
     "less is" at "http://repo.lessis.me",
     "coda" at "http://repo.codahale.com")
 
-addSbtPlugin("com.typesafe.sbtscalariform" % "sbtscalariform" % "0.4.0")
+addSbtPlugin("com.typesafe.sbtscalariform" % "sbtscalariform" % "0.5.1")
